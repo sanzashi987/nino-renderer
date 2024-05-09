@@ -1,42 +1,127 @@
-use std::ops::{Add, Mul, Neg, Sub};
-#[derive(Debug, Clone, Copy)]
-pub struct Vec2 {
-  pub x: f32,
-  pub y: f32,
-}
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-impl Vec2 {
-  pub fn dot(self, rhs: Vec2) -> f32 {
-    self.x * rhs.x + self.y * rhs.y
-  }
-}
-
-impl Add<Vec2> for Vec2 {
-  type Output = Self;
-
-  fn add(self, rhs: Vec2) -> Self {
-    Self {
-      x: self.x + rhs.x,
-      y: self.y + rhs.y,
+macro_rules! define_mat {
+  ($name:ident, $dim:expr) => {
+    #[derive(Debug, Clone, Copy)]
+    pub struct $name {
+      data: [f32; $dim * $dim],
     }
-  }
+  };
 }
 
-impl Sub<Vec2> for Vec2 {
-  type Output = Self;
-  fn sub(self, rhs: Self) -> Self {
-    Self {
-      x: self.x - rhs.x,
-      y: self.y - rhs.y,
+macro_rules! define_vec_op {
+  ($name:ident,$trait_name:ident, $func:ident, $op:tt, $($var:ident),+) => {
+    impl $trait_name for $name {
+      type Output = Self;
+      fn $func(self, rhs: Self) -> Self::Output {
+        $name {
+          $(
+            $var:self.$var $op rhs.$var,
+          )+
+        }
+      }
     }
-  }
-}
-impl Mul<f32> for Vec2 {
-  type Output = Self;
-  fn mul(self, rhs: f32) -> Self {
-    Self {
-      x: self.x * rhs,
-      y: self.y * rhs,
+
+    impl $trait_name<f32> for $name {
+      type Output = Self;
+      fn $func(self, rhs: f32) -> Self::Output {
+        $name {
+          $(
+            $var:self.$var $op rhs,
+          )+
+        }
+      }
     }
-  }
+  };
 }
+
+macro_rules! definv_vec_op_assign {
+  ($name:ident,$trait_name:ident, $func:ident, $op:tt, $($var:ident),+) => {
+    impl $trait_name for $name {
+      fn $func(&mut self, rhs: Self) {
+        $(
+          self.$var $op rhs.$var;
+        )+
+      }
+    }
+
+    impl $trait_name<f32> for $name {
+      fn $func(&mut self, rhs: f32) {
+        $(
+          self.$var $op rhs;
+        )+
+      }
+    }
+  };
+}
+
+macro_rules! define_vec {
+  ($name:ident,$($var:ident),+) => {
+
+    #[derive(Debug, PartialEq, Copy, Clone, Default)]
+    pub struct $name {
+      $(
+        pub $var:f32,
+      )+
+    }
+
+    impl $name {
+      pub const fn new($($var:f32),+) -> $name{
+        $name{
+          $(
+            $var,
+          )+
+        }
+      }
+
+      pub fn zero() -> $name {
+        $name {
+          $( $var: 0f32, )+
+        }
+      }
+
+      pub fn length_square(&self)->f32{
+        $(
+          self.$var * self.$var +
+        )+
+        0.0
+      }
+
+      pub fn length(&self) ->f32{
+        self.length_square().sqrt()
+      }
+
+      pub fn normalize(&self) -> $name {
+        *self / self.length()
+      }
+    }
+
+    impl Neg for $name {
+      type Output = Self;
+      fn neg(self) -> Self::Output{
+        Self::new(
+          $(
+            -self.$var,
+          )+
+        )
+      }
+    }
+
+    define_vec_op!($name, Add, add, + $(,$var)+);
+    define_vec_op!($name, Sub, sub, - $(,$var)+);
+    define_vec_op!($name, Mul, mul, * $(,$var)+);
+    define_vec_op!($name, Div, div, / $(,$var)+);
+    definv_vec_op_assign!($name, AddAssign, add_assign, += $(,$var)+ );
+    definv_vec_op_assign!($name, SubAssign, sub_assign, -= $(,$var)+ );
+    definv_vec_op_assign!($name, MulAssign, mul_assign, *= $(,$var)+ );
+    definv_vec_op_assign!($name, DivAssign, div_assign, /= $(,$var)+ );
+  };
+}
+
+define_vec!(Vec2, x, y);
+
+define_mat!(Mat2, 2);
+define_mat!(Mat3, 3);
+define_mat!(Mat4, 4);
+
+// impl Mul<Vec2> for Mat4 {}

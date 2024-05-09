@@ -28,3 +28,5 @@ pub fn draw_line(x0: f32, y0: f32, x1: f32, y1: f32, img: &mut image::RgbImage, 
     }
   }
 }
+
+// pub fn draw_triangle()
