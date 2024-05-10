@@ -1,4 +1,5 @@
 mod bresenham_line;
-mod math;
+pub mod math;
 mod cohen_sutherland;
 pub mod renderer;
+pub mod camera;

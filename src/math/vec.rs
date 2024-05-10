@@ -1,13 +1,6 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::default::Default;
 
-macro_rules! define_mat {
-  ($name:ident, $dim:expr) => {
-    #[derive(Debug, Clone, Copy)]
-    pub struct $name {
-      data: [f32; $dim * $dim],
-    }
-  };
-}
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 macro_rules! define_vec_op {
   ($name:ident,$trait_name:ident, $func:ident, $op:tt, $($var:ident),+) => {
@@ -35,7 +28,7 @@ macro_rules! define_vec_op {
   };
 }
 
-macro_rules! definv_vec_op_assign {
+macro_rules! define_vec_op_assign {
   ($name:ident,$trait_name:ident, $func:ident, $op:tt, $($var:ident),+) => {
     impl $trait_name for $name {
       fn $func(&mut self, rhs: Self) {
@@ -111,17 +104,39 @@ macro_rules! define_vec {
     define_vec_op!($name, Sub, sub, - $(,$var)+);
     define_vec_op!($name, Mul, mul, * $(,$var)+);
     define_vec_op!($name, Div, div, / $(,$var)+);
-    definv_vec_op_assign!($name, AddAssign, add_assign, += $(,$var)+ );
-    definv_vec_op_assign!($name, SubAssign, sub_assign, -= $(,$var)+ );
-    definv_vec_op_assign!($name, MulAssign, mul_assign, *= $(,$var)+ );
-    definv_vec_op_assign!($name, DivAssign, div_assign, /= $(,$var)+ );
+    define_vec_op_assign!($name, AddAssign, add_assign, += $(,$var)+ );
+    define_vec_op_assign!($name, SubAssign, sub_assign, -= $(,$var)+ );
+    define_vec_op_assign!($name, MulAssign, mul_assign, *= $(,$var)+ );
+    define_vec_op_assign!($name, DivAssign, div_assign, /= $(,$var)+ );
   };
 }
 
 define_vec!(Vec2, x, y);
+define_vec!(Vec3, x, y, z);
+define_vec!(Vec4, x, y, z, w);
 
-define_mat!(Mat2, 2);
-define_mat!(Mat3, 3);
-define_mat!(Mat4, 4);
+impl Vec4 {
+  pub fn from_vec3(v: &Vec3, w: f32) -> Vec4 {
+    Self {
+      x: v.x,
+      y: v.y,
+      z: v.z,
+      w,
+    }
+  }
 
-// impl Mul<Vec2> for Mat4 {}
+  pub fn truncated_to_vec3(&self) -> Vec3 {
+    Vec3 {
+      x: self.x,
+      y: self.y,
+      z: self.z,
+    }
+  }
+
+  pub fn truncated_to_vec2(&self) -> Vec2 {
+    Vec2 {
+      x: self.x,
+      y: self.y,
+    }
+  }
+}
