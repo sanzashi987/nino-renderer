@@ -1,9 +1,10 @@
+use std::clone;
+
 use crate::bresenham_line;
 use crate::camera::Camera;
 use crate::cohen_sutherland;
 use crate::image::ColorAttachment;
 use crate::math::{Mat4, Vec2, Vec3, Vec4};
-use image;
 
 struct Viewport {
   x: i32,
@@ -27,16 +28,20 @@ impl Renderer {
     }
   }
 
-  pub fn get_canvas_width(&self) -> u32 {
-    return self.color_attachment.width();
+  pub fn clear(&mut self, color: &Vec4) {
+    self.color_attachment.clear(color)
   }
 
-  pub fn get_canvas_heigth(&self) -> u32 {
-    return self.color_attachment.height();
+  pub fn get_canvas_width(&self) -> u32 {
+    self.color_attachment.width()
+  }
+
+  pub fn get_canvas_height(&self) -> u32 {
+    self.color_attachment.height()
   }
 
   pub fn get_pixiel(&self) -> &[u8] {
-    return self.color_attachment.data();
+    self.color_attachment.data()
   }
 
   pub fn draw_triangle(&mut self, model: &Mat4, vertices: &[Vec3; 3], color: &Vec4) {

@@ -1,10 +1,6 @@
 // use fltk::browser::BrowserScrollbar;
-use image;
-
-use crate::{
-  image::ColorAttachment,
-  math::{self, Vec4},
-};
+use crate::image::ColorAttachment;
+use crate::math;
 
 //Bresenham
 pub fn draw_line(
@@ -15,32 +11,6 @@ pub fn draw_line(
   color: &math::Vec4,
   color_pool: &mut ColorAttachment,
 ) {
-  if x0 == x1 {
-    let larger = y1 > y0;
-    let mut y = y0;
-    loop {
-      color_pool.set(x0 as u32, y as u32, color);
-      if y0 == y1 {
-        break;
-      }
-      y = y + if larger { 1 } else { -1 };
-    }
-    return;
-  }
-
-  if y0 == y1 {
-    let larger = x1 > x0;
-    let mut x = x0;
-    loop {
-      color_pool.set(x as u32, y0 as u32, color);
-      if x == x1 {
-        break;
-      }
-      x = x + if larger { 1 } else { -1 };
-    }
-    return;
-  }
-
   let mut dy = (y1 - y0).abs();
   let mut dx = (x1 - x0).abs();
   let mut x = x0;

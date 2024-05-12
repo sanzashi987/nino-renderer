@@ -135,7 +135,7 @@ impl Mul<Vec4> for Mat4 {
 }
 
 #[rustfmt::skip]
-pub fn create_translate(offset: &Vec3) -> Mat4 {
+pub fn apply_translate(offset: &Vec3) -> Mat4 {
   Mat4::from_row(&[
     1.0, 0.0, 0.0, offset.x,
     0.0, 1.0, 0.0, offset.y,
@@ -145,7 +145,7 @@ pub fn create_translate(offset: &Vec3) -> Mat4 {
 }
 
 #[rustfmt::skip]
-pub fn create_eular_rotate_y(angle: f32) -> Mat4 {
+pub fn apply_eular_rotate_y(angle: f32) -> Mat4 {
   let c = angle.cos();
   let s = angle.sin();
   Mat4::from_row(&[
