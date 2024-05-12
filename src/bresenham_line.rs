@@ -1,17 +1,25 @@
 // use fltk::browser::BrowserScrollbar;
 use image;
 
-//Bresenham
-pub fn draw_line(x0: i32, y0: i32, x1: i32, y1: i32, img: &mut image::RgbImage, color: [u8; 3]) {
-  // let dx = x1 - x0;
-  // let dy = y1 - y0;
-  let rgb = image::Rgb(color);
+use crate::{
+  image::ColorAttachment,
+  math::{self, Vec4},
+};
 
+//Bresenham
+pub fn draw_line(
+  x0: i32,
+  y0: i32,
+  x1: i32,
+  y1: i32,
+  color: &math::Vec4,
+  color_pool: &mut ColorAttachment,
+) {
   if x0 == x1 {
     let larger = y1 > y0;
     let mut y = y0;
     loop {
-      img.put_pixel(x0 as u32, y as u32, rgb);
+      color_pool.set(x0 as u32, y as u32, color);
       if y0 == y1 {
         break;
       }
@@ -24,7 +32,7 @@ pub fn draw_line(x0: i32, y0: i32, x1: i32, y1: i32, img: &mut image::RgbImage, 
     let larger = x1 > x0;
     let mut x = x0;
     loop {
-      img.put_pixel(x as u32, y0 as u32, rgb);
+      color_pool.set(x as u32, y0 as u32, color);
       if x == x1 {
         break;
       }
@@ -32,10 +40,6 @@ pub fn draw_line(x0: i32, y0: i32, x1: i32, y1: i32, img: &mut image::RgbImage, 
     }
     return;
   }
-
-  // if x0 > x1 {
-  //   std::mem::swap(&mut _x0, &mut _x1);
-  // }
 
   let mut dy = (y1 - y0).abs();
   let mut dx = (x1 - x0).abs();
@@ -60,9 +64,9 @@ pub fn draw_line(x0: i32, y0: i32, x1: i32, y1: i32, img: &mut image::RgbImage, 
   let desc = -2 * dx;
   while x != final_x {
     if y_grows_faster {
-      img.put_pixel(y as u32, x as u32, rgb);
+      color_pool.set(y as u32, x as u32, color);
     } else {
-      img.put_pixel(x as u32, y as u32, rgb);
+      color_pool.set(x as u32, y as u32, color);
     }
 
     x += step_x;

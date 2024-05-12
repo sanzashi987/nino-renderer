@@ -1,6 +1,7 @@
 use crate::bresenham_line;
 use crate::camera::Camera;
 use crate::cohen_sutherland;
+use crate::image::ColorAttachment;
 use crate::math::{Mat4, Vec2, Vec3, Vec4};
 use image;
 
@@ -14,6 +15,7 @@ struct Viewport {
 pub struct Renderer {
   camera: Camera,
   viewport: Viewport,
+  color_attachment: ColorAttachment,
 }
 
 impl Renderer {
@@ -21,6 +23,7 @@ impl Renderer {
     Self {
       camera,
       viewport: Viewport { x: 0, y: 0, w, h },
+      color_attachment: ColorAttachment::new(w, h),
     }
   }
 
@@ -39,14 +42,23 @@ impl Renderer {
           + self.viewport.y as f32,
       )
     });
+
+    let length = &vertices.len();
+    for i in 0..*length {
+      let p1 = &vertices[i];
+      let p2 = &vertices[(i + 1) % *length];
+
+      self.draw_line(&p1, &p2, color);
+    }
   }
 
-  pub fn draw_line(x0: f32, y0: f32, x1: f32, y1: f32, img: &mut image::RgbImage, color: [u8; 3]) {
-    let p0 = Vec2 { x: x0, y: y0 };
-    let p1 = Vec2 { x: x1, y: y1 };
-
-    let rect_min = Vec2 { x: 50.0, y: 50.0 };
-    let rect_max = Vec2 { x: 100.0, y: 100.0 };
+  pub fn draw_line(&mut self, p0: &Vec2, p1: &Vec2, color: &Vec4) {
+    // let rect_min = Vec2 { x: 50.0, y: 50.0 };
+    let rect_min = Vec2::zero();
+    let rect_max = Vec2::new(
+      self.color_attachment.width() as f32 - 1.0,
+      self.color_attachment.height() as f32 - 1.0,
+    );
 
     let res = cohen_sutherland::clip(&p0, &p1, &rect_min, &rect_max);
 
@@ -58,12 +70,10 @@ impl Renderer {
         next_p0.y as i32,
         next_p1.x as i32,
         next_p1.y as i32,
-        img,
         color,
+        &mut self.color_attachment,
       ),
-      None => {
-        return;
-      }
+      None => {}
     }
   }
 }
