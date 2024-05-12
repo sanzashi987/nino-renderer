@@ -1,16 +1,56 @@
-use image;
+// use image;
 // use nino_renderer::bresenham_line;
-
-use image::imageops::colorops;
-use nino_renderer::camera;
-use nino_renderer::math::{Mat4, Vec3, Vec4};
+use fltk::{self, app::set_visual, enums::Mode, prelude::*, window::Window};
+use nino_renderer::math::{self, Mat4, Vec3, Vec4};
 use nino_renderer::renderer::Renderer;
+use nino_renderer::{camera, renderer};
 
 const WINDOW_WIDTH: u32 = 1024;
 const WINDOW_HEIGHT: u32 = 720;
 
+fn run_fltk(cb: fn(win: &mut Window)) {
+  let app = fltk::app::App::default();
+
+  let window = Window::new(
+    100,
+    100,
+    WINDOW_WIDTH as i32,
+    WINDOW_HEIGHT as i32,
+    "sandbox",
+  );
+
+  window.draw(cb);
+
+  fltk::app::add_idle3(move |_| {
+    window.redraw();
+  });
+
+  window.handle(move |_, event| false);
+  window.end();
+  set_visual(Mode::Rgb).unwrap();
+  window.show();
+
+  app.run().unwrap();
+}
+
+// fn create_window() -> Window {}
+
+fn draw_image(renderer: &renderer::Renderer) {
+  let pixels_buffer = renderer.get_pixiel();
+
+  fltk::draw::draw_image(
+    pixels_buffer,
+    0,
+    0,
+    renderer.get_canvas_width() as i32,
+    renderer.get_canvas_heigth() as i32,
+    fltk::enums::ColorDepth::Rgb8,
+  )
+  .unwrap();
+}
+
 fn main() {
-  let mut img = image::ImageBuffer::new(100, 100);
+  // let mut img = image::ImageBuffer::new(100, 100);
 
   let camera = camera::Camera::new(
     1.0,
@@ -19,19 +59,24 @@ fn main() {
   );
   let mut renderer = Renderer::new(100, 100, camera);
 
-  let color = Vec4::new(0.0, 1.0, 10.0, 1.0);
+  let mut window = create_window();
 
-  let vertices = [
-    Vec3::new(-1.0, 1.0, -2.0),
-    Vec3::new(1.0, 1.0, -2.0),
-    Vec3::new(0.0, -1.0, -2.0),
-  ];
+  let mut rotation = 0.0f32;
 
-  renderer.draw_triangle(&Mat4::identity(), &vertices, &color);
+  run_fltk(move |_| {
+    let color = Vec4::new(0.0, 1.0, 10.0, 1.0);
+    let model = Mat4::identity();
+    // let model = math::create_translate(&math::Vec3::new(0.0, 0.0, -4.0))
+    //   * math::create_eular_rotate_y(rotation.to_radians());
+    let vertices = [
+      Vec3::new(-1.0, 1.0, -2.0),
+      Vec3::new(1.0, 1.0, -2.0),
+      Vec3::new(0.0, -1.0, -2.0),
+    ];
 
-  renderer.draw_line(10.0, 10.0, 100.0, 100.0, &mut img, [0, 244, 244]);
-  renderer.draw_line(50.0, 10.0, 100.0, 100.0, &mut img, [250, 0, 244]);
-  renderer.draw_line(99.0, 50.0, 10.0, 1.0, &mut img, [250, 0, 244]);
+    renderer.draw_triangle(&model, &vertices, &color);
+    rotation += 1.0;
 
-  img.save("test.png").unwrap();
+    draw_image(&renderer)
+  });
 }

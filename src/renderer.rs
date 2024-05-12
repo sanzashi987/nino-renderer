@@ -27,6 +27,18 @@ impl Renderer {
     }
   }
 
+  pub fn get_canvas_width(&self) -> u32 {
+    return self.color_attachment.width();
+  }
+
+  pub fn get_canvas_heigth(&self) -> u32 {
+    return self.color_attachment.height();
+  }
+
+  pub fn get_pixiel(&self) -> &[u8] {
+    return self.color_attachment.data();
+  }
+
   pub fn draw_triangle(&mut self, model: &Mat4, vertices: &[Vec3; 3], color: &Vec4) {
     let vertices = vertices.map(|v| {
       //homogeneous

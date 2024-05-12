@@ -1,4 +1,4 @@
-use super::Vec4;
+use super::{Vec3, Vec4};
 use std::ops::{Div, Mul};
 
 macro_rules! define_mat {
@@ -132,4 +132,26 @@ impl Mul<Vec4> for Mat4 {
         + self.get(3, 3) * rhs.w,
     )
   }
+}
+
+#[rustfmt::skip]
+pub fn create_translate(offset: &Vec3) -> Mat4 {
+  Mat4::from_row(&[
+    1.0, 0.0, 0.0, offset.x,
+    0.0, 1.0, 0.0, offset.y,
+    0.0, 0.0, 1.0, offset.z,
+    0.0, 0.0, 0.0, 1.0,
+  ])
+}
+
+#[rustfmt::skip]
+pub fn create_eular_rotate_y(angle: f32) -> Mat4 {
+  let c = angle.cos();
+  let s = angle.sin();
+  Mat4::from_row(&[
+      c, 0.0,  -s, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+      s, 0.0,   c, 0.0,
+    0.0, 0.0, 0.0, 1.0,
+  ])
 }
