@@ -68,12 +68,14 @@ fn main() {
     Vec3::new(1.0, 1.0, 0.0),
     Vec3::new(0.0, -1.0, 0.0),
   ];
+
+  let model = math::apply_translate(&math::Vec3::new(0.0, 0.0, -4.0));
+
   run_fltk(move |window| {
     renderer.clear(&Vec4::new(0.0, 0.0, 0.0, 1.0));
     // let model = Mat4::identity();
     // // SRT
-    let model = math::apply_translate(&math::Vec3::new(0.0, 0.0, -4.0))
-      * math::apply_eular_rotate_y(rotation.to_radians());
+    let model = model * math::apply_eular_rotate_y(rotation.to_radians());
 
     renderer.draw_triangle(&model, &vertices, &color);
     rotation += 1.0;

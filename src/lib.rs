@@ -4,3 +4,4 @@ mod cohen_sutherland;
 pub mod renderer;
 pub mod camera;
 mod image;
+mod scanline;
