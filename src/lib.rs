@@ -5,3 +5,5 @@ pub mod renderer;
 pub mod camera;
 mod image;
 mod scanline;
+pub mod cpu_renderer;
+mod vertex;

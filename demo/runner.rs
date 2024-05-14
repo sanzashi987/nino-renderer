@@ -2,8 +2,8 @@
 // use image;
 // use nino_renderer::bresenham_line;
 use fltk::{self, app::set_visual, enums::Mode, prelude::*, window::Window};
+use nino_renderer::cpu_renderer::{self, Renderer};
 use nino_renderer::math::{self, Mat4, Vec3, Vec4};
-use nino_renderer::renderer::Renderer;
 use nino_renderer::{camera, renderer};
 
 const WINDOW_WIDTH: u32 = 1024;
@@ -34,10 +34,16 @@ fn run_fltk<F: FnMut(&mut Window) + 'static>(cb: F) {
   app.run().unwrap();
 }
 
-// fn create_window() -> Window {}
+fn create_renderer(w: u32, h: u32, camera: camera::Camera) -> Box<dyn renderer::RendererInterface> {
+  if cfg!(feature = "cpu") {
+    Box::new(cpu_renderer::Renderer::new(w, h, camera))
+  } else {
+    Box::new(cpu_renderer::Renderer::new(w, h, camera))
+  }
+}
 
-fn draw_image(renderer: &renderer::Renderer) {
-  let pixels_buffer = renderer.get_pixiel();
+fn draw_image(renderer: &mut Box<dyn renderer::RendererInterface>) {
+  let pixels_buffer = renderer.get_frame_image();
 
   fltk::draw::draw_image(
     pixels_buffer,
@@ -60,7 +66,7 @@ fn main() {
     WINDOW_WIDTH as f32 / WINDOW_HEIGHT as f32,
     50f32.to_radians(),
   );
-  let mut renderer = Renderer::new(WINDOW_WIDTH, WINDOW_HEIGHT, camera);
+  let mut renderer = create_renderer(WINDOW_WIDTH, WINDOW_HEIGHT, camera);
   let color = Vec4::new(0.0, 1.0, 10.0, 1.0);
 
   let vertices = [
@@ -80,6 +86,6 @@ fn main() {
     renderer.draw_triangle(&model, &vertices, &color);
     rotation += 1.0;
 
-    draw_image(&renderer)
+    draw_image(&mut renderer);
   });
 }

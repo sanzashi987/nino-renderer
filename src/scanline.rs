@@ -1,4 +1,7 @@
-use crate::math::{lerp, Vec2};
+use crate::{
+  math::{lerp, Vec2},
+  vertex::Vertex,
+};
 #[derive(Clone, Copy, Debug)]
 pub struct Edge {
   pub v1: Vec2,
@@ -43,47 +46,51 @@ impl Trapezoid {
     }
   }
 
-  pub fn from_triangle(vertices: &[Vec2; 3]) -> [Option<Self>; 2] {
+  pub fn from_triangle(vertices: &[Vertex; 3]) -> [Option<Self>; 2] {
     let mut vertices = *vertices;
-    vertices.sort_by(|a, b| a.y.partial_cmp(&b.y).unwrap());
+    vertices.sort_by(|a, b| a.position.y.partial_cmp(&b.position.y).unwrap());
 
-    if (vertices[0].x == vertices[1].x && vertices[0].x == vertices[2].x)
-      || (vertices[0].y == vertices[1].y && vertices[0].y == vertices[2].y)
+    if (vertices[0].position.x == vertices[1].position.x
+      && vertices[0].position.x == vertices[2].position.x)
+      || (vertices[0].position.y == vertices[1].position.y
+        && vertices[0].position.y == vertices[2].position.y)
     {
       return [None, None];
     }
 
-    if vertices[0].y == vertices[1].y {
-      if vertices[0].x > vertices[1].x {
+    if vertices[0].position.y == vertices[1].position.y {
+      if vertices[0].position.x > vertices[1].position.x {
         vertices.swap(0, 1);
       }
 
-      let trap = Self::get_hang_trap(&vertices);
+      let trap = Self::get_hang_trap(&vertices.map(|v| v.truncated_to_vec2()));
       return [Some(trap), None];
     }
 
-    if vertices[1].y == vertices[2].y {
-      if vertices[1].x > vertices[2].x {
+    if vertices[1].position.y == vertices[2].position.y {
+      if vertices[1].position.x > vertices[2].position.x {
         vertices.swap(1, 2);
       }
 
-      let trap = Self::get_portrait_trap(&vertices);
+      let trap = Self::get_portrait_trap(&vertices.map(|v| v.truncated_to_vec2()));
       return [Some(trap), None];
     }
 
-    let k = (vertices[2].y - vertices[0].y) / (vertices[2].x - vertices[0].x);
+    let k = (vertices[2].position.y - vertices[0].position.y)
+      / (vertices[2].position.x - vertices[0].position.x);
     // k = k => (y2 -y0)/(x2-x0) = (y1-y0)/(x? -x0) = > x? = (y1-y0)/k+x0
-    let dx = (vertices[1].y - vertices[0].y) / k + vertices[0].x;
+    let dx = (vertices[1].position.y - vertices[0].position.y) / k + vertices[0].position.x;
 
-    let d_vertex = Vec2::new(dx, vertices[1].y);
+    let d_vertex = Vec2::new(dx, vertices[1].position.y);
 
-    if dx > vertices[1].x {
-      let trap1 = Self::get_portrait_trap(&[vertices[0], vertices[1], d_vertex]);
-      let trap2 = Self::get_hang_trap(&[vertices[1], d_vertex, vertices[2]]);
+    let vec2s = &vertices.map(|v| v.truncated_to_vec2());
+    if dx > vertices[1].position.x {
+      let trap1 = Self::get_portrait_trap(&[vec2s[0], vec2s[1], d_vertex]);
+      let trap2 = Self::get_hang_trap(&[vec2s[1], d_vertex, vec2s[2]]);
       return [Some(trap1), Some(trap2)];
     } else {
-      let trap1 = Self::get_portrait_trap(&[vertices[0], d_vertex, vertices[1]]);
-      let trap2 = Self::get_hang_trap(&[d_vertex, vertices[1], vertices[2]]);
+      let trap1 = Self::get_portrait_trap(&[vec2s[0], d_vertex, vec2s[1]]);
+      let trap2 = Self::get_hang_trap(&[d_vertex, vec2s[1], vec2s[2]]);
       return [Some(trap1), Some(trap2)];
     }
 
