@@ -6,7 +6,7 @@ use crate::{
   math::{Mat4, Vec2, Vec3, Vec4},
   renderer::{RendererInterface, Viewport},
   scanline,
-  vertex::{self, Vertex},
+  vertex::{self, attributes_foreach, Vertex},
 };
 
 pub struct Renderer {
@@ -44,23 +44,38 @@ impl RendererInterface for Renderer {
 
       let mut vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
 
-      for v in &vertices {
+      // mv
+      for v in &mut vertices {
         v.position = *model * v.position;
       }
 
-      for v in &vertices {
+      // projection
+      for v in &mut vertices {
         v.position = *self.camera.get_frustum().get_mat() * v.position;
       }
 
-      for v in &vertices {}
+      // restore z from w (original z in 3D)
+      for v in &mut vertices {
+        v.position.z = -v.position.w * self.camera.get_frustum().near();
+      }
 
-      for v in &vertices {
+      // restore y/x from w (projected x,y in 2D)
+      for v in &mut vertices {
+        v.position.y /= v.position.w;
+        v.position.x /= v.position.w;
+        v.position.w = 1.0;
+      }
+
+      // viewport affine, from [-1, 1]^2 to [0, W - 1] x [0, H - 1]
+      for v in &mut vertices {
         v.position.x =
           (v.position.x + 1.0) * 0.5 * (self.viewport.w as f32 - 1.0) + self.viewport.x as f32;
         v.position.y =
           (v.position.y + 1.0) * 0.5 * (self.viewport.w as f32 - 1.0) + self.viewport.x as f32;
       }
-      let [trap1, trap2] = scanline::Trapezoid::from_triangle(&vertices);
+
+      // for each triangle , cut in two possible trapezoid
+      let [trap1, trap2] = &mut scanline::Trapezoid::from_triangle(&vertices);
       // rasterization
       if let Some(trap) = trap1 {
         self.draw_trapezoid(trap, texture);
@@ -116,7 +131,7 @@ impl Renderer {
 
   pub fn draw_trapezoid(
     &mut self,
-    trap: scanline::Trapezoid,
+    trap: &mut scanline::Trapezoid,
     texture: Option<&image::DynamicImage>,
   ) {
     let top = trap.top.ceil().max(0.0) as i32;
@@ -126,6 +141,12 @@ impl Renderer {
       .min(self.color_attachment.height() as f32 - 1.0) as i32
       - 1;
     let mut y = top as f32;
+
+    // reciprocal vertex attributes, (all attribute divided by the original z)
+    vertex::vertex_rhw_init(&mut trap.left.v1);
+    vertex::vertex_rhw_init(&mut trap.left.v2);
+    vertex::vertex_rhw_init(&mut trap.right.v1);
+    vertex::vertex_rhw_init(&mut trap.right.v2);
 
     while y <= bottom as f32 {
       let mut scanline = scanline::Scanline::from_trapezoid(&trap, y);
@@ -140,17 +161,34 @@ impl Renderer {
     texture: Option<&image::DynamicImage>,
   ) {
     let mut vertex = scanline.vertex;
-    let y = scanline.y as u32;
+    let y: u32 = scanline.y as u32;
     let mut width = scanline.width;
     let border = self.color_attachment.width() as f32;
     while width > 0.0 {
-      let x = &vertex.x;
+      let x = &vertex.position.x;
+      let rhw = vertex.position.z;
       if *x >= 0.0 && *x < border {
-        self.color_attachment.set(*x as u32, y, color)
+        // local copy
+        let mut attr_local = vertex.attributes;
+
+        attributes_foreach(&mut attr_local, |v| v / rhw);
+        let color = attr_local.vec4[0]
+          * match texture {
+            Some(texture) => Vec4::new(1.0, 1.0, 1.0, 1.0),
+            None => Vec4::new(1.0, 1.0, 1.0, 1.0),
+          };
+
+        self.color_attachment.set(*x as u32, y, &color);
       }
 
       width -= 1.0;
-      vertex += scanline.step;
+      vertex.position += scanline.step.position;
+      vertex.attributes = vertex::interp_attributes(
+        &vertex.attributes,
+        &scanline.step.attributes,
+        |v1, v2, _| v1 + v2,
+        0.0,
+      )
     }
   }
 }
