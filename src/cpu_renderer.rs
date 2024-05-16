@@ -3,9 +3,10 @@ use crate::{
   camera::Camera,
   cohen_sutherland,
   image::ColorAttachment,
-  math::{Mat4, Vec2, Vec3, Vec4},
-  renderer::{RendererInterface, Viewport},
+  math::{Mat4, Vec2, /* Vec3, */ Vec4},
+  renderer::{self, RendererInterface, Viewport, ATTR_COLOR, ATTR_TEXCOORD},
   scanline,
+  texture::Texture,
   vertex::{self, attributes_foreach, Vertex},
 };
 
@@ -37,7 +38,7 @@ impl RendererInterface for Renderer {
     model: &Mat4,
     vertices: &[Vertex],
     count: u32,
-    texture: Option<&image::DynamicImage>,
+    texture: Option<&Texture>,
   ) {
     for i in 0..count {
       let index = (i * 3) as usize;
@@ -129,11 +130,7 @@ impl Renderer {
     }
   }
 
-  pub fn draw_trapezoid(
-    &mut self,
-    trap: &mut scanline::Trapezoid,
-    texture: Option<&image::DynamicImage>,
-  ) {
+  pub fn draw_trapezoid(&mut self, trap: &mut scanline::Trapezoid, texture: Option<&Texture>) {
     let top = trap.top.ceil().max(0.0) as i32;
     let bottom = trap
       .bottom
@@ -149,17 +146,13 @@ impl Renderer {
     vertex::vertex_rhw_init(&mut trap.right.v2);
 
     while y <= bottom as f32 {
-      let mut scanline = scanline::Scanline::from_trapezoid(&trap, y);
+      let scanline = scanline::Scanline::from_trapezoid(&trap, y);
       self.draw_scanline(&scanline, texture);
       y += 1.0;
     }
   }
 
-  pub fn draw_scanline(
-    &mut self,
-    scanline: &scanline::Scanline,
-    texture: Option<&image::DynamicImage>,
-  ) {
+  pub fn draw_scanline(&mut self, scanline: &scanline::Scanline, texture: Option<&Texture>) {
     let mut vertex = scanline.vertex;
     let y: u32 = scanline.y as u32;
     let mut width = scanline.width;
@@ -172,9 +165,11 @@ impl Renderer {
         let mut attr_local = vertex.attributes;
 
         attributes_foreach(&mut attr_local, |v| v / rhw);
-        let color = attr_local.vec4[0]
+
+        let textcoord = attr_local.vec2[ATTR_TEXCOORD];
+        let color = attr_local.vec4[ATTR_COLOR]
           * match texture {
-            Some(texture) => Vec4::new(1.0, 1.0, 1.0, 1.0),
+            Some(texture) => renderer::texture_sample(&texture, &textcoord),
             None => Vec4::new(1.0, 1.0, 1.0, 1.0),
           };
 

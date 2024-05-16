@@ -1,7 +1,12 @@
 use crate::{
-  math::{Mat4, Vec4},
+  math::{Mat4, Vec2, Vec4},
+  texture::Texture,
   vertex::Vertex,
 };
+
+pub const ATTR_COLOR: usize = 0;
+pub const ATTR_TEXCOORD: usize = 1;
+
 pub struct Viewport {
   pub x: i32,
   pub y: i32,
@@ -19,6 +24,13 @@ pub trait RendererInterface {
     model: &Mat4,
     vertices: &[Vertex],
     count: u32,
-    texture: Option<&image::DynamicImage>,
+    texture: Option<&Texture>,
   );
+}
+
+pub fn texture_sample(texture: &Texture, textcoord: &Vec2) -> Vec4 {
+  let x = (textcoord.x * (texture.width() - 1) as f32) as u32;
+  let y = (textcoord.y * (texture.height() - 1) as f32) as u32;
+
+  texture.get_pixel(x, y)
 }

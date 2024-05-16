@@ -7,3 +7,4 @@ mod image;
 mod scanline;
 pub mod cpu_renderer;
 mod vertex;
+pub mod texture;

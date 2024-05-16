@@ -63,6 +63,7 @@ fn main() {
 
   let camera = camera::Camera::new(
     1.0,
+    5.0,
     WINDOW_WIDTH as f32 / WINDOW_HEIGHT as f32,
     50f32.to_radians(),
   );

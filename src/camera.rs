@@ -9,18 +9,31 @@ pub struct Frustum {
 
 impl Frustum {
   #[rustfmt::skip]
-  pub fn new(near: f32, aspect: f32, fov: f32) -> Frustum {
+  pub fn new(near: f32,far: f32, aspect: f32, fov: f32) -> Frustum {
     let a = 1.0 / (near * fov.tan());
     Self{
       near,
       aspect,
       fov,
-      mat: Mat4::from_row(&[
-        a,     0.0,     0.0,     0.0,
-        0.0, aspect*a,  0.0,     0.0,
-        0.0,   0.0,     1.0,     0.0,
-        0.0,   0.0,  -1.0/near,  0.0,
-      ])
+      mat:if cfg!(feature="cpu"){
+          Mat4::from_row(&[
+            a,     0.0,     0.0,     0.0,
+            0.0, aspect*a,  0.0,     0.0,
+            0.0,   0.0,     1.0,     0.0,
+            0.0,   0.0,  -1.0/near,  0.0,
+          ])
+        } else {
+          let half_w = near * fov.tan();
+          let half_h = half_w / aspect;
+          let near = near.abs();
+          let far = far.abs();
+          Mat4::from_row(&[
+            a,     0.0,     0.0,     0.0,
+            0.0, aspect*a,  0.0,     0.0,
+            0.0,   0.0,     1.0,     0.0,
+            0.0,   0.0,  -1.0/near,  0.0,
+          ])
+        }
     }
   }
 
@@ -38,9 +51,9 @@ pub struct Camera {
 }
 
 impl Camera {
-  pub fn new(near: f32, aspect: f32, fov: f32) -> Self {
+  pub fn new(near: f32, far: f32, aspect: f32, fov: f32) -> Self {
     Self {
-      frustum: Frustum::new(near, aspect, fov),
+      frustum: Frustum::new(near, far, aspect, fov),
     }
   }
 
