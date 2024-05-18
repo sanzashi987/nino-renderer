@@ -4,6 +4,9 @@
 use fltk::{self, app::set_visual, enums::Mode, prelude::*, window::Window};
 use nino_renderer::cpu_renderer::{self, Renderer};
 use nino_renderer::math::{self, Mat4, Vec3, Vec4};
+use nino_renderer::renderer::{ATTR_COLOR, ATTR_TEXCOORD};
+use nino_renderer::texture::{self, TextureStore};
+use nino_renderer::vertex::{Attributes, Vertex};
 use nino_renderer::{camera, renderer};
 
 const WINDOW_WIDTH: u32 = 1024;
@@ -36,8 +39,10 @@ fn run_fltk<F: FnMut(&mut Window) + 'static>(cb: F) {
 
 fn create_renderer(w: u32, h: u32, camera: camera::Camera) -> Box<dyn renderer::RendererInterface> {
   if cfg!(feature = "cpu") {
+    print!("use cpu renderer");
     Box::new(cpu_renderer::Renderer::new(w, h, camera))
   } else {
+    print!("use gpu renderer");
     Box::new(cpu_renderer::Renderer::new(w, h, camera))
   }
 }
@@ -63,28 +68,47 @@ fn main() {
 
   let camera = camera::Camera::new(
     1.0,
-    5.0,
+    100.0,
     WINDOW_WIDTH as f32 / WINDOW_HEIGHT as f32,
     50f32.to_radians(),
   );
   let mut renderer = create_renderer(WINDOW_WIDTH, WINDOW_HEIGHT, camera);
-  let color = Vec4::new(0.0, 1.0, 10.0, 1.0);
+
+  let mut attr1 = Attributes::default();
+  let mut attr2 = Attributes::default();
+  let mut attr3 = Attributes::default();
+  let mut attr4 = Attributes::default();
+  attr1.set_vec4(ATTR_COLOR, math::Vec4::new(1.0, 1.0, 1.0, 1.0));
+  attr2.set_vec4(ATTR_COLOR, math::Vec4::new(1.0, 1.0, 1.0, 1.0));
+  attr3.set_vec4(ATTR_COLOR, math::Vec4::new(1.0, 1.0, 1.0, 1.0));
+  attr4.set_vec4(ATTR_COLOR, math::Vec4::new(1.0, 1.0, 1.0, 1.0));
+  attr1.set_vec2(ATTR_TEXCOORD, math::Vec2::new(0.0, 1.0));
+  attr2.set_vec2(ATTR_TEXCOORD, math::Vec2::new(1.0, 1.0));
+  attr3.set_vec2(ATTR_TEXCOORD, math::Vec2::new(0.0, 0.0));
+  attr4.set_vec2(ATTR_TEXCOORD, math::Vec2::new(1.0, 0.0));
 
   let vertices = [
-    Vec3::new(-1.0, 1.0, 0.0),
-    Vec3::new(1.0, 1.0, 0.0),
-    Vec3::new(0.0, -1.0, 0.0),
+    Vertex::new(&math::Vec3::new(-1.0, 1.0, 0.0), attr1),
+    Vertex::new(&math::Vec3::new(1.0, 1.0, 0.0), attr2),
+    Vertex::new(&math::Vec3::new(-1.0, -1.0, 0.0), attr3),
+    Vertex::new(&math::Vec3::new(1.0, 1.0, 0.0), attr2),
+    Vertex::new(&math::Vec3::new(-1.0, -1.0, 0.0), attr3),
+    Vertex::new(&math::Vec3::new(1.0, -1.0, 0.0), attr4),
   ];
-
   let model = math::apply_translate(&math::Vec3::new(0.0, 0.0, -4.0));
 
   run_fltk(move |window| {
     renderer.clear(&Vec4::new(0.0, 0.0, 0.0, 1.0));
-    // let model = Mat4::identity();
+    let mut texture_store = TextureStore::default();
+    let store_ref = &mut texture_store;
+    let texture_id = store_ref.load("./resources/plane/pic.jpg", "test").unwrap();
+
+    let texture = store_ref.get_by_id(texture_id);
+
     // // SRT
     let model = model * math::apply_eular_rotate_y(rotation.to_radians());
 
-    renderer.draw_triangle(&model, &vertices, &color);
+    renderer.draw_triangle(&model, &vertices, 2, texture);
     rotation += 1.0;
 
     draw_image(&mut renderer);

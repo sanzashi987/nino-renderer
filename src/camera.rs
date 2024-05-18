@@ -25,13 +25,12 @@ impl Frustum {
         } else {
           let half_w = near * fov.tan();
           let half_h = half_w / aspect;
-          let near = near.abs();
-          let far = far.abs();
+          // with far plane, clamp x,y,z in [-1, 1]
           Mat4::from_row(&[
-            a,     0.0,     0.0,     0.0,
-            0.0, aspect*a,  0.0,     0.0,
-            0.0,   0.0,     1.0,     0.0,
-            0.0,   0.0,  -1.0/near,  0.0,
+            near / half_w,           0.0,                       0.0,                             0.0,
+                      0.0, near / half_h,                       0.0,                             0.0,
+                      0.0,           0.0, far + near / (far - near), 2.0 * far * near / (far - near),
+                      0.0,           0.0,                      -1.0,                             0.0,
           ])
         }
     }

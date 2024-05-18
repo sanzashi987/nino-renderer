@@ -6,6 +6,7 @@ use crate::{
 
 pub const ATTR_COLOR: usize = 0;
 pub const ATTR_TEXCOORD: usize = 1;
+pub const UNIFORM_TEXTURE: u32 = 0;
 
 pub struct Viewport {
   pub x: i32,
