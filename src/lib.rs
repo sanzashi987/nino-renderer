@@ -8,3 +8,4 @@ mod scanline;
 pub mod cpu_renderer;
 pub mod vertex;
 pub mod texture;
+pub mod gpu_renderer;
