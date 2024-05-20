@@ -115,6 +115,12 @@ define_vec!(Vec2, x, y);
 define_vec!(Vec3, x, y, z);
 define_vec!(Vec4, x, y, z, w);
 
+impl Vec2 {
+  pub fn cross(&self, rhs: &Vec2) -> f32 {
+    self.x * rhs.y - self.y * rhs.x
+  }
+}
+
 impl Vec4 {
   pub fn from_vec3(v: &Vec3, w: f32) -> Vec4 {
     Self {
