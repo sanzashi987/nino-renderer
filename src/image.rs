@@ -68,3 +68,4 @@ impl PureElemImage<f32> {
 }
 
 pub type ColorAttachment = PureElemImage<u8>;
+pub type DepthAttachment = PureElemImage<f32>;
