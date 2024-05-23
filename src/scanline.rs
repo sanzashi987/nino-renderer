@@ -1,6 +1,6 @@
 use crate::{
   // math::{lerp, Vec2}
-  vertex::{self, interp_attributes, Vertex},
+  shader::{self, interp_attributes, Vertex},
 };
 #[derive(Clone, Copy, Debug)]
 pub struct Edge {
@@ -82,7 +82,7 @@ impl Trapezoid {
     let dx = (vertices[1].position.y - vertices[0].position.y) / k + vertices[0].position.x;
     let t = (vertices[2].position.x - dx) / (vertices[2].position.x - vertices[0].position.x);
 
-    let d_vertex = vertex::lerp_vertex(&vertices[0], &vertices[1], t);
+    let d_vertex = shader::lerp_vertex(&vertices[0], &vertices[1], t);
 
     if dx > vertices[1].position.x {
       let trap1 = Self::get_portrait_trap(&[vertices[0], vertices[1], d_vertex]);
@@ -112,8 +112,8 @@ impl Scanline {
     let t2 =
       (init_y - trap.right.v1.position.y) / (trap.right.v2.position.y - trap.right.v1.position.y);
 
-    let vertex_left = vertex::lerp_vertex(&trap.left.v1, &trap.left.v2, t1);
-    let vertex_right = vertex::lerp_vertex(&trap.right.v1, &trap.right.v2, t2);
+    let vertex_left = shader::lerp_vertex(&trap.left.v1, &trap.left.v2, t1);
+    let vertex_right = shader::lerp_vertex(&trap.right.v1, &trap.right.v2, t2);
     let width = vertex_right.position.x - vertex_left.position.x;
     let rh_width = 1.0 / width;
 

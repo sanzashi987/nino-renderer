@@ -1,7 +1,7 @@
 use crate::{
   math::{Mat4, Vec2, Vec4},
   texture::Texture,
-  vertex::Vertex,
+  shader::Vertex,
 };
 
 pub const ATTR_COLOR: usize = 0;

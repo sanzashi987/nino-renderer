@@ -33,7 +33,7 @@ impl RendererInterface for Renderer {
   fn draw_triangle(
     &mut self,
     model: &crate::math::Mat4,
-    vertices: &[crate::vertex::Vertex],
+    vertices: &[crate::shader::Vertex],
     count: u32,
     texture: Option<&crate::texture::Texture>,
   ) {

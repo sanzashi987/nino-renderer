@@ -7,7 +7,7 @@ use crate::{
   renderer::{self, RendererInterface, Viewport, ATTR_COLOR, ATTR_TEXCOORD},
   scanline,
   texture::Texture,
-  vertex::{self, attributes_foreach, Vertex},
+  shader::{self, attributes_foreach, Vertex},
 };
 
 pub struct Renderer {
@@ -140,10 +140,10 @@ impl Renderer {
     let mut y = top as f32;
 
     // reciprocal vertex attributes, (all attribute divided by the original z)
-    vertex::vertex_rhw_init(&mut trap.left.v1);
-    vertex::vertex_rhw_init(&mut trap.left.v2);
-    vertex::vertex_rhw_init(&mut trap.right.v1);
-    vertex::vertex_rhw_init(&mut trap.right.v2);
+    shader::vertex_rhw_init(&mut trap.left.v1);
+    shader::vertex_rhw_init(&mut trap.left.v2);
+    shader::vertex_rhw_init(&mut trap.right.v1);
+    shader::vertex_rhw_init(&mut trap.right.v2);
 
     while y <= bottom as f32 {
       let scanline = scanline::Scanline::from_trapezoid(&trap, y);
@@ -178,7 +178,7 @@ impl Renderer {
 
       width -= 1.0;
       vertex.position += scanline.step.position;
-      vertex.attributes = vertex::interp_attributes(
+      vertex.attributes = shader::interp_attributes(
         &vertex.attributes,
         &scanline.step.attributes,
         |v1, v2, _| v1 + v2,

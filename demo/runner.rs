@@ -6,8 +6,8 @@ use nino_renderer::cpu_renderer::{self, Renderer};
 use nino_renderer::math::{self, Mat4, Vec3, Vec4};
 use nino_renderer::renderer::{ATTR_COLOR, ATTR_TEXCOORD};
 use nino_renderer::texture::{self, TextureStore};
-use nino_renderer::vertex::{Attributes, Vertex};
-use nino_renderer::{camera, renderer};
+use nino_renderer::shader::{Attributes, Vertex};
+use nino_renderer::{camera, gpu_renderer, renderer};
 
 const WINDOW_WIDTH: u32 = 1024;
 const WINDOW_HEIGHT: u32 = 720;
@@ -43,7 +43,7 @@ fn create_renderer(w: u32, h: u32, camera: camera::Camera) -> Box<dyn renderer::
     Box::new(cpu_renderer::Renderer::new(w, h, camera))
   } else {
     print!("use gpu renderer");
-    Box::new(cpu_renderer::Renderer::new(w, h, camera))
+    Box::new(gpu_renderer::Renderer::new(w, h, camera))
   }
 }
 
