@@ -5,12 +5,24 @@ use crate::{
   image::ColorAttachment,
   math::{self, Barycentric, Vec2},
   renderer::{texture_sample, RendererInterface, Viewport, ATTR_COLOR, ATTR_TEXCOORD},
+  shader::{Attributes, Shader, Uniforms, Vertex},
+  texture::TextureStore,
 };
+
+fn get_corrected_attribute(
+  z: f32,
+  vertices: &[Vertex; 3],
+  barycentric: &Barycentric,
+) -> Attributes {
+  let mut attr = Attributes::default();
+}
 
 pub struct Renderer {
   color: ColorAttachment,
   camera: Camera,
   viewport: Viewport,
+  shader: Shader,
+  uniforms: Uniforms,
 }
 
 impl RendererInterface for Renderer {
@@ -35,14 +47,21 @@ impl RendererInterface for Renderer {
     model: &crate::math::Mat4,
     vertices: &[crate::shader::Vertex],
     count: u32,
-    texture: Option<&crate::texture::Texture>,
+    // texture: Option<&crate::texture::Texture>,
+    texture_store: &TextureStore,
   ) {
     for i in 0..count {
       let index = (i * 3) as usize;
       let mut vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
 
+      // for v in &mut vertices {
+      //   v.position = *model * v.position;
+      // }
+
       for v in &mut vertices {
-        v.position = *model * v.position;
+        *v = self
+          .shader
+          .call_vertex_shading(v, &self.uniforms, texture_store);
       }
 
       for v in &mut vertices {
@@ -121,29 +140,51 @@ impl RendererInterface for Renderer {
           );
 
           if barycentric.is_valid() {
-            let mut color = vertices[0].attributes.vec4[ATTR_COLOR] * barycentric.alpha()
-              + vertices[1].attributes.vec4[ATTR_COLOR] * barycentric.beta()
-              + vertices[2].attributes.vec4[ATTR_COLOR] * barycentric.gamma();
+            // let mut color = vertices[0].attributes.vec4[ATTR_COLOR] * barycentric.alpha()
+            //   + vertices[1].attributes.vec4[ATTR_COLOR] * barycentric.beta()
+            //   + vertices[2].attributes.vec4[ATTR_COLOR] * barycentric.gamma();
 
-            match texture {
-              Some(t) => {
-                let texture_coord = vertices[0].attributes.vec2[ATTR_TEXCOORD]
-                  + barycentric.alpha()
-                  + vertices[1].attributes.vec2[ATTR_TEXCOORD]
-                  + barycentric.beta()
-                  + vertices[2].attributes.vec2[ATTR_TEXCOORD]
-                  + barycentric.gamma();
+            // match texture {
+            //   Some(t) => {
+            //     let texture_coord = vertices[0].attributes.vec2[ATTR_TEXCOORD]
+            //       + barycentric.alpha()
+            //       + vertices[1].attributes.vec2[ATTR_TEXCOORD]
+            //       + barycentric.beta()
+            //       + vertices[2].attributes.vec2[ATTR_TEXCOORD]
+            //       + barycentric.gamma();
 
-                color *= texture_sample(t, &texture_coord);
-              }
+            //     color *= texture_sample(t, &texture_coord);
+            //   }
 
-              None => {}
-            }
+            //   None => {}
+            // }
+
+            let inv_z = barycentric.alpha() / vertices[0].position.z
+              + barycentric.beta() / vertices[1].position.z
+              + barycentric.gamma() / vertices[2].position.z;
+            let z = 1.0 / inv_z;
+            let attr = get_corrected_attribute(z, &vertices, &barycentric);
+
+            let color = self
+              .shader
+              .call_fragment_shading(&attr, &self.uniforms, texture_store);
 
             self.color.set(x, y, &color);
           }
         }
       }
+    }
+  }
+}
+
+impl Renderer {
+  pub fn new(w: u32, h: u32, camera: Camera) -> Self {
+    Self {
+      camera,
+      viewport: Viewport { x: 0, y: 0, w, h },
+      color: ColorAttachment::new(w, h),
+      shader: Shader::default(),
+      uniforms: Uniforms::default(),
     }
   }
 }

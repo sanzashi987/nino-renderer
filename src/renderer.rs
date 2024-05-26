@@ -1,7 +1,5 @@
 use crate::{
-  math::{Mat4, Vec2, Vec4},
-  texture::Texture,
-  shader::Vertex,
+  math::{Mat4, Vec2, Vec4}, shader::Vertex, texture::{Texture, TextureStore}
 };
 
 pub const ATTR_COLOR: usize = 0;
@@ -25,7 +23,8 @@ pub trait RendererInterface {
     model: &Mat4,
     vertices: &[Vertex],
     count: u32,
-    texture: Option<&Texture>,
+    // texture: Option<&Texture>,
+    texture_store: &TextureStore
   );
 }
 

@@ -6,14 +6,16 @@ use crate::{
   math::{Mat4, Vec2, /* Vec3, */ Vec4},
   renderer::{self, RendererInterface, Viewport, ATTR_COLOR, ATTR_TEXCOORD},
   scanline,
-  texture::Texture,
-  shader::{self, attributes_foreach, Vertex},
+  shader::{self, attributes_foreach, Shader, Uniforms, Vertex},
+  texture::{Texture, TextureStore},
 };
 
 pub struct Renderer {
   color_attachment: ColorAttachment,
   viewport: Viewport,
   camera: Camera,
+  shader: Shader,
+  uniforms: Uniforms,
 }
 
 impl RendererInterface for Renderer {
@@ -38,7 +40,8 @@ impl RendererInterface for Renderer {
     model: &Mat4,
     vertices: &[Vertex],
     count: u32,
-    texture: Option<&Texture>,
+    // texture: Option<&Texture>,
+    texture_store: &TextureStore,
   ) {
     for i in 0..count {
       let index = (i * 3) as usize;
@@ -47,7 +50,10 @@ impl RendererInterface for Renderer {
 
       // mv
       for v in &mut vertices {
-        v.position = *model * v.position;
+        // v.position = *model * v.position;
+        *v = self
+          .shader
+          .call_vertex_shading(v, &self.uniforms, texture_store);
       }
 
       // projection
@@ -79,10 +85,10 @@ impl RendererInterface for Renderer {
       let [trap1, trap2] = &mut scanline::Trapezoid::from_triangle(&vertices);
       // rasterization
       if let Some(trap) = trap1 {
-        self.draw_trapezoid(trap, texture);
+        self.draw_trapezoid(trap, texture_store);
       }
       if let Some(trap) = trap2 {
-        self.draw_trapezoid(trap, texture);
+        self.draw_trapezoid(trap, texture_store);
       }
     }
 
@@ -102,6 +108,8 @@ impl Renderer {
       camera,
       viewport: Viewport { x: 0, y: 0, w, h },
       color_attachment: ColorAttachment::new(w, h),
+      shader: Shader::default(),
+      uniforms: Uniforms::default(),
     }
   }
 
@@ -130,7 +138,7 @@ impl Renderer {
     }
   }
 
-  pub fn draw_trapezoid(&mut self, trap: &mut scanline::Trapezoid, texture: Option<&Texture>) {
+  pub fn draw_trapezoid(&mut self, trap: &mut scanline::Trapezoid, texture_store: &TextureStore) {
     let top = trap.top.ceil().max(0.0) as i32;
     let bottom = trap
       .bottom
@@ -147,12 +155,12 @@ impl Renderer {
 
     while y <= bottom as f32 {
       let scanline = scanline::Scanline::from_trapezoid(&trap, y);
-      self.draw_scanline(&scanline, texture);
+      self.draw_scanline(&scanline, texture_store);
       y += 1.0;
     }
   }
 
-  pub fn draw_scanline(&mut self, scanline: &scanline::Scanline, texture: Option<&Texture>) {
+  pub fn draw_scanline(&mut self, scanline: &scanline::Scanline, texture_store: &TextureStore) {
     let mut vertex = scanline.vertex;
     let y: u32 = scanline.y as u32;
     let mut width = scanline.width;
@@ -167,12 +175,14 @@ impl Renderer {
         attributes_foreach(&mut attr_local, |v| v / rhw);
 
         let textcoord = attr_local.vec2[ATTR_TEXCOORD];
-        let color = attr_local.vec4[ATTR_COLOR]
-          * match texture {
-            Some(texture) => renderer::texture_sample(&texture, &textcoord),
-            None => Vec4::new(1.0, 1.0, 1.0, 1.0),
-          };
-
+        // let color = attr_local.vec4[ATTR_COLOR]
+        //   * match texture {
+        //     Some(texture) => renderer::texture_sample(&texture, &textcoord),
+        //     None => Vec4::new(1.0, 1.0, 1.0, 1.0),
+        //   };
+        let color = self
+          .shader
+          .call_fragment_shading(&attr_local, &self.uniforms, texture_store);
         self.color_attachment.set(*x as u32, y, &color);
       }
 
