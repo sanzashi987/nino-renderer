@@ -77,14 +77,14 @@ impl RendererInterface for Renderer {
       let index = (i * 3) as usize;
       let mut vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
 
-      // for v in &mut vertices {
-      //   v.position = *model * v.position;
-      // }
-
       for v in &mut vertices {
         *v = self
           .shader
           .call_vertex_shading(v, &self.uniforms, texture_store);
+      }
+
+      for v in &mut vertices {
+        v.position = *model * v.position;
       }
 
       for v in &mut vertices {

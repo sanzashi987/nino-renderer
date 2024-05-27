@@ -55,6 +55,9 @@ impl RendererInterface for Renderer {
           .shader
           .call_vertex_shading(v, &self.uniforms, texture_store);
       }
+      for v in &mut vertices {
+        v.position = *model * v.position;
+      }
 
       // projection
       for v in &mut vertices {
