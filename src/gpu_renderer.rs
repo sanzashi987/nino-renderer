@@ -1,20 +1,43 @@
-use image::imageops::colorops;
-
 use crate::{
   camera::Camera,
   image::ColorAttachment,
   math::{self, Barycentric, Vec2},
-  renderer::{texture_sample, RendererInterface, Viewport, ATTR_COLOR, ATTR_TEXCOORD},
+  renderer::{RendererInterface, Viewport},
   shader::{Attributes, Shader, Uniforms, Vertex},
   texture::TextureStore,
 };
 
+#[rustfmt::skip]
 fn get_corrected_attribute(
   z: f32,
   vertices: &[Vertex; 3],
   barycentric: &Barycentric,
 ) -> Attributes {
-  let mut attr = Attributes::default();
+  let mut attrs = Attributes::default();
+
+  for index in 0..attrs.float.len() {
+    attrs.float[index] = (
+      vertices[0].attributes.float[index] * barycentric.alpha() / vertices[0].position.z +
+      vertices[1].attributes.float[index] * barycentric.beta()  / vertices[1].position.z +
+      vertices[2].attributes.float[index] * barycentric.gamma() / vertices[2].position.z
+    ) * z;
+    attrs.vec2[index] = (
+      vertices[0].attributes.vec2[index] * barycentric.alpha() / vertices[0].position.z +
+      vertices[1].attributes.vec2[index] * barycentric.beta()  / vertices[1].position.z +
+      vertices[2].attributes.vec2[index] * barycentric.gamma() / vertices[2].position.z
+    ) * z;
+    attrs.vec3[index] = (
+      vertices[0].attributes.vec3[index] * barycentric.alpha() / vertices[0].position.z +
+      vertices[1].attributes.vec3[index] * barycentric.beta()  / vertices[1].position.z +
+      vertices[2].attributes.vec3[index] * barycentric.gamma() / vertices[2].position.z
+    ) * z; 
+    attrs.vec4[index] = (
+      vertices[0].attributes.vec4[index] * barycentric.alpha() / vertices[0].position.z +
+      vertices[1].attributes.vec4[index] * barycentric.beta()  / vertices[1].position.z +
+      vertices[2].attributes.vec4[index] * barycentric.gamma() / vertices[2].position.z
+    ) * z; 
+  }
+  attrs
 }
 
 pub struct Renderer {
