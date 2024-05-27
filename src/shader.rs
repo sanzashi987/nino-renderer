@@ -60,11 +60,12 @@ impl Vertex {
   }
 }
 
+// perspective correction in advance
 pub fn vertex_rhw_init(vertex: &mut Vertex) {
-  let rhw_z = 1.0 / vertex.position.z;
-  vertex.position.z = rhw_z;
-
-  attributes_foreach(&mut vertex.attributes, |v| v * rhw_z);
+  // let rhw_z = 1.0 / vertex.position.z;
+  vertex.position.z = 1.0 / vertex.position.z;
+  // apply perspective correction
+  attributes_foreach(&mut vertex.attributes, |v| v * vertex.position.z);
 }
 
 pub fn lerp_vertex(start: &Vertex, end: &Vertex, t: f32) -> Vertex {

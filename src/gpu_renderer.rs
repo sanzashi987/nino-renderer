@@ -8,11 +8,25 @@ use crate::{
 };
 
 #[rustfmt::skip]
-fn get_corrected_attribute(
-  z: f32,
+/**
+ * for any attr with barycentric interpolate:
+ * attr_interpolated = alpha * attr0 + beta * attr1 + gamma * attr2
+ * 
+ * and with perspective correction [ref: https://www.cs.cornell.edu/courses/cs4620/2015fa/lectures/PerspectiveCorrectZU.pdf]
+ * 1/Z = alpha / Z0 + beta / Z1 + gamma / Z2 
+ * 
+ * hence we can combine barycentric interpolate with perspective correct
+ * ==> attr_interpolated / Z = alpha * attr0 / Z0 +  beta * attr1 / Z1 +  gamma * attr2 / Z2
+ * ==> attr_interpolated = (alpha * attr0 / Z0 +  beta * attr1 / Z1 +  gamma * attr2 / Z2) * Z
+ */
+fn perspective_correct_and_barycentric_interpolate(
   vertices: &[Vertex; 3],
   barycentric: &Barycentric,
 ) -> Attributes {
+  let inv_z = barycentric.alpha() / vertices[0].position.z
+              + barycentric.beta() / vertices[1].position.z
+              + barycentric.gamma() / vertices[2].position.z;
+  let z = 1.0 / inv_z;
   let mut attrs = Attributes::default();
 
   for index in 0..attrs.float.len() {
@@ -182,11 +196,7 @@ impl RendererInterface for Renderer {
             //   None => {}
             // }
 
-            let inv_z = barycentric.alpha() / vertices[0].position.z
-              + barycentric.beta() / vertices[1].position.z
-              + barycentric.gamma() / vertices[2].position.z;
-            let z = 1.0 / inv_z;
-            let attr = get_corrected_attribute(z, &vertices, &barycentric);
+            let attr = perspective_correct_and_barycentric_interpolate(&vertices, &barycentric);
 
             let color = self
               .shader

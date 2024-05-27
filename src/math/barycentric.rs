@@ -5,6 +5,13 @@ pub struct Barycentric {
   gamma: f32,
 }
 
+/**
+ * pt: any point inside the triangle
+ * S  = | AB x BC | /2 
+ * Sa = | CD x BD | /2 
+ * Sb = | AD x CD | /2 
+ * Sc = | AD x BD | /2 
+ */
 impl Barycentric {
   pub fn new(pt: &Vec2, triangle: &[Vec2; 3]) -> Self {
     let area_twice = (triangle[1] - triangle[0]).cross(&(triangle[2] - triangle[1]));

@@ -169,15 +169,15 @@ impl Renderer {
     let mut width = scanline.width;
     let border = self.color_attachment.width() as f32;
     while width > 0.0 {
-      let x = &vertex.position.x;
-      let rhw = vertex.position.z;
-      if *x >= 0.0 && *x < border {
+      let x = vertex.position.x;
+      if x >= 0.0 && x < border {
         // local copy
         let mut attr_local = vertex.attributes;
 
-        attributes_foreach(&mut attr_local, |v| v / rhw);
+        // perspective correction restore with `z`(precompute and store in `z` inside the `rhw_init`)
+        attributes_foreach(&mut attr_local, |v| v / vertex.position.z);
 
-        let textcoord = attr_local.vec2[ATTR_TEXCOORD];
+        // let textcoord = attr_local.vec2[ATTR_TEXCOORD];
         // let color = attr_local.vec4[ATTR_COLOR]
         //   * match texture {
         //     Some(texture) => renderer::texture_sample(&texture, &textcoord),
@@ -186,11 +186,12 @@ impl Renderer {
         let color = self
           .shader
           .call_fragment_shading(&attr_local, &self.uniforms, texture_store);
-        self.color_attachment.set(*x as u32, y, &color);
+        self.color_attachment.set(x as u32, y, &color);
       }
 
       width -= 1.0;
       vertex.position += scanline.step.position;
+      // apply the interpolation
       vertex.attributes = shader::interp_attributes(
         &vertex.attributes,
         &scanline.step.attributes,

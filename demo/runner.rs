@@ -5,8 +5,8 @@ use fltk::{self, app::set_visual, enums::Mode, prelude::*, window::Window};
 use nino_renderer::cpu_renderer::{self, Renderer};
 use nino_renderer::math::{self, Mat4, Vec3, Vec4};
 use nino_renderer::renderer::{ATTR_COLOR, ATTR_TEXCOORD};
-use nino_renderer::texture::{self, TextureStore};
 use nino_renderer::shader::{Attributes, Vertex};
+use nino_renderer::texture::{self, TextureStore};
 use nino_renderer::{camera, gpu_renderer, renderer};
 
 const WINDOW_WIDTH: u32 = 1024;
@@ -108,7 +108,7 @@ fn main() {
     // // SRT
     let model = model * math::apply_eular_rotate_y(rotation.to_radians());
 
-    renderer.draw_triangle(&model, &vertices, 2, texture);
+    renderer.draw_triangle(&model, &vertices, 2, &texture_store);
     rotation += 1.0;
 
     draw_image(&mut renderer);
