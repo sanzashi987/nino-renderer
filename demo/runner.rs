@@ -1,8 +1,8 @@
 use fltk::{self, app::set_visual, enums::Mode, prelude::*, window::Window};
 use nino_renderer::cpu_renderer::{self};
 use nino_renderer::math::{self, Vec4};
-use nino_renderer::renderer::RendererInterface;
-use nino_renderer::shader::{Attributes, Vertex};
+use nino_renderer::renderer::{texture_sample, RendererInterface};
+use nino_renderer::shader::{self, Attributes, Vertex};
 use nino_renderer::texture::TextureStore;
 use nino_renderer::{camera, gpu_renderer};
 
@@ -108,9 +108,15 @@ fn main() {
     .texture
     .insert(UNIFORM_TEXTURE, texture_id);
 
-  renderer.get_shader().vertex_shading = Box::new(|v, _, _| *v);
-  renderer.get_shader().fragment_shading = Box::new(|a, u, t| {
-    
+  let shader = renderer.get_shader();
+
+  shader.vertex_shading = Box::new(|v, _, _| *v);
+  shader.fragment_shading = Box::new(|a, u, t| {
+    let frag_color = a.vec4[ATTR_COLOR];
+    let textcoord = a.vec2[ATTR_TEXCOORD];
+    let texture = t.get_by_id(u.texture[&UNIFORM_TEXTURE]).unwrap();
+    let texture_color = texture_sample(texture, &textcoord);
+    texture_color * frag_color
   });
 
   run_fltk(move |window| {
