@@ -1,13 +1,10 @@
-// use fltk::macros::window;
-// use image;
-// use nino_renderer::bresenham_line;
 use fltk::{self, app::set_visual, enums::Mode, prelude::*, window::Window};
-use nino_renderer::cpu_renderer::{self, Renderer};
-use nino_renderer::math::{self, Mat4, Vec3, Vec4};
-use nino_renderer::renderer::{ATTR_COLOR, ATTR_TEXCOORD};
+use nino_renderer::cpu_renderer::{self};
+use nino_renderer::math::{self, Vec4};
+use nino_renderer::renderer::{RendererInterface, ATTR_COLOR, ATTR_TEXCOORD};
 use nino_renderer::shader::{Attributes, Vertex};
-use nino_renderer::texture::{self, TextureStore};
-use nino_renderer::{camera, gpu_renderer, renderer};
+use nino_renderer::texture::TextureStore;
+use nino_renderer::{camera, gpu_renderer};
 
 const WINDOW_WIDTH: u32 = 1024;
 const WINDOW_HEIGHT: u32 = 720;
@@ -37,7 +34,7 @@ fn run_fltk<F: FnMut(&mut Window) + 'static>(cb: F) {
   app.run().unwrap();
 }
 
-fn create_renderer(w: u32, h: u32, camera: camera::Camera) -> Box<dyn renderer::RendererInterface> {
+fn create_renderer(w: u32, h: u32, camera: camera::Camera) -> Box<dyn RendererInterface> {
   if cfg!(feature = "cpu") {
     print!("use cpu renderer");
     Box::new(cpu_renderer::Renderer::new(w, h, camera))
@@ -47,7 +44,7 @@ fn create_renderer(w: u32, h: u32, camera: camera::Camera) -> Box<dyn renderer::
   }
 }
 
-fn draw_image(renderer: &mut Box<dyn renderer::RendererInterface>) {
+fn draw_image(renderer: &mut Box<dyn RendererInterface>) {
   let pixels_buffer = renderer.get_frame_image();
 
   fltk::draw::draw_image(

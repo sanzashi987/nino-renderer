@@ -1,8 +1,10 @@
+use renderer_marco_derive::RendererCommon;
+
 use crate::{
   camera::Camera,
   image::ColorAttachment,
   math::{self, Barycentric, Vec2},
-  renderer::{RendererInterface, Viewport},
+  renderer::*,
   shader::{Attributes, Shader, Uniforms, Vertex},
   texture::TextureStore,
 };
@@ -54,6 +56,7 @@ fn perspective_correct_and_barycentric_interpolate(
   attrs
 }
 
+#[derive(RendererCommon)]
 pub struct Renderer {
   color: ColorAttachment,
   camera: Camera,
@@ -62,23 +65,7 @@ pub struct Renderer {
   uniforms: Uniforms,
 }
 
-impl RendererInterface for Renderer {
-  fn clear(&mut self, color: &crate::math::Vec4) {
-    self.color.clear(color);
-  }
-
-  fn get_canvas_width(&self) -> u32 {
-    self.color.width()
-  }
-
-  fn get_canvas_height(&self) -> u32 {
-    self.color.height()
-  }
-
-  fn get_frame_image(&self) -> &[u8] {
-    self.color.data()
-  }
-
+impl RendererDraw for Renderer {
   fn draw_triangle(
     &mut self,
     model: &crate::math::Mat4,

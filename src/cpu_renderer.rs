@@ -1,40 +1,27 @@
+use renderer_marco_derive::RendererCommon;
+
 use crate::{
   bresenham_line,
   camera::Camera,
   cohen_sutherland,
   image::ColorAttachment,
   math::{Mat4, Vec2, /* Vec3, */ Vec4},
-  renderer::{self, RendererInterface, Viewport, ATTR_COLOR, ATTR_TEXCOORD},
+  renderer::*,
   scanline,
   shader::{self, attributes_foreach, Shader, Uniforms, Vertex},
   texture::{Texture, TextureStore},
 };
 
+#[derive(RendererCommon)]
 pub struct Renderer {
-  color_attachment: ColorAttachment,
+  color: ColorAttachment,
   viewport: Viewport,
   camera: Camera,
   shader: Shader,
   uniforms: Uniforms,
 }
 
-impl RendererInterface for Renderer {
-  fn clear(&mut self, color: &Vec4) {
-    self.color_attachment.clear(color)
-  }
-
-  fn get_canvas_width(&self) -> u32 {
-    self.color_attachment.width()
-  }
-
-  fn get_canvas_height(&self) -> u32 {
-    self.color_attachment.height()
-  }
-
-  fn get_frame_image(&self) -> &[u8] {
-    self.color_attachment.data()
-  }
-
+impl RendererDraw for Renderer {
   fn draw_triangle(
     &mut self,
     model: &Mat4,
@@ -104,13 +91,12 @@ impl RendererInterface for Renderer {
     // }
   }
 }
-
 impl Renderer {
   pub fn new(w: u32, h: u32, camera: Camera) -> Self {
     Self {
       camera,
       viewport: Viewport { x: 0, y: 0, w, h },
-      color_attachment: ColorAttachment::new(w, h),
+      color: ColorAttachment::new(w, h),
       shader: Shader::default(),
       uniforms: Uniforms::default(),
     }
@@ -120,8 +106,8 @@ impl Renderer {
     // let rect_min = Vec2 { x: 50.0, y: 50.0 };
     let rect_min = Vec2::zero();
     let rect_max = Vec2::new(
-      self.color_attachment.width() as f32 - 1.0,
-      self.color_attachment.height() as f32 - 1.0,
+      self.color.width() as f32 - 1.0,
+      self.color.height() as f32 - 1.0,
     );
 
     let res = cohen_sutherland::clip(&p0, &p1, &rect_min, &rect_max);
@@ -135,7 +121,7 @@ impl Renderer {
         next_p1.x as i32,
         next_p1.y as i32,
         color,
-        &mut self.color_attachment,
+        &mut self.color,
       ),
       None => {}
     }
@@ -143,11 +129,7 @@ impl Renderer {
 
   pub fn draw_trapezoid(&mut self, trap: &mut scanline::Trapezoid, texture_store: &TextureStore) {
     let top = trap.top.ceil().max(0.0) as i32;
-    let bottom = trap
-      .bottom
-      .ceil()
-      .min(self.color_attachment.height() as f32 - 1.0) as i32
-      - 1;
+    let bottom = trap.bottom.ceil().min(self.color.height() as f32 - 1.0) as i32 - 1;
     let mut y = top as f32;
 
     // reciprocal vertex attributes, (all attribute divided by the original z)
@@ -167,7 +149,7 @@ impl Renderer {
     let mut vertex = scanline.vertex;
     let y: u32 = scanline.y as u32;
     let mut width = scanline.width;
-    let border = self.color_attachment.width() as f32;
+    let border = self.color.width() as f32;
     while width > 0.0 {
       let x = vertex.position.x;
       if x >= 0.0 && x < border {
@@ -186,7 +168,7 @@ impl Renderer {
         let color = self
           .shader
           .call_fragment_shading(&attr_local, &self.uniforms, texture_store);
-        self.color_attachment.set(x as u32, y, &color);
+        self.color.set(x as u32, y, &color);
       }
 
       width -= 1.0;
