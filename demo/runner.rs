@@ -1,13 +1,17 @@
 use fltk::{self, app::set_visual, enums::Mode, prelude::*, window::Window};
 use nino_renderer::cpu_renderer::{self};
 use nino_renderer::math::{self, Vec4};
-use nino_renderer::renderer::{RendererInterface, ATTR_COLOR, ATTR_TEXCOORD};
+use nino_renderer::renderer::RendererInterface;
 use nino_renderer::shader::{Attributes, Vertex};
 use nino_renderer::texture::TextureStore;
 use nino_renderer::{camera, gpu_renderer};
 
 const WINDOW_WIDTH: u32 = 1024;
 const WINDOW_HEIGHT: u32 = 720;
+
+const ATTR_COLOR: usize = 0;
+const ATTR_TEXCOORD: usize = 1;
+const UNIFORM_TEXTURE: u32 = 0;
 
 fn run_fltk<F: FnMut(&mut Window) + 'static>(cb: F) {
   let app = fltk::app::App::default();
@@ -60,7 +64,7 @@ fn draw_image(renderer: &mut Box<dyn RendererInterface>) {
 
 fn main() {
   // let mut img = image::ImageBuffer::new(100, 100);
-
+  let mut texture_store = TextureStore::default();
   let mut rotation = 0.0f32;
 
   let camera = camera::Camera::new(
@@ -94,13 +98,25 @@ fn main() {
   ];
   let model = math::apply_translate(&math::Vec3::new(0.0, 0.0, -4.0));
 
+  // let store_ref = &mut texture_store;
+  let texture_id = texture_store
+    .load("./resources/plane/pic.jpg", "test")
+    .unwrap();
+
+  renderer
+    .get_uniforms()
+    .texture
+    .insert(UNIFORM_TEXTURE, texture_id);
+
+  renderer.get_shader().vertex_shading = Box::new(|v, _, _| *v);
+  renderer.get_shader().fragment_shading = Box::new(|a, u, t| {
+    
+  });
+
   run_fltk(move |window| {
     renderer.clear(&Vec4::new(0.0, 0.0, 0.0, 1.0));
-    let mut texture_store = TextureStore::default();
-    let store_ref = &mut texture_store;
-    let texture_id = store_ref.load("./resources/plane/pic.jpg", "test").unwrap();
 
-    let texture = store_ref.get_by_id(texture_id);
+    // let texture = texture_store.get_by_id(texture_id);
 
     // // SRT
     let model = model * math::apply_eular_rotate_y(rotation.to_radians());
