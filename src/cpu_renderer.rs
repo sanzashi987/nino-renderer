@@ -35,6 +35,8 @@ impl RendererDraw for Renderer {
 
       let mut vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
 
+      let frustum = self.camera.get_frustum();
+
       // mv
       for v in &mut vertices {
         // v.position = *model * v.position;
@@ -48,18 +50,18 @@ impl RendererDraw for Renderer {
 
       // projection
       for v in &mut vertices {
-        v.position = *self.camera.get_frustum().get_mat() * v.position;
+        v.position = *frustum.get_mat() * v.position;
       }
 
       // restore z from w (original z in 3D)
       for v in &mut vertices {
-        v.position.z = -v.position.w * self.camera.get_frustum().near();
+        v.position.z = -v.position.w * frustum.near();
       }
 
       // restore y/x from w (projected x,y in 2D)
       for v in &mut vertices {
-        v.position.y /= v.position.w;
         v.position.x /= v.position.w;
+        v.position.y /= v.position.w;
         v.position.w = 1.0;
       }
 
@@ -68,7 +70,7 @@ impl RendererDraw for Renderer {
         v.position.x =
           (v.position.x + 1.0) * 0.5 * (self.viewport.w as f32 - 1.0) + self.viewport.x as f32;
         v.position.y =
-          (v.position.y + 1.0) * 0.5 * (self.viewport.w as f32 - 1.0) + self.viewport.x as f32;
+          (v.position.y + 1.0) * 0.5 * (self.viewport.h as f32 - 1.0) + self.viewport.y as f32;
       }
 
       // for each triangle , cut in two possible trapezoid

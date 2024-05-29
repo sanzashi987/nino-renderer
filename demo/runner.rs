@@ -21,7 +21,7 @@ fn run_fltk<F: FnMut(&mut Window) + 'static>(cb: F) {
     100,
     WINDOW_WIDTH as i32,
     WINDOW_HEIGHT as i32,
-    "sandbox",
+    "runner",
   );
 
   window.draw(cb);
@@ -69,9 +69,9 @@ fn main() {
 
   let camera = camera::Camera::new(
     1.0,
-    100.0,
+    1000.0,
     WINDOW_WIDTH as f32 / WINDOW_HEIGHT as f32,
-    50f32.to_radians(),
+    30f32.to_radians(),
   );
   let mut renderer = create_renderer(WINDOW_WIDTH, WINDOW_HEIGHT, camera);
 

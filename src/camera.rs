@@ -10,12 +10,13 @@ pub struct Frustum {
 impl Frustum {
   #[rustfmt::skip]
   pub fn new(near: f32,far: f32, aspect: f32, fov: f32) -> Frustum {
-    let a = 1.0 / (near * fov.tan());
     Self{
       near,
       aspect,
       fov,
       mat:if cfg!(feature="cpu"){
+          let a = 1.0 / (near * fov.tan());
+          // without far plane, clamp x,y in [-1, 1]^2, z= near
           Mat4::from_row(&[
             a,     0.0,     0.0,     0.0,
             0.0, aspect*a,  0.0,     0.0,
@@ -25,7 +26,7 @@ impl Frustum {
         } else {
           let half_w = near * fov.tan();
           let half_h = half_w / aspect;
-          // with far plane, clamp x,y,z in [-1, 1]
+          // with far plane, clamp x,y,z in [-1, 1]^3
           Mat4::from_row(&[
             near / half_w,           0.0,                       0.0,                             0.0,
                       0.0, near / half_h,                       0.0,                             0.0,

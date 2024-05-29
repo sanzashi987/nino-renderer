@@ -34,7 +34,7 @@ impl Trapezoid {
   fn get_portrait_trap(vertices: &[Vertex; 3]) -> Self {
     Trapezoid {
       top: vertices[0].position.y,
-      bottom: vertices[1].position.y,
+      bottom: vertices[2].position.y,
       left: Edge {
         v1: vertices[0],
         v2: vertices[1],
@@ -80,9 +80,9 @@ impl Trapezoid {
       / (vertices[2].position.x - vertices[0].position.x);
     // k = k => (y2 -y0)/(x2-x0) = (y1-y0)/(x? -x0) = > x? = (y1-y0)/k+x0
     let dx = (vertices[1].position.y - vertices[0].position.y) / k + vertices[0].position.x;
-    let t = (vertices[2].position.x - dx) / (vertices[2].position.x - vertices[0].position.x);
+    let t = (dx - vertices[2].position.x) / (vertices[0].position.x - vertices[2].position.x);
 
-    let d_vertex = shader::lerp_vertex(&vertices[0], &vertices[1], t);
+    let d_vertex = shader::lerp_vertex(&vertices[0], &vertices[2], t);
 
     if dx > vertices[1].position.x {
       let trap1 = Self::get_portrait_trap(&[vertices[0], vertices[1], d_vertex]);
@@ -119,8 +119,8 @@ impl Scanline {
 
     let position_step = (vertex_right.position - vertex_left.position) * rh_width;
     let attribute_step = interp_attributes(
-      &vertex_right.attributes,
       &vertex_left.attributes,
+      &vertex_right.attributes,
       |v1, v2, t| (v2 - v1) * t,
       rh_width,
     );
