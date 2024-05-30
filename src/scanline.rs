@@ -76,13 +76,19 @@ impl Trapezoid {
       return [Some(trap), None];
     }
 
-    let k = (vertices[2].position.y - vertices[0].position.y)
-      / (vertices[2].position.x - vertices[0].position.x);
+    let t = (vertices[1].position.y - vertices[0].position.y)
+      / (vertices[2].position.y - vertices[0].position.y);
+    // let k = (vertices[2].position.y - vertices[0].position.y)
     // k = k => (y2 -y0)/(x2-x0) = (y1-y0)/(x? -x0) = > x? = (y1-y0)/k+x0
-    let dx = (vertices[1].position.y - vertices[0].position.y) / k + vertices[0].position.x;
-    let t = (dx - vertices[2].position.x) / (vertices[0].position.x - vertices[2].position.x);
+    let dx = t * (vertices[2].position.x - vertices[0].position.x) + vertices[0].position.x;
 
-    let d_vertex = shader::lerp_vertex(&vertices[0], &vertices[2], t);
+    let (mut v0, mut v2) = (vertices[0], vertices[2]);
+    shader::vertex_rhw_init(&mut v0);
+    shader::vertex_rhw_init(&mut v2);
+    let mut d_vertex = shader::lerp_vertex(&v0, &v2, t);
+
+    shader::attributes_foreach(&mut d_vertex.attributes, |v| v / d_vertex.position.z);
+    d_vertex.position.z = 1.0 / d_vertex.position.z;
 
     if dx > vertices[1].position.x {
       let trap1 = Self::get_portrait_trap(&[vertices[0], vertices[1], d_vertex]);
