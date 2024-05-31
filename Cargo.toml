@@ -7,11 +7,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-image = "0.25.1"
-renderer_marco_derive = {path = "./renderer_marco_derive"}
+image = "0.24.5"
+renderer_marco_derive = { path = "./renderer_marco_derive" }
 
 [dev-dependencies]
-fltk = { version = "1.3.33", features = ["fltk-bundled"] }
+# fltk = { version = "1.3.33", features = ["fltk-bundled"] }
+fltk = "1.3.33"
 
 
 [[example]]
