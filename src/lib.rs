@@ -9,3 +9,4 @@ pub mod cpu_renderer;
 pub mod shader;
 pub mod texture;
 pub mod gpu_renderer;
+pub mod obj_loader;
