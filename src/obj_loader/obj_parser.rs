@@ -1,44 +1,8 @@
-use std::{
-  self,
-  collections::HashMap,
-  fs::File,
-  io::{BufRead, BufReader},
-  path::Path,
-};
+use std::{self, collections::HashMap, path::Path};
 
 use crate::math::{Vec2, Vec3};
 
-use super::marcos::ignore_utils;
-
-struct FileContent {
-  lines: Vec<String>,
-}
-
-impl FileContent {
-  pub fn from_file(file_name: &Path) -> Result<FileContent, std::io::Error> {
-    let file = File::open(file_name)?;
-    let mut reader = BufReader::new(file);
-    let (mut line, mut lines) = (String::new(), vec![] as Vec<String>);
-
-    let mut eof = false;
-
-    while !eof {
-      match reader.read_line(&mut line) {
-        Ok(len) => {
-          if len != 0 {
-            lines.push(line.clone());
-            line.clear();
-          } else {
-            eof = true;
-          }
-        }
-        Err(err) => return Err(err),
-      }
-    }
-
-    Ok(FileContent { lines })
-  }
-}
+use super::{error::ParseResult, marcos::ignore_utils, token_requester::TokenRequester};
 
 pub struct Vertex {
   pub vertex: u32,
@@ -75,14 +39,14 @@ pub struct MtlTextureMaps {
 #[rustfmt::skip]
 pub struct Material {
   pub name: String,
-  pub ambient: Option<Vec3>,              // Ka in rgb and single value range from 0.0 to 1.0
-  pub diffuse: Option<Vec3>,              // Kd ...
-  pub specular: Option<Vec3>,             // Ks ...
-  pub emissive_coeficient: Option<Vec3>,  // Ke ...
+  pub ambient: Option<Vec3>,                    // Ka in rgb and single value range from 0.0 to 1.0
+  pub diffuse: Option<Vec3>,                    // Kd ...
+  pub specular: Option<Vec3>,                   // Ks ...
+  pub emissive_coeficient: Option<Vec3>,        // Ke ...
   pub specular_exponent: Option<f32>,           // Ns normally range from 0 to 1000.
   pub d_factor: Option<f32>,                    // d (default 1.0 -> opaque)
   pub d_halo:Option<f32>,                       // d -halo,  dissolve = 1.0 - (N*v)(1.0-factor)
-  pub transmission_filter: Option<Vec3>,  // Tf in rgb and single value range from 0.0 to 1.0
+  pub transmission_filter: Option<Vec3>,        // Tf in rgb and single value range from 0.0 to 1.0
   pub optical_density: Option<f32>,             // Ni range from 0.001 to 10. (glass -> 1.5, affects the refraction)
   pub illum: Option<u8>,                        // illum 0 to 2
 
@@ -147,67 +111,6 @@ impl SceneData {
   }
 }
 
-#[derive(Debug)]
-pub enum Error {
-  IoError(std::io::Error),
-  CantConvertToNum,
-  UnknownToken(String),
-  ExceedComponent,
-  EmptyContent,
-  ParseIncomplete,
-  InvalidSyntax,
-  PathNotFound,
-}
-
-impl From<std::io::Error> for Error {
-  fn from(value: std::io::Error) -> Self {
-    Self::IoError(value)
-  }
-}
-
-struct TokenRequester<'a> {
-  content: &'a FileContent,
-  tokens: std::str::SplitWhitespace<'a>,
-  line: u64,
-}
-#[derive(PartialEq)]
-enum TokenType<'a> {
-  Token(&'a str),
-  Nextline,
-  Eof,
-}
-
-impl<'a> TokenRequester<'a> {
-  fn new(content: &'a FileContent) -> Result<Self, Error> {
-    if content.lines.is_empty() {
-      Err(Error::EmptyContent)
-    } else {
-      Ok(Self {
-        content,
-        tokens: content.lines[0].split_whitespace(),
-        line: 0,
-      })
-    }
-  }
-
-  fn request(&mut self) -> TokenType<'a> {
-    match self.tokens.next() {
-      Some(token) => TokenType::Token(token),
-      None => {
-        self.line += 1;
-        if self.line as usize >= self.content.lines.len() {
-          TokenType::Eof
-        } else {
-          self.tokens = self.content.lines[self.line as usize].split_whitespace();
-          TokenType::Nextline
-        }
-      }
-    }
-  }
-}
-
-pub type ParseResult = Result<(), Error>;
-
 struct ObjParser<'a, 'b> {
   scene: SceneData,
   dirpath: &'a Path,
@@ -222,6 +125,8 @@ impl<'a, 'b> ObjParser<'a, 'b> {
       requester,
     }
   }
+
+  pub fn parse() -> ParseResult {}
 }
 
 // ignore_utils!()
