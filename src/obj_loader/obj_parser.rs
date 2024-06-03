@@ -2,7 +2,11 @@ use std::{self, collections::HashMap, path::Path};
 
 use crate::math::{Vec2, Vec3};
 
-use super::{error::ParseResult, marcos::ignore_utils, token_requester::TokenRequester};
+use super::{
+  error::{Error, ParseResult},
+  marcos::ignore_utils,
+  token_requester::{TokenRequester, TokenType},
+};
 
 pub struct Vertex {
   pub vertex: u32,
@@ -126,7 +130,25 @@ impl<'a, 'b> ObjParser<'a, 'b> {
     }
   }
 
-  pub fn parse() -> ParseResult {}
+  pub fn parse(&mut self) -> ParseResult {
+    let mut token = self.requester.request();
+    let mut finish = false;
+    while !finish {
+      match token {
+        TokenType::Token(str) => match str {
+          "#" => todo!(),
+          _ => return Err(Error::UnknownToken(str.to_string())),
+        },
+        TokenType::Nextline => {
+          token = self.requester.request();
+        }
+        TokenType::Eof => {
+          finish = true;
+        }
+      }
+    }
+    Ok(())
+  }
 }
 
 // ignore_utils!()
