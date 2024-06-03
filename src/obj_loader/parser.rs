@@ -8,6 +8,8 @@ use std::{
 
 use crate::math::{Vec2, Vec3};
 
+use super::marcos::ignore_utils;
+
 struct FileContent {
   lines: Vec<String>,
 }
@@ -134,7 +136,7 @@ pub struct SceneData {
 }
 
 impl SceneData {
-  fn new() -> Self {
+  pub fn new() -> Self {
     Self {
       vertices: vec![],
       normals: vec![],
@@ -165,7 +167,7 @@ impl From<std::io::Error> for Error {
 
 struct TokenRequester<'a> {
   content: &'a FileContent,
-  tokens: std::str::SplitAsciiWhitespace<'a>,
+  tokens: std::str::SplitWhitespace<'a>,
   line: u64,
 }
 #[derive(PartialEq)]
@@ -177,7 +179,7 @@ enum TokenType<'a> {
 
 impl<'a> TokenRequester<'a> {
   fn new(content: &'a FileContent) -> Result<Self, Error> {
-    if (content.lines.is_empty()) {
+    if content.lines.is_empty() {
       Err(Error::EmptyContent)
     } else {
       Ok(Self {
@@ -187,4 +189,39 @@ impl<'a> TokenRequester<'a> {
       })
     }
   }
+
+  fn request(&mut self) -> TokenType<'a> {
+    match self.tokens.next() {
+      Some(token) => TokenType::Token(token),
+      None => {
+        self.line += 1;
+        if self.line as usize >= self.content.lines.len() {
+          TokenType::Eof
+        } else {
+          self.tokens = self.content.lines[self.line as usize].split_whitespace();
+          TokenType::Nextline
+        }
+      }
+    }
+  }
 }
+
+pub type ParseResult = Result<(), Error>;
+
+struct ObjParser<'a, 'b> {
+  scene: SceneData,
+  dirpath: &'a Path,
+  requester: &'b mut TokenRequester<'b>,
+}
+
+impl<'a, 'b> ObjParser<'a, 'b> {
+  pub fn new(path: &'a Path, requester: &'b mut TokenRequester<'b>) -> Self {
+    Self {
+      scene: SceneData::new(),
+      dirpath: path,
+      requester,
+    }
+  }
+}
+
+// ignore_utils!()
