@@ -1,10 +1,10 @@
-use std::{self, collections::HashMap, path::Path};
+use std::{collections::HashMap, ops::Not, path::Path};
 
 use crate::math::{Vec2, Vec3};
 
 use super::{
   error::{Error, ParseResult},
-  marcos::ignore_utils,
+  marcos::{ignore_utils, parse_as},
   token_requester::{TokenRequester, TokenType},
 };
 
@@ -84,12 +84,6 @@ impl Material {
   }
 }
 
-impl Default for Material {
-  fn default() -> Self {
-    Self::new("name")
-  }
-}
-
 pub struct MtlLib {
   pub materials: HashMap<String, Material>,
 }
@@ -115,7 +109,7 @@ impl SceneData {
   }
 }
 
-struct ObjParser<'a, 'b> {
+pub struct ObjParser<'a, 'b> {
   scene: SceneData,
   dirpath: &'a Path,
   requester: &'b mut TokenRequester<'b>,
@@ -136,7 +130,25 @@ impl<'a, 'b> ObjParser<'a, 'b> {
     while !finish {
       match token {
         TokenType::Token(str) => match str {
-          "#" => todo!(),
+          "#" => {
+            ignore_utils!(token = self.requester.request();TokenType::Nextline, TokenType::Eof)
+          }
+          "g" | "o" => self.scene.models.push(Model {
+            faces: vec![],
+            name: parse_as!(token = self.requester.request(); String)?,
+            mtllib: self
+              .scene
+              .materials
+              .is_empty()
+              .not()
+              .then_some((self.scene.materials.len() - 1) as u32),
+            material: None,
+            smooth_shade: 0,
+          }),
+          "v" => self
+            .scene
+            .vertices
+            .push(parse_as!(token = self.requester.request();Vec3 = x:f32, y:f32, z:f32 )?),
           _ => return Err(Error::UnknownToken(str.to_string())),
         },
         TokenType::Nextline => {
@@ -152,3 +164,6 @@ impl<'a, 'b> ObjParser<'a, 'b> {
 }
 
 // ignore_utils!()
+// fn a() {
+//   <Vec3>::zero()
+// }
