@@ -9,8 +9,8 @@ pub struct FileContent {
 }
 
 impl FileContent {
-  pub fn from_file(file_name: &Path) -> Result<FileContent, Error> {
-    let file = File::open(file_name)?;
+  pub fn from_file(filename: &Path) -> Result<FileContent, Error> {
+    let file = File::open(filename)?;
     let mut reader = BufReader::new(file);
     let (mut line, mut lines) = (String::new(), vec![] as Vec<String>);
 

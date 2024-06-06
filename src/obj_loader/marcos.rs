@@ -35,7 +35,7 @@ macro_rules! parse_as {
           return Err(Error::ParseIncomplete);
         }
       )+
-      // move to next token
+      // move to next token for pattern matching
       $var = $request;
       Ok::<$type,Error>(value)
     }

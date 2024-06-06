@@ -4,8 +4,10 @@ use crate::math::{Vec2, Vec3};
 
 use super::{
   error::{Error, ParseResult},
+  file_content::FileContent,
   marcos::{ignore_utils, parse_as},
   token_requester::{TokenRequester, TokenType},
+  MtlLibParser,
 };
 
 pub struct Vertex {
@@ -130,9 +132,11 @@ impl<'a, 'b> ObjParser<'a, 'b> {
     while !finish {
       match token {
         TokenType::Token(str) => match str {
+          // starts with # is comment, skip this line
           "#" => {
             ignore_utils!(token = self.requester.request();TokenType::Nextline, TokenType::Eof)
           }
+
           "g" | "o" => self.scene.models.push(Model {
             faces: vec![],
             name: parse_as!(token = self.requester.request(); String)?,
@@ -145,10 +149,54 @@ impl<'a, 'b> ObjParser<'a, 'b> {
             material: None,
             smooth_shade: 0,
           }),
+          // vertex defs
           "v" => self
             .scene
             .vertices
             .push(parse_as!(token = self.requester.request();Vec3 = x:f32, y:f32, z:f32 )?),
+          // texture coordinates
+          "vt" => self
+            .scene
+            .textcoords
+            .push(parse_as!(token = self.requester.request(); Vec2 = x:f32 , y:f32)?),
+          // normal
+          "vn" => self
+            .scene
+            .normals
+            .push(parse_as!(token = self.requester.request(); Vec3 = x:f32,y:f32,z:f32)?),
+          // "f" =>
+          "mtllib" => {
+            token = self.requester.request();
+            if let TokenType::Token(filename) = token {
+              let mut path_buf =
+                std::path::PathBuf::from(self.dirpath.parent().ok_or(Error::PathNotFound)?);
+              path_buf.push(filename);
+
+              let file_content = FileContent::from_file(path_buf.as_path())?;
+              let mut mtllib_token_requester = TokenRequester::new(&file_content)?;
+              let mut mtllib_parser = MtlLibParser::new(&mut mtllib_token_requester);
+
+              self.scene.materials.push(mtllib_parser.parse()?);
+
+              token = self.requester.request();
+            }
+          }
+          "usemtl" => {
+            self
+              .scene
+              .models
+              .last_mut()
+              .ok_or(Error::ParseIncomplete)?
+              .material = Some(parse_as!(token = self.requester.request(); String)?)
+          }
+          "s" => {
+            self
+              .scene
+              .models
+              .last_mut()
+              .ok_or(Error::ParseIncomplete)?
+              .smooth_shade = parse_as!(token = self.requester.request();u8)?
+          }
           _ => return Err(Error::UnknownToken(str.to_string())),
         },
         TokenType::Nextline => {
