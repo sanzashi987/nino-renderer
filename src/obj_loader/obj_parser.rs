@@ -5,7 +5,7 @@ use crate::math::{Vec2, Vec3};
 use super::{
   error::{Error, ParseResult},
   file_content::FileContent,
-  marcos::{ignore_utils, parse_as},
+  marcos::{parse_line, parse_num, skip_to_next_line},
   token_requester::{TokenRequester, TokenType},
   MtlLibParser,
 };
@@ -134,12 +134,12 @@ impl<'a, 'b> ObjParser<'a, 'b> {
         TokenType::Token(str) => match str {
           // starts with # is comment, skip this line
           "#" => {
-            ignore_utils!(token = self.requester.request();TokenType::Nextline, TokenType::Eof)
+            skip_to_next_line!(token = self.requester.request();TokenType::Nextline, TokenType::Eof)
           }
 
           "g" | "o" => self.scene.models.push(Model {
             faces: vec![],
-            name: parse_as!(token = self.requester.request(); String)?,
+            name: parse_line!(token = self.requester.request(); String)?,
             mtllib: self
               .scene
               .materials
@@ -153,17 +153,17 @@ impl<'a, 'b> ObjParser<'a, 'b> {
           "v" => self
             .scene
             .vertices
-            .push(parse_as!(token = self.requester.request();Vec3 = x:f32, y:f32, z:f32 )?),
+            .push(parse_line!(token = self.requester.request(); Vec3 = x:f32, y:f32, z:f32)?),
           // texture coordinates
           "vt" => self
             .scene
             .textcoords
-            .push(parse_as!(token = self.requester.request(); Vec2 = x:f32 , y:f32)?),
+            .push(parse_line!(token = self.requester.request(); Vec2 = x:f32 , y:f32)?),
           // normal
           "vn" => self
             .scene
             .normals
-            .push(parse_as!(token = self.requester.request(); Vec3 = x:f32,y:f32,z:f32)?),
+            .push(parse_line!(token = self.requester.request(); Vec3 = x:f32,y:f32,z:f32)?),
           // "f" =>
           "mtllib" => {
             token = self.requester.request();
@@ -187,7 +187,7 @@ impl<'a, 'b> ObjParser<'a, 'b> {
               .models
               .last_mut()
               .ok_or(Error::ParseIncomplete)?
-              .material = Some(parse_as!(token = self.requester.request(); String)?)
+              .material = Some(parse_line!(token = self.requester.request(); String)?)
           }
           "s" => {
             self
@@ -195,7 +195,53 @@ impl<'a, 'b> ObjParser<'a, 'b> {
               .models
               .last_mut()
               .ok_or(Error::ParseIncomplete)?
-              .smooth_shade = parse_as!(token = self.requester.request();u8)?
+              .smooth_shade = parse_line!(token = self.requester.request();u8)?
+          }
+          // faces
+          // Face with vertex only
+          // => f v1 v2 v3
+          // Face with vertex index and texture coordinate index
+          // => f v1/vt1 v2/vt2 v3/vt3
+          // Face with vertex index, texture coordinate index and vertex normal index
+          // => f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3
+          // Face with vertex index and vertex normal index but not texture coordinate index
+          // => f v1//vn1 v2//vn2 v3//vn3
+          "f" => {
+            token = self.requester.request();
+            let mut vertices: Vec<Vertex> = Vec::new();
+            let mut keep_parse = true;
+            while keep_parse {
+              if let TokenType::Token(token_str) = token {
+                let splited: Vec<&str> = token_str.split('/').collect();
+                let mut textcoord: Option<u32> = None;
+                let mut normal: Option<u32> = None;
+                let length = splited.len();
+                if length == 3 {
+                } else if length == 2 {
+                } else if length == 1 {
+                } else {
+                  return Err(Error::InvalidSyntax);
+                }
+                let str = splited[0];
+                let vertex = parse_num!(str, u32) - 1;
+
+                vertices.push(Vertex {
+                  vertex,
+                  textcoord,
+                  normal,
+                })
+              } else {
+                keep_parse = false
+              }
+              token = self.requester.request();
+            }
+            self
+              .scene
+              .models
+              .last_mut()
+              .ok_or(Error::ParseIncomplete)?
+              .faces
+              .push(Face { vertices });
           }
           _ => return Err(Error::UnknownToken(str.to_string())),
         },
