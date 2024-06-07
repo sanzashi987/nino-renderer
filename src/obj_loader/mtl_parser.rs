@@ -5,8 +5,8 @@ use crate::math::Vec3;
 use super::{
   error::Error,
   marcos::{parse_material_field, parse_num, parse_token, skip_to_next_line},
+  material::{Material, MtlLib},
   token_requester::{TokenRequester, TokenType},
-  Material, MtlLib,
 };
 
 pub struct MtlLibParser<'a> {

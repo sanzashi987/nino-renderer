@@ -4,6 +4,8 @@ mod marcos;
 mod mtl_parser;
 mod obj_parser;
 mod token_requester;
+mod material;
+mod face;
 
 // pub use marcos::*;
 pub use mtl_parser::*;
