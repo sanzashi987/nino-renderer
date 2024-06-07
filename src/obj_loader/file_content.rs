@@ -14,16 +14,16 @@ impl FileContent {
     let mut reader = BufReader::new(file);
     let (mut line, mut lines) = (String::new(), vec![] as Vec<String>);
 
-    let mut eof = false;
+    let mut done = false;
 
-    while !eof {
+    while !done {
       match reader.read_line(&mut line) {
         Ok(len) => {
           if len != 0 {
             lines.push(line.clone());
             line.clear();
           } else {
-            eof = true;
+            done = true;
           }
         }
         Err(err) => return Err(err),

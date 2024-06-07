@@ -13,7 +13,7 @@ macro_rules! parse_num {
   }};
 }
 
-macro_rules! parse_line {
+macro_rules! parse_token {
   ($var:ident = $request:expr; $type:ty) => {{
     //get current token
     $var = $request;
@@ -50,6 +50,13 @@ macro_rules! parse_line {
   };
 }
 
+macro_rules! parse_material_field {
+  ($mtl:ident.$($prop:ident).+ = $expr:expr) => {
+    $mtl.as_mut().ok_or(Error::ParseIncomplete)?$(.$prop)+ = $expr;
+  };
+}
+
+pub(in crate::obj_loader) use parse_token;
+pub(in crate::obj_loader) use parse_material_field;
 pub(in crate::obj_loader) use parse_num;
-pub(in crate::obj_loader) use parse_line;
 pub(in crate::obj_loader) use skip_to_next_line;

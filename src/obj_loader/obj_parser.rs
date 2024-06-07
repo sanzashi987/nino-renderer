@@ -5,7 +5,7 @@ use crate::math::{Vec2, Vec3};
 use super::{
   error::{Error, ParseResult},
   file_content::FileContent,
-  marcos::{parse_line, parse_num, skip_to_next_line},
+  marcos::{parse_num, parse_token, skip_to_next_line},
   token_requester::{TokenRequester, TokenType},
   MtlLibParser,
 };
@@ -50,8 +50,8 @@ pub struct Material {
   pub specular: Option<Vec3>,                   // Ks ...
   pub emissive_coeficient: Option<Vec3>,        // Ke ...
   pub specular_exponent: Option<f32>,           // Ns normally range from 0 to 1000.
-  pub d_factor: Option<f32>,                    // d (default 1.0 -> opaque)
-  pub d_halo:Option<f32>,                       // d -halo,  dissolve = 1.0 - (N*v)(1.0-factor)
+  pub dissolve: Option<f32>,                    // d (default 1.0 -> opaque)
+  // pub d_halo:Option<f32>,                       // d -halo,  dissolve = 1.0 - (N*v)(1.0-factor)
   pub transmission_filter: Option<Vec3>,        // Tf in rgb and single value range from 0.0 to 1.0
   pub optical_density: Option<f32>,             // Ni range from 0.001 to 10. (glass -> 1.5, affects the refraction)
   pub illum: Option<u8>,                        // illum 0 to 2
@@ -60,7 +60,7 @@ pub struct Material {
 }
 
 impl Material {
-  fn new(name: &str) -> Self {
+  pub fn new(name: &str) -> Self {
     Self {
       name: name.to_string(),
       ambient: None,
@@ -68,8 +68,8 @@ impl Material {
       specular: None,
       emissive_coeficient: None,
       specular_exponent: None,
-      d_factor: None,
-      d_halo: None,
+      dissolve: None,
+      // d_halo: None,
       transmission_filter: None,
       optical_density: None,
       illum: None,
@@ -139,7 +139,7 @@ impl<'a, 'b> ObjParser<'a, 'b> {
 
           "g" | "o" => self.scene.models.push(Model {
             faces: vec![],
-            name: parse_line!(token = self.requester.request(); String)?,
+            name: parse_token!(token = self.requester.request(); String)?,
             mtllib: self
               .scene
               .materials
@@ -153,17 +153,17 @@ impl<'a, 'b> ObjParser<'a, 'b> {
           "v" => self
             .scene
             .vertices
-            .push(parse_line!(token = self.requester.request(); Vec3 = x:f32, y:f32, z:f32)?),
+            .push(parse_token!(token = self.requester.request(); Vec3 = x:f32, y:f32, z:f32)?),
           // texture coordinates
           "vt" => self
             .scene
             .textcoords
-            .push(parse_line!(token = self.requester.request(); Vec2 = x:f32 , y:f32)?),
+            .push(parse_token!(token = self.requester.request(); Vec2 = x:f32 , y:f32)?),
           // normal
           "vn" => self
             .scene
             .normals
-            .push(parse_line!(token = self.requester.request(); Vec3 = x:f32,y:f32,z:f32)?),
+            .push(parse_token!(token = self.requester.request(); Vec3 = x:f32,y:f32,z:f32)?),
           // "f" =>
           "mtllib" => {
             token = self.requester.request();
@@ -187,7 +187,7 @@ impl<'a, 'b> ObjParser<'a, 'b> {
               .models
               .last_mut()
               .ok_or(Error::ParseIncomplete)?
-              .material = Some(parse_line!(token = self.requester.request(); String)?)
+              .material = Some(parse_token!(token = self.requester.request(); String)?)
           }
           "s" => {
             self
@@ -195,7 +195,7 @@ impl<'a, 'b> ObjParser<'a, 'b> {
               .models
               .last_mut()
               .ok_or(Error::ParseIncomplete)?
-              .smooth_shade = parse_line!(token = self.requester.request();u8)?
+              .smooth_shade = parse_token!(token = self.requester.request();u8)?
           }
           // faces
           // Face with vertex only
@@ -209,20 +209,32 @@ impl<'a, 'b> ObjParser<'a, 'b> {
           "f" => {
             token = self.requester.request();
             let mut vertices: Vec<Vertex> = Vec::new();
-            let mut keep_parse = true;
-            while keep_parse {
+
+            let mut done = false;
+            while !done {
               if let TokenType::Token(token_str) = token {
                 let splited: Vec<&str> = token_str.split('/').collect();
-                let mut textcoord: Option<u32> = None;
-                let mut normal: Option<u32> = None;
-                let length = splited.len();
-                if length == 3 {
-                } else if length == 2 {
-                } else if length == 1 {
-                } else {
+
+                let indices = splited.as_slice();
+                if indices.len() > 3 || indices.len() < 1 {
                   return Err(Error::InvalidSyntax);
                 }
-                let str = splited[0];
+                let (mut textcoord, mut normal) = (None, None);
+
+                match *indices {
+                  [_, second, third] => {
+                    if second.is_empty().not() {
+                      textcoord = Some(parse_num!(second, u32) - 1);
+                    }
+                    normal = Some(parse_num!(third, u32) - 1);
+                  }
+                  [_, second] => {
+                    textcoord = Some(parse_num!(second, u32) - 1);
+                  }
+                  _ => return Err(Error::InvalidSyntax),
+                }
+
+                let str = indices[0];
                 let vertex = parse_num!(str, u32) - 1;
 
                 vertices.push(Vertex {
@@ -231,7 +243,7 @@ impl<'a, 'b> ObjParser<'a, 'b> {
                   normal,
                 })
               } else {
-                keep_parse = false
+                done = true;
               }
               token = self.requester.request();
             }
