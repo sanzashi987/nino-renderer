@@ -190,8 +190,3 @@ impl<'a, 'b> ObjParser<'a, 'b> {
     Ok(())
   }
 }
-
-// ignore_utils!()
-// fn a() {
-//   <Vec3>::zero()
-// }
