@@ -41,6 +41,7 @@ impl Attributes {
   }
 }
 
+// Runtime Vertex in pipeline
 #[derive(Clone, Copy, Debug)]
 pub struct Vertex {
   pub position: Vec4,

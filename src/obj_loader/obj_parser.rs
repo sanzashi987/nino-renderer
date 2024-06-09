@@ -1,5 +1,7 @@
 use std::{ops::Not, path::Path};
 
+use image::error;
+
 use crate::math::{Vec2, Vec3};
 
 use super::{
@@ -188,5 +190,18 @@ impl<'a, 'b> ObjParser<'a, 'b> {
       }
     }
     Ok(())
+  }
+}
+
+pub fn load_from_file(filename: &str) -> Result<SceneData, Error> {
+  let fullpath = std::path::Path::new(filename);
+  match FileContent::from_file(fullpath) {
+    Ok(content) => {
+      let mut requester = TokenRequester::new(&content)?;
+      let mut parser = ObjParser::new(fullpath, &mut requester);
+      parser.parse()?;
+      Ok(parser.scene)
+    }
+    Err(error) => return Err(Error::IoError(error)),
   }
 }

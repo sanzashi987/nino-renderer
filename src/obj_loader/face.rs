@@ -1,3 +1,4 @@
+// parsed vertex config indices from obj file
 pub struct Vertex {
   pub vertex: u32,
   pub normal: Option<u32>,
