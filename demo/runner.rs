@@ -1,17 +1,74 @@
 use fltk::{self, app::set_visual, enums::Mode, prelude::*, window::Window};
-use nino_renderer::cpu_renderer::{self};
-use nino_renderer::math::{self, Vec4};
-use nino_renderer::renderer::{texture_sample, RendererInterface};
-use nino_renderer::shader::{self, Attributes, Vertex};
-use nino_renderer::texture::TextureStore;
-use nino_renderer::{camera, gpu_renderer};
+
+use nino_renderer::{
+  camera::{self, Camera},
+  cpu_renderer, gpu_renderer,
+  math::{self, Vec4},
+  model::{self, Mesh},
+  renderer::{texture_sample, RendererInterface},
+  shader::{Attributes, Vertex},
+  texture::{self, TextureStore},
+};
 
 const WINDOW_WIDTH: u32 = 1024;
-const WINDOW_HEIGHT: u32 = 720;
+const WINDOW_HEIGHT: u32 = 768;
 
-const ATTR_COLOR: usize = 0;
-const ATTR_TEXCOORD: usize = 1;
-const UNIFORM_TEXTURE: u32 = 0;
+// attribute
+const ATTR_TEXCOORD: usize = 0; // vec2
+const ATTR_NORMAL: usize = 0; // vec3
+
+// uniform
+const UNIFORM_COLOR: u32 = 1;
+const UNIFORM_TEXTURE: u32 = 1;
+
+fn create_renderer(w: u32, h: u32, camera: camera::Camera) -> Box<dyn RendererInterface> {
+  if cfg!(feature = "cpu") {
+    print!("using scanline rendering");
+    Box::new(cpu_renderer::Renderer::new(w, h, camera))
+  } else {
+    print!("using barycentric coordinate rendering");
+    Box::new(gpu_renderer::Renderer::new(w, h, camera))
+  }
+}
+
+const RESOURCE_PATH: &str = "./resources";
+const FOLDER: &str = "plane";
+
+fn get_resource_filepath(relative: &str) -> String {
+  format!("{}/{}/{}", RESOURCE_PATH, FOLDER, relative)
+}
+
+struct StructedModelData {
+  vertices: Vec<Vertex>,
+  mtllib: Option<u32>,
+  material: Option<String>,
+}
+
+fn construct_model_data(meshes: &[Mesh]) -> Vec<StructedModelData> {
+  let mut data = Vec::<StructedModelData>::new();
+
+  for mesh in meshes {
+    let mut vertices = Vec::<Vertex>::new();
+    // convert model vertex to shader vertex
+    for vertex in &mesh.vertices {
+      let mut attr = Attributes::default();
+
+      attr.set_vec2(ATTR_TEXCOORD, vertex.textcoord);
+      attr.set_vec3(ATTR_NORMAL, vertex.normal);
+
+      let shader_vertex = Vertex::new(&vertex.position, attr);
+      vertices.push(shader_vertex);
+    }
+
+    data.push(StructedModelData {
+      vertices,
+      material: mesh.material.clone(),
+      mtllib: mesh.mtllib,
+    })
+  }
+
+  data
+}
 
 fn run_fltk<F: FnMut(&mut Window) + 'static>(cb: F) {
   let app = fltk::app::App::default();
@@ -38,16 +95,6 @@ fn run_fltk<F: FnMut(&mut Window) + 'static>(cb: F) {
   app.run().unwrap();
 }
 
-fn create_renderer(w: u32, h: u32, camera: camera::Camera) -> Box<dyn RendererInterface> {
-  if cfg!(feature = "cpu") {
-    print!("use cpu renderer");
-    Box::new(cpu_renderer::Renderer::new(w, h, camera))
-  } else {
-    print!("use gpu renderer");
-    Box::new(gpu_renderer::Renderer::new(w, h, camera))
-  }
-}
-
 fn draw_image(renderer: &mut Box<dyn RendererInterface>) {
   let pixels_buffer = renderer.get_frame_image();
 
@@ -63,71 +110,68 @@ fn draw_image(renderer: &mut Box<dyn RendererInterface>) {
 }
 
 fn main() {
-  // let mut img = image::ImageBuffer::new(100, 100);
   let mut texture_store = TextureStore::default();
   let mut rotation = 0.0f32;
 
-  let camera = camera::Camera::new(
+  let camera = Camera::new(
     1.0,
     1000.0,
     WINDOW_WIDTH as f32 / WINDOW_HEIGHT as f32,
     30f32.to_radians(),
   );
+
   let mut renderer = create_renderer(WINDOW_WIDTH, WINDOW_HEIGHT, camera);
 
-  let mut attr1 = Attributes::default();
-  let mut attr2 = Attributes::default();
-  let mut attr3 = Attributes::default();
-  let mut attr4 = Attributes::default();
-  attr1.set_vec4(ATTR_COLOR, math::Vec4::new(1.0, 1.0, 1.0, 1.0));
-  attr2.set_vec4(ATTR_COLOR, math::Vec4::new(1.0, 1.0, 1.0, 1.0));
-  attr3.set_vec4(ATTR_COLOR, math::Vec4::new(1.0, 1.0, 1.0, 1.0));
-  attr4.set_vec4(ATTR_COLOR, math::Vec4::new(1.0, 1.0, 1.0, 1.0));
-  attr1.set_vec2(ATTR_TEXCOORD, math::Vec2::new(0.0, 1.0));
-  attr2.set_vec2(ATTR_TEXCOORD, math::Vec2::new(1.0, 1.0));
-  attr3.set_vec2(ATTR_TEXCOORD, math::Vec2::new(0.0, 0.0));
-  attr4.set_vec2(ATTR_TEXCOORD, math::Vec2::new(1.0, 0.0));
+  let (meshes, mtllibs) = model::load_from_file(
+    &get_resource_filepath("plane.obj"),
+    model::PreOperation::None,
+  )
+  .unwrap();
 
-  let vertices = [
-    Vertex::new(&math::Vec3::new(-1.0, 1.0, 0.0), attr1),
-    Vertex::new(&math::Vec3::new(1.0, 1.0, 0.0), attr2),
-    Vertex::new(&math::Vec3::new(-1.0, -1.0, 0.0), attr3),
-    Vertex::new(&math::Vec3::new(1.0, 1.0, 0.0), attr2),
-    Vertex::new(&math::Vec3::new(-1.0, -1.0, 0.0), attr3),
-    Vertex::new(&math::Vec3::new(1.0, -1.0, 0.0), attr4),
-  ];
-  let model = math::apply_translate(&math::Vec3::new(0.0, 0.0, -4.0));
+  let vertex_data = construct_model_data(&meshes);
 
-  // let store_ref = &mut texture_store;
-  let texture_id = texture_store
-    .load("./resources/plane/pic.jpg", "test")
-    .unwrap();
-
-  renderer
-    .get_uniforms()
-    .texture
-    .insert(UNIFORM_TEXTURE, texture_id);
+  for mtllib in &mtllibs {
+    for (_, val) in mtllib.materials.iter() {
+      if let Some(path) = &val.texture_maps.diffuse {
+        texture_store
+          .load(&get_resource_filepath(path), path)
+          .unwrap();
+      }
+    }
+  }
 
   let shader = renderer.get_shader();
 
   shader.vertex_shading = Box::new(|v, _, _| *v);
   shader.fragment_shading = Box::new(|a, u, t| {
-    let frag_color = a.vec4[ATTR_COLOR];
+    let mut frag_color = match u.vec4.get(&UNIFORM_COLOR) {
+      Some(v4) => *v4,
+      None => Vec4::new(1.0, 1.0, 1.0, 1.0),
+    };
     let textcoord = a.vec2[ATTR_TEXCOORD];
-    let texture = t.get_by_id(u.texture[&UNIFORM_TEXTURE]).unwrap();
-    let texture_color = texture_sample(texture, &textcoord);
-    texture_color * frag_color
+
+    if let Some(texture_id) = u.texture.get(&UNIFORM_TEXTURE) {
+      if let Some(texture) = t.get_by_id(*texture_id) {
+        frag_color *= texture_sample(texture, &textcoord);
+      }
+    }
+
+    frag_color
   });
 
-  run_fltk(move |window| {
+  run_fltk(move |_| {
     renderer.clear(&Vec4::new(0.0, 0.0, 0.0, 1.0));
 
     // let texture = texture_store.get_by_id(texture_id);
 
     // // SRT
-    let model = model * math::apply_eular_rotate_y(rotation.to_radians());
+    let model = math::apply_translate(&math::Vec3::new(0.0, 0.0, -4.0))
+      * math::apply_eular_rotate_y(rotation.to_radians());
 
-    renderer.draw_triangle(&model, &vertices, 2, &texture_store);
+    for data in &vertex_data {
+      renderer.draw_triangle(&model, &data.vertices, 2, &texture_store);
+    }
+
     rotation += 1.0;
 
     draw_image(&mut renderer);

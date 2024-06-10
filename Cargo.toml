@@ -20,6 +20,10 @@ name = "runner"
 path = "demo/runner.rs"
 
 
+[[example]]
+name = "hard-import-runner"
+path = "demo/runner_hard_import.rs"
+
 [features]
 cpu = []
 gpu = []
