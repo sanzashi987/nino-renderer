@@ -10,9 +10,27 @@ pub fn renderer_common(input: TokenStream) -> TokenStream {
   let id = ast.ident;
 
   quote! {
+    impl #id {
+      pub fn new(w: u32, h: u32, camera: Camera) -> Self {
+        Self {
+          camera,
+          viewport: Viewport { x: 0, y: 0, w, h },
+          color: ColorAttachment::new(w, h),
+          depth:  DepthAttachment::new(w, h),
+          shader: Default::default(),
+          uniforms: Default::default(),
+        }
+      }
+    }
+
+
     impl RendererDerive for # id {
       fn clear(&mut self, color: &crate::math::Vec4) {
         self.color.clear(color);
+      }
+
+      fn clear_depth(&mut self){
+        self.depth.clear(f32::MIN);
       }
 
       fn get_canvas_width(&self) -> u32 {
@@ -38,4 +56,11 @@ pub fn renderer_common(input: TokenStream) -> TokenStream {
     impl RendererInterface for Renderer {}
   }
   .into()
+}
+
+#[proc_macro_attribute(RendererStruct)]
+pub fn renderer_struct(attr: TokenStream, item: TokenStream) -> TokenStream {
+
+
+
 }

@@ -2,7 +2,7 @@ use renderer_marco_derive::RendererCommon;
 
 use crate::{
   camera::Camera,
-  image::ColorAttachment,
+  image::{ColorAttachment, DepthAttachment},
   math::{self, Barycentric, Vec2},
   renderer::*,
   shader::{Attributes, Shader, Uniforms, Vertex},
@@ -59,6 +59,7 @@ fn perspective_correct_and_barycentric_interpolate(
 #[derive(RendererCommon)]
 pub struct Renderer {
   color: ColorAttachment,
+  depth: DepthAttachment,
   camera: Camera,
   viewport: Viewport,
   shader: Shader,
@@ -193,18 +194,6 @@ impl RendererDraw for Renderer {
           }
         }
       }
-    }
-  }
-}
-
-impl Renderer {
-  pub fn new(w: u32, h: u32, camera: Camera) -> Self {
-    Self {
-      camera,
-      viewport: Viewport { x: 0, y: 0, w, h },
-      color: ColorAttachment::new(w, h),
-      shader: Shader::default(),
-      uniforms: Uniforms::default(),
     }
   }
 }

@@ -18,7 +18,7 @@ const ATTR_TEXCOORD: usize = 0; // vec2
 const ATTR_NORMAL: usize = 0; // vec3
 
 // uniform
-const UNIFORM_COLOR: u32 = 1;
+const UNIFORM_COLOR: u32 = 0;
 const UNIFORM_TEXTURE: u32 = 1;
 
 fn create_renderer(w: u32, h: u32, camera: camera::Camera) -> Box<dyn RendererInterface> {
@@ -181,6 +181,7 @@ fn main() {
 
   run_fltk(move |_| {
     renderer.clear(&Vec4::new(0.0, 0.0, 0.0, 1.0));
+    renderer.clear_depth();
 
     // let texture = texture_store.get_by_id(texture_id);
 

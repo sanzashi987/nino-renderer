@@ -13,6 +13,7 @@ pub struct Viewport {
 
 pub trait RendererDerive {
   fn clear(&mut self, color: &Vec4);
+  fn clear_depth(&mut self);
   fn get_canvas_width(&self) -> u32;
   fn get_canvas_height(&self) -> u32;
   fn get_frame_image(&self) -> &[u8];

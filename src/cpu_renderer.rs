@@ -4,7 +4,7 @@ use crate::{
   bresenham_line,
   camera::Camera,
   cohen_sutherland,
-  image::ColorAttachment,
+  image::{ColorAttachment, DepthAttachment},
   math::{Mat4, Vec2, /* Vec3, */ Vec4},
   renderer::*,
   scanline,
@@ -15,6 +15,7 @@ use crate::{
 #[derive(RendererCommon)]
 pub struct Renderer {
   color: ColorAttachment,
+  depth: DepthAttachment,
   viewport: Viewport,
   camera: Camera,
   shader: Shader,
@@ -93,16 +94,6 @@ impl RendererDraw for Renderer {
   }
 }
 impl Renderer {
-  pub fn new(w: u32, h: u32, camera: Camera) -> Self {
-    Self {
-      camera,
-      viewport: Viewport { x: 0, y: 0, w, h },
-      color: ColorAttachment::new(w, h),
-      shader: Shader::default(),
-      uniforms: Uniforms::default(),
-    }
-  }
-
   fn draw_line(&mut self, p0: &Vec2, p1: &Vec2, color: &Vec4) {
     // let rect_min = Vec2 { x: 50.0, y: 50.0 };
     let rect_min = Vec2::zero();

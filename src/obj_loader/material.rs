@@ -10,7 +10,7 @@ pub struct MtlTextureMaps {
   pub specular_highlight: Option<String>, // map_Ns ...
   pub alpha: Option<String>,              // map_d
   pub refl: Option<String>,               // map_refl
-  pub bump: Option<String>,               // map_Bump
+  pub bump: Option<String>,               // map_Bump  bump map (which by default uses luminance channel of the image)
 }
 
 /**
