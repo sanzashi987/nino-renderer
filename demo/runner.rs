@@ -1,4 +1,4 @@
-use fltk::{self, app::set_visual, enums::Mode, prelude::*, window::Window};
+use fltk::{self, app::set_visual, enums::Mode, prelude::*, text, window::Window};
 
 use nino_renderer::{
   camera::{self, Camera},
@@ -128,7 +128,7 @@ fn main() {
   )
   .unwrap();
 
-  let vertex_data = construct_model_data(&meshes);
+  let model_structures = construct_model_data(&meshes);
 
   for mtllib in &mtllibs {
     for (_, val) in mtllib.materials.iter() {
@@ -136,6 +136,26 @@ fn main() {
         texture_store
           .load(&get_resource_filepath(path), path)
           .unwrap();
+      }
+    }
+  }
+
+  for structure in &model_structures {
+    let uniforms = renderer.get_uniforms();
+    if structure.mtllib.is_some() && structure.material.is_some() {
+      let mtllib = &mtllibs[structure.mtllib.unwrap() as usize];
+      if let Some(material) = mtllib.materials.get(&structure.material.clone().unwrap()) {
+        if let Some(ambient) = material.ambient {
+          uniforms
+            .vec4
+            .insert(UNIFORM_COLOR, Vec4::from_vec3(&ambient, 1.0));
+        }
+
+        if let Some(diffuse) = &material.texture_maps.diffuse {
+          uniforms
+            .texture
+            .insert(UNIFORM_TEXTURE, *texture_store.get_id(diffuse).unwrap());
+        }
       }
     }
   }
@@ -152,7 +172,7 @@ fn main() {
 
     if let Some(texture_id) = u.texture.get(&UNIFORM_TEXTURE) {
       if let Some(texture) = t.get_by_id(*texture_id) {
-        frag_color *= texture_sample(texture, &textcoord);
+        frag_color = texture_sample(texture, &textcoord) * frag_color;
       }
     }
 
@@ -168,8 +188,8 @@ fn main() {
     let model = math::apply_translate(&math::Vec3::new(0.0, 0.0, -4.0))
       * math::apply_eular_rotate_y(rotation.to_radians());
 
-    for data in &vertex_data {
-      renderer.draw_triangle(&model, &data.vertices, 2, &texture_store);
+    for data in &model_structures {
+      renderer.draw_triangle(&model, &data.vertices, &texture_store);
     }
 
     rotation += 1.0;

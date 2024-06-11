@@ -127,7 +127,7 @@ fn main() {
     // // SRT
     let model = model * math::apply_eular_rotate_y(rotation.to_radians());
 
-    renderer.draw_triangle(&model, &vertices, 2, &texture_store);
+    renderer.draw_triangle(&model, &vertices, &texture_store);
     rotation += 1.0;
 
     draw_image(&mut renderer);

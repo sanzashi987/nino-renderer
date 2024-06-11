@@ -70,11 +70,11 @@ impl RendererDraw for Renderer {
     &mut self,
     model: &crate::math::Mat4,
     vertices: &[crate::shader::Vertex],
-    count: u32,
+    // count: u32,
     // texture: Option<&crate::texture::Texture>,
     texture_store: &TextureStore,
   ) {
-    for i in 0..count {
+    for i in 0..vertices.len() / 3_usize {
       let index = (i * 3) as usize;
       let mut vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
 

@@ -25,7 +25,7 @@ pub trait RendererDraw {
     &mut self,
     model: &Mat4,
     vertices: &[Vertex],
-    count: u32,
+    // count: u32,
     // texture: Option<&Texture>,
     texture_store: &TextureStore,
   );
