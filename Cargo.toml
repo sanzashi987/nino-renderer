@@ -1,4 +1,4 @@
-workspace = { members = ["renderer_marco_derive"] }
+workspace = { members = ["renderer_macro_derive"] }
 [package]
 name = "nino-renderer"
 version = "0.1.0"
@@ -8,7 +8,7 @@ edition = "2021"
 
 [dependencies]
 image = "0.24.5"
-renderer_marco_derive = { path = "./renderer_marco_derive" }
+renderer_macro_derive = { path = "./renderer_macro_derive" }
 
 [dev-dependencies]
 # fltk = { version = "1.3.33", features = ["fltk-bundled"] }
@@ -23,6 +23,10 @@ path = "demo/runner.rs"
 [[example]]
 name = "hard-import-runner"
 path = "demo/runner_hard_import.rs"
+
+[[example]]
+name = "macro-playground"
+path = "demo/macro_playground.rs"
 
 [features]
 cpu = []

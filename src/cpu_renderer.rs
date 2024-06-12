@@ -1,4 +1,4 @@
-use renderer_marco_derive::RendererCommon;
+use renderer_macro_derive::renderer;
 
 use crate::{
   bresenham_line,
@@ -12,15 +12,9 @@ use crate::{
   texture::{Texture, TextureStore},
 };
 
-#[derive(RendererCommon)]
-pub struct Renderer {
-  color: ColorAttachment,
-  depth: DepthAttachment,
-  viewport: Viewport,
-  camera: Camera,
-  shader: Shader,
-  uniforms: Uniforms,
-}
+// #[derive(RendererCommon)]
+#[renderer]
+pub struct Renderer;
 
 impl RendererDraw for Renderer {
   fn draw_triangle(

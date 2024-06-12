@@ -381,7 +381,7 @@ version = "0.1.0"
 dependencies = [
  "fltk",
  "image",
- "renderer_marco_derive",
+ "renderer_macro_derive",
 ]
 
 [[package]]
@@ -498,7 +498,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "renderer_marco_derive"
+name = "renderer_macro_derive"
 version = "0.1.0"
 dependencies = [
  "quote",

@@ -1,5 +1,5 @@
 [package]
-name = "renderer_marco_derive"
+name = "renderer_macro_derive"
 version = "0.1.0"
 edition = "2021"
 

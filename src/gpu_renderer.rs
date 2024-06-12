@@ -1,4 +1,4 @@
-use renderer_marco_derive::RendererCommon;
+use renderer_macro_derive::renderer;
 
 use crate::{
   camera::Camera,
@@ -56,15 +56,8 @@ fn perspective_correct_and_barycentric_interpolate(
   attrs
 }
 
-#[derive(RendererCommon)]
-pub struct Renderer {
-  color: ColorAttachment,
-  depth: DepthAttachment,
-  camera: Camera,
-  viewport: Viewport,
-  shader: Shader,
-  uniforms: Uniforms,
-}
+#[renderer]
+struct Renderer;
 
 impl RendererDraw for Renderer {
   fn draw_triangle(

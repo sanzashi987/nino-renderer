@@ -8,7 +8,7 @@ use super::{
   error::{Error, ParseResult},
   face::{Face, Model, Vertex},
   file_content::FileContent,
-  marcos::{parse_num, parse_token, skip_to_next_line},
+  macros::{parse_num, parse_token, skip_to_next_line},
   material::MtlLib,
   token_requester::{TokenRequester, TokenType},
   MtlLibParser,
