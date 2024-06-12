@@ -59,9 +59,9 @@ pub fn renderer_common(input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn renderer(attr: TokenStream, item: TokenStream) -> TokenStream {
-  let c = attr.clone();
-  let attr_ast = parse_macro_input!(attr as AttributeArgs);
+pub fn renderer(_: TokenStream, item: TokenStream) -> TokenStream {
+  // let c = attr.clone();
+  // let attr_ast = parse_macro_input!(attr as AttributeArgs);
   let ast: DeriveInput = syn::parse(item).unwrap();
   let struct_name = ast.ident;
 
