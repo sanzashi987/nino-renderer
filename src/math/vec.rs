@@ -129,6 +129,19 @@ impl Vec3 {
       z: self.x * rhs.y - self.y * rhs.x,
     }
   }
+
+  pub fn x_axis() -> &'static Self {
+    const X: Vec3 = Vec3::new(1.0, 0.0, 0.0);
+    &X
+  }
+  pub fn y_axis() -> &'static Self {
+    const Y: Vec3 = Vec3::new(0.0, 1.0, 0.0);
+    &Y
+  }
+  pub fn z_axis() -> &'static Self {
+    const Z: Vec3 = Vec3::new(0.0, 0.0, 1.0);
+    &Z
+  }
 }
 
 impl Vec4 {
