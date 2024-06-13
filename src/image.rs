@@ -65,6 +65,10 @@ impl PureElemImage<f32> {
   pub fn set(&mut self, x: u32, y: u32, value: f32) {
     self.data[(x + y * self.w) as usize] = value;
   }
+
+  pub fn get(&mut self, x: u32, y: u32) -> f32 {
+    self.data[(x + y * self.w) as usize]
+  }
 }
 
 pub type ColorAttachment = PureElemImage<u8>;

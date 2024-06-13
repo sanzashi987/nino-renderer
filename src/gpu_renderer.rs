@@ -22,13 +22,10 @@ use crate::{
  * ==> attr_interpolated = (alpha * attr0 / Z0 +  beta * attr1 / Z1 +  gamma * attr2 / Z2) * Z
  */
 fn perspective_correct_and_barycentric_interpolate(
+  z:f32,
   vertices: &[Vertex; 3],
   barycentric: &Barycentric,
 ) -> Attributes {
-  let inv_z = barycentric.alpha() / vertices[0].position.z
-              + barycentric.beta() / vertices[1].position.z
-              + barycentric.gamma() / vertices[2].position.z;
-  let z = 1.0 / inv_z;
   let mut attrs = Attributes::default();
 
   for index in 0..attrs.float.len() {
@@ -177,13 +174,22 @@ impl RendererDraw for Renderer {
             //   None => {}
             // }
 
-            let attr = perspective_correct_and_barycentric_interpolate(&vertices, &barycentric);
+            let inv_z = barycentric.alpha() / vertices[0].position.z
+              + barycentric.beta() / vertices[1].position.z
+              + barycentric.gamma() / vertices[2].position.z;
+            let z = 1.0 / inv_z;
 
-            let color = self
-              .shader
-              .call_fragment_shading(&attr, &self.uniforms, texture_store);
+            if (self.depth.get(x, y) <= z) {
+              let attr =
+                perspective_correct_and_barycentric_interpolate(z, &vertices, &barycentric);
 
-            self.color.set(x, y, &color);
+              let color = self
+                .shader
+                .call_fragment_shading(&attr, &self.uniforms, texture_store);
+              self.color.set(x, y, &color);
+              // update the closer depth from the cammer
+              self.depth.set(x, y, z);
+            }
           }
         }
       }

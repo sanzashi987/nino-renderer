@@ -135,26 +135,29 @@ impl Renderer {
     let mut vertex = scanline.vertex;
     let y: u32 = scanline.y as u32;
     let mut width = scanline.width;
-    let border = self.color.width() as f32;
     while width > 0.0 {
       let x = vertex.position.x;
-      if x >= 0.0 && x < border {
-        // local copy
-        let mut attr_local = vertex.attributes;
+      if x >= 0.0 && x < self.color.width() as f32 {
+        let real_z = 1.0 / vertex.position.z;
+        if self.depth.get(x as u32, y) <= real_z {
+          // local copy
+          let mut attr_local = vertex.attributes;
 
-        // perspective correction restore with `z`(precompute and store in `z` inside the `rhw_init`)
-        attributes_foreach(&mut attr_local, |v| v / vertex.position.z);
+          // perspective correction restore with `z`(precompute and store in `z` inside the `rhw_init`)
+          attributes_foreach(&mut attr_local, |v| v / vertex.position.z);
 
-        // let textcoord = attr_local.vec2[ATTR_TEXCOORD];
-        // let color = attr_local.vec4[ATTR_COLOR]
-        //   * match texture {
-        //     Some(texture) => renderer::texture_sample(&texture, &textcoord),
-        //     None => Vec4::new(1.0, 1.0, 1.0, 1.0),
-        //   };
-        let color = self
-          .shader
-          .call_fragment_shading(&attr_local, &self.uniforms, texture_store);
-        self.color.set(x as u32, y, &color);
+          // let textcoord = attr_local.vec2[ATTR_TEXCOORD];
+          // let color = attr_local.vec4[ATTR_COLOR]
+          //   * match texture {
+          //     Some(texture) => renderer::texture_sample(&texture, &textcoord),
+          //     None => Vec4::new(1.0, 1.0, 1.0, 1.0),
+          //   };
+          let color = self
+            .shader
+            .call_fragment_shading(&attr_local, &self.uniforms, texture_store);
+          self.color.set(x as u32, y, &color);
+          self.depth.set(x as u32, y, real_z);
+        }
       }
 
       width -= 1.0;
