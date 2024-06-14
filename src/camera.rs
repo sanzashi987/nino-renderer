@@ -65,16 +65,41 @@ impl Camera {
     }
   }
 
+  pub fn move_to(&mut self, position: Vec3) {
+    self.position = position;
+    self.compute_view_matrix();
+  }
+
+  pub fn move_delta(&mut self, delta: Vec3) {
+    self.position += delta;
+    self.compute_view_matrix();
+  }
+
   pub fn set_rotation(&mut self, rotation: Vec3) {
     self.rotation = rotation;
     self.compute_view_matrix();
+  }
+
+  pub fn lookat(&mut self, point: Vec3) {
+    // if location as (0,0,1) and look at 0,0,0, then direction is 0,0,-1
+    // and reverse(back) is 0,0,1
+    let back = (self.position - point).normalize();
+    self.view_direction = -back;
+    let dir = point - self.position;
+
+    // 0,1,0
+    let up = Vec3::y_axis();
+    // -1,0,0
+    let right = up.cross(&back).normalize();
+    // 0,1,0
+    let up = back.cross(&right).normalize();
   }
 
   pub fn compute_view_matrix(&mut self) {
     let rotation = math::apply_eular_rotate_xyz(&self.rotation);
     //SRT
     self.view_matarix = rotation * math::apply_translate(&self.position);
-    // always compute from minus z axis 
+    // always compute from minus z axis
     self.view_direction = (rotation * math::Vec4::new(0.0, 0.0, -1.0, 1.0)).truncated_to_vec3();
   }
 

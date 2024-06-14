@@ -46,10 +46,10 @@ pub fn clip(p1: &Vec2, p2: &Vec2, rect_min: &Vec2, rect_max: &Vec2) -> Option<(V
     };
 
     if outcode & TOP != 0 {
-      p.x = p1.x + (pt2.x - pt1.x) * (rect_max.y - pt1.y) / (pt2.y - pt1.y);
+      p.x = pt1.x + (pt2.x - pt1.x) * (rect_max.y - pt1.y) / (pt2.y - pt1.y);
       p.y = rect_max.y;
     } else if outcode & BOTTOM != 0 {
-      p.x = p1.x + (pt2.x - pt1.x) * (rect_min.y - pt1.y) / (pt2.y - pt1.y);
+      p.x = pt1.x + (pt2.x - pt1.x) * (rect_min.y - pt1.y) / (pt2.y - pt1.y);
       p.y = rect_min.y;
     } else if outcode & RIGHT != 0 {
       p.y = pt1.y + (pt2.y - pt1.y) * (rect_max.x - pt1.x) / (pt2.x - pt1.x);
