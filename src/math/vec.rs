@@ -87,6 +87,13 @@ macro_rules! define_vec {
       pub fn normalize(&self) -> $name {
         *self / self.length()
       }
+
+      pub fn dot(&self, rhs: &$name) -> f32 {
+        $(
+            self.$var * rhs.$var +
+        )+
+        0.0
+      }
     }
 
     impl Neg for $name {

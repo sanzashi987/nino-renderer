@@ -1,5 +1,5 @@
 use crate::{
-  math::{Mat4, Vec2, Vec4},
+  math::{Mat4, Vec2, Vec3, Vec4},
   shader::{Shader, Uniforms, Vertex},
   texture::{Texture, TextureStore},
 };
@@ -39,4 +39,36 @@ pub fn texture_sample(texture: &Texture, textcoord: &Vec2) -> Vec4 {
   let y = (textcoord.y * (texture.height() - 1) as f32) as u32;
 
   texture.get_pixel(x, y)
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum FaceCull {
+  Front,
+  Back,
+  None,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum FrontFace {
+  CW,
+  CCW,
+}
+
+pub(crate) fn should_cull(
+  positions: &[Vec3; 3],
+  view_direction: Vec3,
+  face: FrontFace,
+  cull: FaceCull,
+) -> bool {
+  let norm = (positions[1] - positions[0]).cross(&(positions[2] - positions[1]));
+  let is_front_face = match face {
+    FrontFace::CW => norm.dot(&view_direction) > 0.0,
+    FrontFace::CCW => norm.dot(&view_direction) <= 0.0,
+  };
+
+  match cull {
+    FaceCull::Front => is_front_face,
+    FaceCull::Back => !is_front_face,
+    FaceCull::None => false,
+  }
 }
