@@ -16,6 +16,12 @@ use crate::{
 #[renderer]
 pub struct Renderer;
 
+enum RasterizeResult {
+  Ok,
+  Discard,
+  GenerateNewFace,
+}
+
 impl RendererDraw for Renderer {
   fn draw_triangle(
     &mut self,
@@ -40,6 +46,10 @@ impl RendererDraw for Renderer {
       }
       for v in &mut vertices {
         v.position = *model * v.position;
+      }
+
+      if should_cull(positions, view_direction, face, cull) {
+        return RasterizeResult::Discard;
       }
 
       // projection

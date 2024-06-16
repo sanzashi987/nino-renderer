@@ -5,7 +5,7 @@ use crate::{
   image::{ColorAttachment, DepthAttachment},
   math::{self, Barycentric, Vec2},
   renderer::*,
-  shader::{Attributes, Shader, Uniforms, Vertex},
+  shader::{vertex_rhw_init, Attributes, Shader, Uniforms, Vertex},
   texture::TextureStore,
 };
 
@@ -146,6 +146,18 @@ impl RendererDraw for Renderer {
         })
         .floor()
         .min(self.color.height() as f32 - 1.0);
+
+      if self.framework_mode {
+        for j in 0..3 {
+          let mut v1 = vertices[j];
+          let mut v2 = vertices[(j + 1) % 3];
+
+          vertex_rhw_init(&mut v1);
+          vertex_rhw_init(&mut v2);
+        }
+
+        return;
+      }
 
       for x in (aabb_min_x as u32)..(aabb_max_x as u32) {
         for y in (aabb_min_y as u32)..(aabb_max_y as u32) {

@@ -88,6 +88,7 @@ pub fn renderer(_: TokenStream, item: TokenStream) -> TokenStream {
       pub viewport: Viewport,
       pub shader: Shader,
       pub uniforms: Uniforms,
+      pub framework_mode:bool,
     }
 
     impl #struct_name {
@@ -99,6 +100,7 @@ pub fn renderer(_: TokenStream, item: TokenStream) -> TokenStream {
           depth:  DepthAttachment::new(w, h),
           shader: Default::default(),
           uniforms: Default::default(),
+          framework_mode: Default::default(),
         }
       }
     }
@@ -132,6 +134,19 @@ pub fn renderer(_: TokenStream, item: TokenStream) -> TokenStream {
       fn get_uniforms(&mut self) -> &mut Uniforms {
         &mut self.uniforms
       }
+
+      fn enable_framework(&mut self) {
+        self.framework_mode = true;
+      }
+
+      fn disable_framework(&mut self) {
+        self.framework_mode = false;
+      }
+
+      fn toggle_framework(&mut self) {
+        self.framework_mode = !self.framework_mode;
+      }
+
     }
     impl RendererInterface for Renderer {}
 

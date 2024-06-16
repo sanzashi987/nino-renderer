@@ -19,6 +19,9 @@ pub trait RendererDerive {
   fn get_frame_image(&self) -> &[u8];
   fn get_shader(&mut self) -> &mut Shader;
   fn get_uniforms(&mut self) -> &mut Uniforms;
+  fn enable_framework(&mut self);
+  fn disable_framework(&mut self);
+  fn toggle_framework(&mut self);
 }
 
 pub trait RendererDraw {
@@ -50,7 +53,13 @@ pub enum FaceCull {
 
 #[derive(Clone, Copy, Debug)]
 pub enum FrontFace {
+  /**
+   * clockwise
+   */
   CW,
+  /**
+   * counter clockwise
+   */
   CCW,
 }
 
