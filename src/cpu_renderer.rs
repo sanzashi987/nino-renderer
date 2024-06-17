@@ -1,3 +1,4 @@
+use fltk::app::sleep;
 use renderer_macro_derive::renderer;
 
 use crate::{
@@ -16,77 +17,98 @@ use crate::{
 #[renderer]
 pub struct Renderer;
 
-enum RasterizeResult {
-  Ok,
-  Discard,
-  GenerateNewFace,
-}
-
 impl RendererDraw for Renderer {
-  fn draw_triangle(
-    &mut self,
-    model: &Mat4,
-    vertices: &[Vertex],
-    // texture: Option<&Texture>,
-    texture_store: &TextureStore,
-  ) {
+  fn draw_triangle(&mut self, model: &Mat4, vertices: &[Vertex], texture_store: &TextureStore) {
     for i in 0..vertices.len() / 3_usize {
       let index = (i * 3) as usize;
-
       let mut vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
-
-      let frustum = self.camera.get_frustum();
-
-      // mv
-      for v in &mut vertices {
-        // v.position = *model * v.position;
-        *v = self
-          .shader
-          .call_vertex_shading(v, &self.uniforms, texture_store);
-      }
-      for v in &mut vertices {
-        v.position = *model * v.position;
-      }
-
-      if should_cull(positions, view_direction, face, cull) {
-        return RasterizeResult::Discard;
-      }
-
-      // projection
-      for v in &mut vertices {
-        v.position = *frustum.get_mat() * v.position;
-      }
-
-      // restore z from w (original z in 3D)
-      for v in &mut vertices {
-        v.position.z = -v.position.w * frustum.near();
-      }
-
-      // restore y/x from w (projected x,y in 2D)
-      for v in &mut vertices {
-        v.position.x /= v.position.w;
-        v.position.y /= v.position.w;
-        v.position.w = 1.0;
-      }
-
-      // viewport affine, from [-1, 1]^2 to [0, W - 1] x [0, H - 1]
-      for v in &mut vertices {
-        v.position.x =
-          (v.position.x + 1.0) * 0.5 * (self.viewport.w as f32 - 1.0) + self.viewport.x as f32;
-        v.position.y =
-          (v.position.y + 1.0) * 0.5 * (self.viewport.h as f32 - 1.0) + self.viewport.y as f32;
-      }
-
-      // for each triangle , cut in two possible trapezoid
-      let [trap1, trap2] = &mut scanline::Trapezoid::from_triangle(&vertices);
-      // rasterization
-      if let Some(trap) = trap1 {
-        self.draw_trapezoid(trap, texture_store);
-      }
-      if let Some(trap) = trap2 {
-        self.draw_trapezoid(trap, texture_store);
+      match self.rasterize_triangle(model, vertices, texture_store) {
+        RasterizeResult::Ok | RasterizeResult::Discard => {}
+        RasterizeResult::GenerateNewFace => todo!(),
       }
     }
+  }
+}
+impl Renderer {
+  fn rasterize_triangle(
+    &mut self,
+    model: &Mat4,
+    mut vertices: [Vertex; 3],
+    // texture: Option<&Texture>,
+    texture_store: &TextureStore,
+  ) -> RasterizeResult {
+    let frustum = self.camera.get_frustum();
+
+    for v in &mut vertices {
+      // v.position = *model * v.position;
+      *v = self
+        .shader
+        .call_vertex_shading(v, &self.uniforms, texture_store);
+    }
+
+    // M transform
+    for v in &mut vertices {
+      v.position = *model * v.position;
+    }
+
+    // cull clip
+    if should_cull(
+      &vertices.map(|v| v.position.truncated_to_vec3()),
+      *self.camera.get_view_direction(),
+      self.front_face,
+      self.cull,
+    ) {
+      return RasterizeResult::Discard;
+    }
+
+    // View Transform
+    for v in &mut vertices {
+      v.position = *self.camera.get_view_matarix() * v.position;
+    }
+
+    // Projection transform
+    for v in &mut vertices {
+      v.position = *frustum.get_mat() * v.position;
+    }
+
+    // frustum clip
+    if vertices
+      .iter()
+      .all(|v| !frustum.contains(&v.truncated_to_vec3()))
+    {
+      return RasterizeResult::Discard;
+    }
+
+    // restore z from w (original z in 3D)
+    for v in &mut vertices {
+      v.position.z = -v.position.w * frustum.near();
+    }
+
+    // restore y/x from w (projected x,y in 2D)
+    for v in &mut vertices {
+      v.position.x /= v.position.w;
+      v.position.y /= v.position.w;
+      v.position.w = 1.0;
+    }
+
+    // viewport affine, from [-1, 1]^2 to [0, W - 1] x [0, H - 1]
+    for v in &mut vertices {
+      v.position.x =
+        (v.position.x + 1.0) * 0.5 * (self.viewport.w as f32 - 1.0) + self.viewport.x as f32;
+      v.position.y =
+        (v.position.y + 1.0) * 0.5 * (self.viewport.h as f32 - 1.0) + self.viewport.y as f32;
+    }
+
+    // for each triangle , cut in two possible trapezoid
+    let [trap1, trap2] = &mut scanline::Trapezoid::from_triangle(&vertices);
+    // rasterization
+    if let Some(trap) = trap1 {
+      self.draw_trapezoid(trap, texture_store);
+    }
+    if let Some(trap) = trap2 {
+      self.draw_trapezoid(trap, texture_store);
+    }
+    RasterizeResult::Ok
 
     // let length = vertices.len();
     // for i in 0..length {

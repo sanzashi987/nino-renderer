@@ -81,3 +81,9 @@ pub(crate) fn should_cull(
     FaceCull::None => false,
   }
 }
+
+pub enum RasterizeResult {
+  Ok,
+  Discard,
+  GenerateNewFace,
+}

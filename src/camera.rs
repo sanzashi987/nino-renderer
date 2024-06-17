@@ -1,19 +1,23 @@
 use crate::math::{self, Mat4, Vec3};
 pub struct Frustum {
   near: f32,
+  far: f32,
   aspect: f32,
   fov: f32,
-
   mat: Mat4,
 }
 
 impl Frustum {
   #[rustfmt::skip]
+  /**
+   * fov => the angle from right/left plane to the camera direction
+   */
   pub fn new(near: f32,far: f32, aspect: f32, fov: f32) -> Frustum {
     Self{
       near,
       aspect,
       fov,
+      far,
       mat:if cfg!(feature="cpu"){
           let a = 1.0 / (near * fov.tan());
           // without far plane, clamp x,y in [-1, 1]^2, z= near
@@ -43,6 +47,24 @@ impl Frustum {
 
   pub fn near(&self) -> f32 {
     self.near
+  }
+
+  pub fn contains(&self, pt: &Vec3) -> bool {
+    let half_width = self.near * self.fov.tan();
+    let half_height = half_width / self.aspect;
+    // let h_fovy_cos = self.fov.cos();
+    // let h_fovy_sin = self.fov.sin();
+
+    // right  plane normal (half_width,0,-near) x (0, 1, 0) = (near , 0 , half_width)
+    // left   plane normal (-half_width, 0, -near) x ((0, -1, 0)  = (-near, 0 , half_width)
+    // top    plane normal (0, half_height, -near) x (-1, 0, 0) = (0 , near, half_heigth)
+    // bottom plane normal (0, -half_height, -near) x (1, 0, 0) = (0 , -near, half_heigth)
+    !(Vec3::new(self.near, 0.0, half_width).dot(pt) >= 0.0
+      || Vec3::new(-self.near, 0.0, half_width).dot(pt) >= 0.0
+      || Vec3::new(0.0, self.near, half_height).dot(pt) >= 0.0
+      || Vec3::new(0.0, -self.near, half_height).dot(pt) >= 0.0
+      || pt.z >= -self.near
+      || pt.z <= -self.far)
   }
 }
 

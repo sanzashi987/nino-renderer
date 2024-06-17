@@ -59,6 +59,10 @@ impl Vertex {
   pub fn truncated_to_vec2(&self) -> Vec2 {
     self.position.truncated_to_vec2()
   }
+
+  pub fn truncated_to_vec3(&self) -> Vec3 {
+    self.position.truncated_to_vec3()
+  }
 }
 
 // perspective correction in advance

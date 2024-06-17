@@ -89,6 +89,8 @@ pub fn renderer(_: TokenStream, item: TokenStream) -> TokenStream {
       pub shader: Shader,
       pub uniforms: Uniforms,
       pub framework_mode:bool,
+      pub front_face: FrontFace,
+      pub cull: FaceCull
     }
 
     impl #struct_name {
@@ -101,6 +103,8 @@ pub fn renderer(_: TokenStream, item: TokenStream) -> TokenStream {
           shader: Default::default(),
           uniforms: Default::default(),
           framework_mode: Default::default(),
+          front_face:FrontFace::CW,
+          cull: FaceCull::None
         }
       }
     }
