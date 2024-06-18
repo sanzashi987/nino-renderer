@@ -90,6 +90,7 @@ pub fn renderer(_: TokenStream, item: TokenStream) -> TokenStream {
       pub uniforms: Uniforms,
       pub framework_mode:bool,
       pub front_face: FrontFace,
+      pub cliped_triangles: Vec<Vertex>,
       pub cull: FaceCull
     }
 
@@ -104,7 +105,8 @@ pub fn renderer(_: TokenStream, item: TokenStream) -> TokenStream {
           uniforms: Default::default(),
           framework_mode: Default::default(),
           front_face:FrontFace::CW,
-          cull: FaceCull::None
+          cull: FaceCull::None,
+          cliped_triangles: vec![],
         }
       }
     }

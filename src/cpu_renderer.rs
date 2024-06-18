@@ -1,4 +1,3 @@
-use fltk::app::sleep;
 use renderer_macro_derive::renderer;
 
 use crate::{
@@ -8,7 +7,7 @@ use crate::{
   image::{ColorAttachment, DepthAttachment},
   math::{Mat4, Vec2, /* Vec3, */ Vec4},
   renderer::*,
-  scanline,
+  scanline::{self, near_plane_clip},
   shader::{self, attributes_foreach, Shader, Uniforms, Vertex},
   texture::{Texture, TextureStore},
 };
@@ -21,10 +20,25 @@ impl RendererDraw for Renderer {
   fn draw_triangle(&mut self, model: &Mat4, vertices: &[Vertex], texture_store: &TextureStore) {
     for i in 0..vertices.len() / 3_usize {
       let index = (i * 3) as usize;
-      let mut vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
+      let vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
       match self.rasterize_triangle(model, vertices, texture_store) {
         RasterizeResult::Ok | RasterizeResult::Discard => {}
-        RasterizeResult::GenerateNewFace => todo!(),
+        RasterizeResult::GenerateNewFace => {
+          for i in 0..self.cliped_triangles.len() / 3 {
+            let vs = [
+              self.cliped_triangles[i * 3],
+              self.cliped_triangles[i * 3 + 1],
+              self.cliped_triangles[i * 3 + 2],
+            ];
+            match self.rasterize_triangle(model, vs, texture_store) {
+              RasterizeResult::Ok => {}
+              RasterizeResult::Discard | RasterizeResult::GenerateNewFace => {
+                panic!("discard or generate new face for clipped face")
+              }
+            }
+          }
+          self.cliped_triangles.clear();
+        }
       }
     }
   }
@@ -54,7 +68,7 @@ impl Renderer {
     // cull clip
     if should_cull(
       &vertices.map(|v| v.position.truncated_to_vec3()),
-      *self.camera.get_view_direction(),
+      self.camera.get_view_direction(),
       self.front_face,
       self.cull,
     ) {
@@ -77,6 +91,21 @@ impl Renderer {
       .all(|v| !frustum.contains(&v.truncated_to_vec3()))
     {
       return RasterizeResult::Discard;
+    }
+
+    // near plane clip
+
+    if vertices
+      .iter()
+      .any(|v| v.position.z > self.camera.get_frustum().near())
+    {
+      let (face1, face2) = near_plane_clip(&vertices, self.camera.get_frustum().near());
+
+      self.cliped_triangles.extend(face1.iter());
+      if let Some(face) = face2 {
+        self.cliped_triangles.extend(face.iter());
+      }
+      return RasterizeResult::GenerateNewFace;
     }
 
     // restore z from w (original z in 3D)

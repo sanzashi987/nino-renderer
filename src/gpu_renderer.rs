@@ -3,7 +3,7 @@ use renderer_macro_derive::renderer;
 use crate::{
   camera::Camera,
   image::{ColorAttachment, DepthAttachment},
-  math::{self, Barycentric, Vec2},
+  math::{self, Barycentric, Vec2, Vec3},
   renderer::*,
   shader::{vertex_rhw_init, Attributes, Shader, Uniforms, Vertex},
   texture::TextureStore,
@@ -68,7 +68,7 @@ impl RendererDraw for Renderer {
     for i in 0..vertices.len() / 3_usize {
       let index = (i * 3) as usize;
       let mut vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
-
+      let frustum = self.camera.get_frustum();
       for v in &mut vertices {
         *v = self
           .shader
@@ -80,7 +80,21 @@ impl RendererDraw for Renderer {
       }
 
       for v in &mut vertices {
-        v.position = *self.camera.get_frustum().get_mat() * v.position;
+        v.position = *self.camera.get_view_matarix() * v.position
+      }
+
+      for v in &mut vertices {
+        v.position = *frustum.get_mat() * v.position;
+      }
+
+      if should_cull(
+        &vertices.map(|v| v.position.truncated_to_vec3()),
+        // *Vec3::z_axis() * -1_f32,
+        self.camera.get_view_direction(),
+        self.front_face,
+        self.cull,
+      ) {
+        continue;
       }
 
       for v in &mut vertices {

@@ -65,7 +65,7 @@ pub enum FrontFace {
 
 pub(crate) fn should_cull(
   positions: &[Vec3; 3],
-  view_direction: Vec3,
+  view_direction: &Vec3,
   face: FrontFace,
   cull: FaceCull,
 ) -> bool {
