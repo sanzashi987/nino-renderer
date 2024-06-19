@@ -1,4 +1,4 @@
-use crate::math::{self, Mat4, Vec3};
+use crate::math::{self, Mat4, Vec3, Vec4};
 pub struct Frustum {
   near: f32,
   far: f32,
@@ -102,19 +102,52 @@ impl Camera {
     self.compute_view_matrix();
   }
 
+  #[rustfmt::skip]
   pub fn lookat(&mut self, point: Vec3) {
-    // if location as (0,0,1) and look at 0,0,0, then direction is 0,0,-1
-    // and reverse(back) is 0,0,1
+    // the reverse for the looking at vector represents the equivalance of the +z
     let back = (self.position - point).normalize();
     self.view_direction = -back;
-    let dir = point - self.position;
 
     // 0,1,0
     let up = Vec3::y_axis();
-    // -1,0,0
+    //  up x back = right basis
     let right = up.cross(&back).normalize();
-    // 0,1,0
+    //  back x right= top basis
     let up = back.cross(&right).normalize();
+
+    // Ro ==> Rc, B_Ro = [xa,ya,za] => B_Rc = [xa',ya',za'] = [right,up,back],  B_Rc^-1 = B_Rc^T = [right^T]
+    //                   [xb,yb,zb]           [xb',yb',zb']                                        [  up^T ]  
+    //                   [xc,yc,zc]           [xc',yc',zc']                                        [ back^T]   
+    // posture = T · R · S · Standard   ===> Standard = S^-1 · R^-1 · T^-1 · posture
+    // (R^-1 · T^-1) aka ViewMatrix
+    // R^-1 =  B_Rc^-1 = B_Rc^T = [right.x, right.y, right.z,  0.0]   T^-1 = [1.0, 0.0, 0.0, -1 * position.x] 
+    //                            [   up.x,    up.y,    up.z,  0.0]          [0.0, 1.0, 0.0, -1 * position.y]
+    //                            [ back.x,  back.y,  back.z,  0.0]          [0.0, 0.0, 1.0, -1 * position.z]
+    //                            [    0.0,     0.0,     0.0,  1.0]          [0.0, 0.0, 0.0,             1.0]
+    //
+    // then R^-1 x T^-1  will have the form below
+    self.view_matarix = Mat4::from_row(&[
+      right.x, right.y, right.z, -right.dot(&self.position),
+      up.x,    up.y,    up.z,    -up.dot(&self.position),
+      back.x,  back.y,  back.z,  -back.dot(&self.position),
+      0.0,     0.0,     0.0,                        1.0,
+    ]);
+
+    let looking_at = point - self.position;
+
+    // calculate the angle to the rotating axis
+    // a · b = ||a||·||b||·cosθ (if a & b normalized) ===> θ = arccose(a · b)
+    // x is the rotating axis
+    let angle_to_y = Vec3::y_axis().dot(&Vec3::new(0.0,looking_at.y, looking_at.z).normalize()).acos();
+    // y is the rotating axis
+    let angle_to_z = Vec3::z_axis().dot(&Vec3::new(looking_at.x, 0.0, looking_at.z).normalize()).acos();
+    // z is the rotating axis
+    let angle_to_x = Vec3::x_axis().dot(&Vec3::new(looking_at.x, looking_at.y, 0.0).normalize()).acos();
+    
+    self.view_direction = -back;
+
+    self.rotation = math::Vec3::new(angle_to_y, angle_to_z, angle_to_x);
+
   }
 
   pub fn compute_view_matrix(&mut self) {
