@@ -1,6 +1,8 @@
 use crate::{
+  image::{ColorAttachment, DepthAttachment},
+  line::Line,
   math::{Mat4, Vec2, Vec3, Vec4},
-  shader::{Shader, Uniforms, Vertex},
+  shader::{vertex_rhw_init, FragmentShading, Shader, Uniforms, Vertex},
   texture::{Texture, TextureStore},
 };
 
@@ -88,8 +90,23 @@ pub enum RasterizeResult {
   GenerateNewFace,
 }
 
-pub(crate) fn rasterize_framework(vertices: &[Vertex; 3]) {
+pub(crate) fn rasterize_wireframe(
+  vertices: &[Vertex; 3],
+  line: Line,
+  fragment_shader: &FragmentShading,
+  uniforms: &Uniforms,
+  texture_store: &TextureStore,
+  color: &mut ColorAttachment,
+  depth: &mut DepthAttachment,
+) {
+  // 0-1, 1-2, 2-0
   for i in 0..3 {
+    let mut v1 = vertices[i];
+    let mut v2 = vertices[(i + 1) % 3];
 
+    vertex_rhw_init(&mut v1);
+    vertex_rhw_init(&mut v2);
+    let line = Line::new(v1, v2);
+    
   }
 }
