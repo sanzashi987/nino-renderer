@@ -161,7 +161,7 @@ impl RendererDraw for Renderer {
         .floor()
         .min(self.color.height() as f32 - 1.0);
 
-      if self.framework_mode {
+      if self.wireframe_mode {
         for j in 0..3 {
           let mut v1 = vertices[j];
           let mut v2 = vertices[(j + 1) % 3];

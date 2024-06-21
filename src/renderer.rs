@@ -19,9 +19,9 @@ pub trait RendererDerive {
   fn get_frame_image(&self) -> &[u8];
   fn get_shader(&mut self) -> &mut Shader;
   fn get_uniforms(&mut self) -> &mut Uniforms;
-  fn enable_framework(&mut self);
-  fn disable_framework(&mut self);
-  fn toggle_framework(&mut self);
+  fn enable_wireframe(&mut self);
+  fn disable_wireframe(&mut self);
+  fn toggle_wireframe(&mut self);
 }
 
 pub trait RendererDraw {
@@ -86,4 +86,10 @@ pub enum RasterizeResult {
   Ok,
   Discard,
   GenerateNewFace,
+}
+
+pub(crate) fn rasterize_framework(vertices: &[Vertex; 3]) {
+  for i in 0..3 {
+
+  }
 }

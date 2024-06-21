@@ -88,7 +88,7 @@ pub fn renderer(_: TokenStream, item: TokenStream) -> TokenStream {
       pub viewport: Viewport,
       pub shader: Shader,
       pub uniforms: Uniforms,
-      pub framework_mode:bool,
+      pub wireframe_mode: bool,
       pub front_face: FrontFace,
       pub cliped_triangles: Vec<Vertex>,
       pub cull: FaceCull
@@ -103,7 +103,7 @@ pub fn renderer(_: TokenStream, item: TokenStream) -> TokenStream {
           depth:  DepthAttachment::new(w, h),
           shader: Default::default(),
           uniforms: Default::default(),
-          framework_mode: Default::default(),
+          wireframe_mode: Default::default(),
           front_face:FrontFace::CW,
           cull: FaceCull::None,
           cliped_triangles: vec![],
@@ -141,16 +141,16 @@ pub fn renderer(_: TokenStream, item: TokenStream) -> TokenStream {
         &mut self.uniforms
       }
 
-      fn enable_framework(&mut self) {
-        self.framework_mode = true;
+      fn enable_wireframe(&mut self) {
+        self.wireframe_mode = true;
       }
 
-      fn disable_framework(&mut self) {
-        self.framework_mode = false;
+      fn disable_wireframe(&mut self) {
+        self.wireframe_mode = false;
       }
 
-      fn toggle_framework(&mut self) {
-        self.framework_mode = !self.framework_mode;
+      fn toggle_wireframe(&mut self) {
+        self.wireframe_mode = !self.wireframe_mode;
       }
 
     }

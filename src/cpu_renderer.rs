@@ -94,7 +94,6 @@ impl Renderer {
     }
 
     // near plane clip
-
     if vertices
       .iter()
       .any(|v| v.position.z > self.camera.get_frustum().near())
@@ -128,14 +127,21 @@ impl Renderer {
         (v.position.y + 1.0) * 0.5 * (self.viewport.h as f32 - 1.0) + self.viewport.y as f32;
     }
 
-    // for each triangle , cut in two possible trapezoid
-    let [trap1, trap2] = &mut scanline::Trapezoid::from_triangle(&vertices);
-    // rasterization
-    if let Some(trap) = trap1 {
-      self.draw_trapezoid(trap, texture_store);
-    }
-    if let Some(trap) = trap2 {
-      self.draw_trapezoid(trap, texture_store);
+    if self.wireframe_mode {
+      for i in 0..3 {
+        let mut v1 = vertices[i];
+        let mut v2 = vertices[(i + 1) % 3];
+      }
+    } else {
+      // for each triangle , cut in two possible trapezoid
+      let [trap1, trap2] = &mut scanline::Trapezoid::from_triangle(&vertices);
+      // rasterization
+      if let Some(trap) = trap1 {
+        self.draw_trapezoid(trap, texture_store);
+      }
+      if let Some(trap) = trap2 {
+        self.draw_trapezoid(trap, texture_store);
+      }
     }
     RasterizeResult::Ok
 
