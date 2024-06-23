@@ -51,3 +51,41 @@ pub fn draw_line(
 
   // if y1 - y0 > x1 - x0 {}
 }
+
+struct Bresenham {
+  final_x: i32,
+  x: i32,
+  y: i32,
+  steep: i32,
+  step: i32,
+  e: i32,
+  sy: i32,
+  sx: i32,
+  desc: i32,
+}
+
+impl Iterator for Bresenham {
+  type Item = (i32, i32);
+
+  fn next(&mut self) -> Option<Self::Item> {
+    if self.x == self.final_x {
+      return None;
+    }
+
+    let result = if self.steep > 0 {
+      (self.y, self.x)
+    } else {
+      (self.x, self.y)
+    };
+
+    self.e += self.step;
+    if self.e >= 0 {
+      self.y += self.sy;
+      self.e += self.desc;
+    }
+
+    self.x = self.sx;
+
+    Some(result)
+  }
+}
