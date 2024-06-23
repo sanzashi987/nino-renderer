@@ -128,10 +128,14 @@ impl Renderer {
     }
 
     if self.wireframe_mode {
-      for i in 0..3 {
-        let mut v1 = vertices[i];
-        let mut v2 = vertices[(i + 1) % 3];
-      }
+      rasterize_wireframe(
+        &vertices,
+        &self.shader.fragment_shading,
+        &self.uniforms,
+        texture_store,
+        &mut self.color,
+        &mut self.depth,
+      );
     } else {
       // for each triangle , cut in two possible trapezoid
       let [trap1, trap2] = &mut scanline::Trapezoid::from_triangle(&vertices);

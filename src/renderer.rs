@@ -1,8 +1,14 @@
+use std::collections::btree_set::Iter;
+
 use crate::{
+  bresenham_line::Bresenham,
   image::{ColorAttachment, DepthAttachment},
   line::Line,
   math::{Mat4, Vec2, Vec3, Vec4},
-  shader::{vertex_rhw_init, FragmentShading, Shader, Uniforms, Vertex},
+  shader::{
+    attributes_foreach, interp_attributes, vertex_rhw_init, FragmentShading, Shader, Uniforms,
+    Vertex,
+  },
   texture::{Texture, TextureStore},
 };
 
@@ -92,7 +98,7 @@ pub enum RasterizeResult {
 
 pub(crate) fn rasterize_wireframe(
   vertices: &[Vertex; 3],
-  line: Line,
+  // line: Line,
   fragment_shader: &FragmentShading,
   uniforms: &Uniforms,
   texture_store: &TextureStore,
@@ -107,6 +113,39 @@ pub(crate) fn rasterize_wireframe(
     vertex_rhw_init(&mut v1);
     vertex_rhw_init(&mut v2);
     let line = Line::new(v1, v2);
-    
+    let mut bresenham = Bresenham::new(
+      line.start.position.truncated_to_vec2(),
+      line.end.position.truncated_to_vec2(),
+      Vec2::zero(),
+      Vec2::new(color.width() as f32 - 1.0, color.height() as f32 - 1.0),
+    );
+    if let Some(instance) = &mut bresenham {
+      let mut position = instance.next();
+      let mut vertex = line.start;
+      while position.is_some() {
+        let (x, y) = position.unwrap();
+        let z = 1.0 / vertex.position.z;
+
+        let x = x as u32;
+        let y = y as u32;
+        if depth.get(x, y) <= z {
+          let mut attr = vertex.attributes;
+          attributes_foreach(&mut attr, |a| a * z);
+
+          let pixel = fragment_shader(&attr, &uniforms, &texture_store);
+          color.set(x, y, &pixel);
+          depth.set(x, y, z);
+        }
+
+        vertex.position += line.step.position;
+        vertex.attributes = interp_attributes(
+          &vertex.attributes,
+          &line.step.attributes,
+          |v1, v2, _| return v1 + v2,
+          1.0,
+        );
+        position = instance.next();
+      }
+    }
   }
 }

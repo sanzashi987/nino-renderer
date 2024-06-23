@@ -162,15 +162,14 @@ impl RendererDraw for Renderer {
         .min(self.color.height() as f32 - 1.0);
 
       if self.wireframe_mode {
-        for j in 0..3 {
-          let mut v1 = vertices[j];
-          let mut v2 = vertices[(j + 1) % 3];
-
-          vertex_rhw_init(&mut v1);
-          vertex_rhw_init(&mut v2);
-        }
-
-        return;
+        rasterize_wireframe(
+          &vertices,
+          &self.shader.fragment_shading,
+          &self.uniforms,
+          texture_store,
+          &mut self.color,
+          &mut self.depth,
+        );
       }
 
       for x in (aabb_min_x as u32)..(aabb_max_x as u32) {
