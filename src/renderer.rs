@@ -1,7 +1,6 @@
-use std::collections::btree_set::Iter;
-
 use crate::{
   bresenham_line::Bresenham,
+  camera::Camera,
   image::{ColorAttachment, DepthAttachment},
   line::Line,
   math::{Mat4, Vec2, Vec3, Vec4},
@@ -30,6 +29,10 @@ pub trait RendererDerive {
   fn enable_wireframe(&mut self);
   fn disable_wireframe(&mut self);
   fn toggle_wireframe(&mut self);
+  fn set_front_face(&mut self, face: FrontFace);
+  fn get_face_cull(&self) -> FaceCull;
+  fn set_face_cull(&mut self, face: FaceCull);
+  fn get_camera(&self) -> &Camera;
 }
 
 pub trait RendererDraw {

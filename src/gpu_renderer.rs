@@ -111,6 +111,7 @@ impl RendererDraw for Renderer {
           (v.position.x + 1.0) * 0.5 * (self.viewport.w as f32 - 1.0) + self.viewport.x as f32;
         v.position.y =
           (v.position.y + 1.0) * 0.5 * (self.viewport.h as f32 - 1.0) + self.viewport.y as f32;
+        v.position.w = (v.position.w + 1.0) / 2.0;
       }
 
       let aabb_min_x = vertices

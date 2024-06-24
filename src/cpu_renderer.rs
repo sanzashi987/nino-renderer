@@ -94,18 +94,18 @@ impl Renderer {
     }
 
     // near plane clip
-    if vertices
-      .iter()
-      .any(|v| v.position.z > self.camera.get_frustum().near())
-    {
-      let (face1, face2) = near_plane_clip(&vertices, self.camera.get_frustum().near());
+    // if vertices
+    //   .iter()
+    //   .any(|v| v.position.z > self.camera.get_frustum().near())
+    // {
+    //   let (face1, face2) = near_plane_clip(&vertices, self.camera.get_frustum().near());
 
-      self.cliped_triangles.extend(face1.iter());
-      if let Some(face) = face2 {
-        self.cliped_triangles.extend(face.iter());
-      }
-      return RasterizeResult::GenerateNewFace;
-    }
+    //   self.cliped_triangles.extend(face1.iter());
+    //   if let Some(face) = face2 {
+    //     self.cliped_triangles.extend(face.iter());
+    //   }
+    //   return RasterizeResult::GenerateNewFace;
+    // }
 
     // restore z from w (original z in 3D)
     for v in &mut vertices {

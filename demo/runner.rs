@@ -5,7 +5,7 @@ use nino_renderer::{
   cpu_renderer, gpu_renderer,
   math::{self, Vec4},
   model::{self, Mesh},
-  renderer::{texture_sample, RendererInterface},
+  renderer::{texture_sample, FaceCull, FrontFace, RendererInterface},
   shader::{Attributes, Vertex},
   texture::{self, TextureStore},
 };
@@ -32,7 +32,8 @@ fn create_renderer(w: u32, h: u32, camera: camera::Camera) -> Box<dyn RendererIn
 }
 
 const RESOURCE_PATH: &str = "./resources";
-const FOLDER: &str = "plane";
+const FOLDER: &str = "mario";
+const MODEL: &str = "mario_model.obj";
 
 fn get_resource_filepath(relative: &str) -> String {
   format!("{}/{}/{}", RESOURCE_PATH, FOLDER, relative)
@@ -113,20 +114,23 @@ fn main() {
   let mut texture_store = TextureStore::default();
   let mut rotation = 0.0f32;
 
-  let camera = Camera::new(
+  let mut camera = Camera::new(
     1.0,
     1000.0,
     WINDOW_WIDTH as f32 / WINDOW_HEIGHT as f32,
     30f32.to_radians(),
   );
 
-  let mut renderer = create_renderer(WINDOW_WIDTH, WINDOW_HEIGHT, camera);
+  camera.move_to(math::Vec3::new(0.0, 1.0, 0.0));
+  camera.set_rotation(math::Vec3::new(1f32.to_radians(), 0.0, 0.0));
 
-  let (meshes, mtllibs) = model::load_from_file(
-    &get_resource_filepath("plane.obj"),
-    model::PreOperation::None,
-  )
-  .unwrap();
+  let mut renderer = create_renderer(WINDOW_WIDTH, WINDOW_HEIGHT, camera);
+  renderer.set_face_cull(FaceCull::Back);
+  renderer.set_front_face(FrontFace::CCW);
+  // renderer.enable_wireframe();
+
+  let (meshes, mtllibs) =
+    model::load_from_file(&get_resource_filepath(MODEL), model::PreOperation::None).unwrap();
 
   let model_structures = construct_model_data(&meshes);
 

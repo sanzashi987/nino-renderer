@@ -54,7 +54,7 @@ impl PureElemImage<f32> {
     Self {
       w,
       h,
-      data: vec![std::f32::MAX; (w * h) as usize],
+      data: vec![0.0; (w * h) as usize],
     }
   }
 

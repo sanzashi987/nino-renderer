@@ -153,6 +153,22 @@ pub fn renderer(_: TokenStream, item: TokenStream) -> TokenStream {
         self.wireframe_mode = !self.wireframe_mode;
       }
 
+      fn set_front_face(&mut self, face:FrontFace){
+        self.front_face = face;
+      }
+
+      fn set_face_cull(&mut self, cull:FaceCull){
+        self.cull = cull;
+      }
+      fn get_face_cull(&self)->FaceCull{
+        self.cull
+      }
+
+      fn get_camera(&self) -> &Camera{
+        &self.camera
+      }
+
+
     }
     impl RendererInterface for Renderer {}
 
