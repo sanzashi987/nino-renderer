@@ -32,8 +32,8 @@ fn create_renderer(w: u32, h: u32, camera: camera::Camera) -> Box<dyn RendererIn
 }
 
 const RESOURCE_PATH: &str = "./resources";
-const FOLDER: &str = "mario";
-const MODEL: &str = "mario_model.obj";
+const FOLDER: &str = "Red";
+const MODEL: &str = "Red.obj";
 
 fn get_resource_filepath(relative: &str) -> String {
   format!("{}/{}/{}", RESOURCE_PATH, FOLDER, relative)
@@ -121,7 +121,7 @@ fn main() {
     30f32.to_radians(),
   );
 
-  camera.move_to(math::Vec3::new(0.0, 1.0, 0.0));
+  camera.move_to(math::Vec3::new(0.0, 0.0, -1.0));
   camera.set_rotation(math::Vec3::new(1f32.to_radians(), 0.0, 0.0));
 
   let mut renderer = create_renderer(WINDOW_WIDTH, WINDOW_HEIGHT, camera);
@@ -167,6 +167,11 @@ fn main() {
   let shader = renderer.get_shader();
 
   shader.vertex_shading = Box::new(|v, _, _| *v);
+  // shader.vertex_shading = Box::new(|v, _, _| {
+  //   let mut vv = *v;
+  //   vv.position.y *= -1.0;
+  //   vv
+  // });
   shader.fragment_shading = Box::new(|a, u, t| {
     let mut frag_color = match u.vec4.get(&UNIFORM_COLOR) {
       Some(v4) => *v4,

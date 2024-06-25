@@ -1,4 +1,4 @@
-workspace = { members = ["renderer_macro_derive"] }
+workspace = { members = ["renderer_macro_derive", "tinyrenderer"] }
 [package]
 name = "nino-renderer"
 version = "0.1.0"

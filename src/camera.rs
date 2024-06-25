@@ -82,7 +82,7 @@ impl Camera {
   pub fn new(near: f32, far: f32, aspect: f32, fov: f32) -> Self {
     Self {
       frustum: Frustum::new(near, far, aspect, fov),
-      position: Vec3::new(1.0, 1.0, 1.0),
+      position: Vec3::new(0.0, 0.0, 0.0),
       rotation: Vec3::zero(),
       view_matarix: Mat4::identity(),
       view_direction: -*Vec3::z_axis(),
