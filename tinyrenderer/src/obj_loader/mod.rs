@@ -1,2 +1,3 @@
 mod obj_parser;
-mod file_reader;
+mod file_loader;
+mod  model;

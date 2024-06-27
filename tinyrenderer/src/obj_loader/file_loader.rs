@@ -4,13 +4,13 @@ use std::{
   path::Path,
 };
 
-pub struct FileResult<'a> {
+pub struct FileLoader<'a> {
   filename: &'a Path,
   reader: BufReader<File>,
   done: bool,
 }
 
-impl<'a> FileResult<'a> {
+impl<'a> FileLoader<'a> {
   pub fn new(filename: &'a Path) -> Result<Self, Error> {
     let file = File::open(filename)?;
     let reader: BufReader<File> = BufReader::new(file);
@@ -30,7 +30,7 @@ impl<'a> FileResult<'a> {
   }
 }
 
-impl<'a> Iterator for FileResult<'a> {
+impl<'a> Iterator for FileLoader<'a> {
   type Item = String;
   fn next(&mut self) -> Option<Self::Item> {
     if self.done {
