@@ -28,6 +28,10 @@ impl<'a> FileLoader<'a> {
     self.reader = reader;
     Ok(())
   }
+
+  pub fn is_done(&self) -> bool {
+    self.done
+  }
 }
 
 impl<'a> Iterator for FileLoader<'a> {
