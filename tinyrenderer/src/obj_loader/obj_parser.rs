@@ -61,7 +61,14 @@ where
           "#" => {
             continue;
           }
-          "v" => {}
+          "v" => {
+            if self.current_model.is_some() {
+              let m = self.current_model.as_mut().unwrap();
+              
+            } else {
+              return Err(ParserError::ParseIncomplete);
+            }
+          }
           "vn" => {}
           "vt" => {}
           _ => {}
