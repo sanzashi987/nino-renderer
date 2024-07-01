@@ -3,7 +3,7 @@ macro_rules! define_vec {
     #[derive(Debug, PartialEq, Copy, Clone, Default)]
     pub struct $name {
       $(
-        $p:f32,
+        pub $p:f32,
       )+
     }
 
@@ -15,7 +15,14 @@ macro_rules! define_vec {
           )+
 
         }
+      }
 
+      pub fn zero() -> Self {
+        $name{
+          $(
+            $p:0.0,
+          )+
+        }
       }
 
     }

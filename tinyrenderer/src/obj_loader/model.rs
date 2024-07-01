@@ -33,4 +33,16 @@ impl Model {
       texture_coordinates: Default::default(),
     }
   }
+
+  pub fn add_vertex(&mut self, vertex: Vec3) {
+    self.vertices.push(vertex)
+  }
+
+  pub fn add_normal(&mut self, normal: Vec3) {
+    self.normals.push(normal)
+  }
+
+  pub fn add_texture_coordinate(&mut self, texture_coordinate: Vec2) {
+    self.texture_coordinates.push(texture_coordinate)
+  }
 }

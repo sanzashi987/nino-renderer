@@ -1,5 +1,7 @@
 use std::path::Path;
 
+use crate::math::Vec3;
+
 use super::{file_loader::FileLoader, model::Model};
 
 pub struct ObjParser<'a, 'b> {
@@ -15,6 +17,32 @@ pub enum ParserError {
   InvalidSyntax,
   ParseIncomplete,
   UnknownToken(String),
+  CantConvertToNum,
+}
+
+macro_rules! parse_num {
+  ($var:ident,$type:ty) => {{
+    $var
+      .parse::<$type>()
+      .map_err(|_| ParserError::CantConvertToNum)?
+  }};
+}
+
+macro_rules! parse_token {
+    ($iter: expr, $type:ty = $($attr:ident : $attr_type:ty),+) => {
+      {
+        let mut val = <$type>::zero();
+        $(
+          if let Some(s) = $iter {
+            val.$attr = parse_num!(s, $attr_type);
+          } else {
+            return Err(ParserError::ParseIncomplete)
+          }
+        )+
+
+        Ok::<$type,ParserError>(val)
+      }
+    };
 }
 
 impl<'a, 'b> ObjParser<'a, 'b>
@@ -63,14 +91,37 @@ where
           }
           "v" => {
             if self.current_model.is_some() {
-              let m = self.current_model.as_mut().unwrap();
-              
+              self
+                .current_model
+                .as_mut()
+                .unwrap()
+                .add_vertex(parse_token!(tokens.next(), Vec3 = x:f32, y:f32, z:f32)?);
             } else {
               return Err(ParserError::ParseIncomplete);
             }
           }
-          "vn" => {}
-          "vt" => {}
+          "vn" => {
+            if self.current_model.is_some() {
+              self
+                .current_model
+                .as_mut()
+                .unwrap()
+                .add_normal(parse_token!(tokens.next(), Vec3 = x:f32, y:f32, z:f32)?);
+            } else {
+              return Err(ParserError::ParseIncomplete);
+            }
+          }
+          "vt" => {
+            if self.current_model.is_some() {
+              self
+                .current_model
+                .as_mut()
+                .unwrap()
+                .add_texture_coordinate(parse_token!(tokens.next(), Vec2 = x:f32, y:f32)?);
+            } else {
+              return Err(ParserError::ParseIncomplete);
+            }
+          }
           _ => {}
         }
       }
