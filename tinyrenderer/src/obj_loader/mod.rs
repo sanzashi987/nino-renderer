@@ -1,3 +1,5 @@
-mod obj_parser;
 mod file_loader;
-mod  model;
+mod model;
+mod obj_parser;
+
+pub use obj_parser::{load_obj, ParserMode};

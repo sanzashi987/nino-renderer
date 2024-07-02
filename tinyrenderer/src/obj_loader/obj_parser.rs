@@ -2,21 +2,32 @@ use std::path::Path;
 
 use crate::math::{Vec2, Vec3};
 
-use super::{file_loader::FileLoader, model::Model};
+use super::{
+  file_loader::FileLoader,
+  model::{Model, Scene},
+};
 
 pub struct ObjParser<'a, 'b> {
-  result: Vec<Model>,
+  scene: Scene,
+  // empty: Vec<Model>,
   working_dir: &'a Path,
   loader: FileLoader<'b>,
+  lazy: bool,
 }
-
+#[derive(Debug)]
 pub enum ParserError {
   IoError(std::io::Error),
   NotAValidPath,
   InvalidSyntax,
-  ParseIncomplete,
+  ParseIncomplete(String),
   UnknownToken(String),
   CantConvertToNum,
+  UnExpectedEndOfLine,
+}
+
+pub enum ParserMode {
+  Standard,
+  Lazy,
 }
 
 macro_rules! parse_num {
@@ -35,7 +46,7 @@ macro_rules! parse_token {
           if let Some(s) = $iter {
             val.$attr = parse_num!(s, $attr_type);
           } else {
-            return Err(ParserError::ParseIncomplete)
+            return Err(ParserError::UnExpectedEndOfLine)
           }
         )+
 
@@ -48,23 +59,31 @@ impl<'a, 'b> ObjParser<'a, 'b>
 where
   'a: 'b,
 {
-  pub fn new(filepath: &'a Path, single_mode: bool) -> Result<Self, ParserError> {
+  pub fn new(filepath: &'a Path, mode: ParserMode) -> Result<Self, ParserError> {
     let parent = filepath.parent();
     let filename = filepath.file_name();
     let loader_result: Result<FileLoader<'b>, std::io::Error> = FileLoader::new(filepath);
 
+    let (lazy, single) = match mode {
+      ParserMode::Standard => (false, true),
+      ParserMode::Lazy => (true, false),
+    };
+
     if let (Some(dir), Some(name)) = (parent, filename) {
       match loader_result {
         Ok(loader) => {
-          return Ok(Self {
+          let mut parser = Self {
             working_dir: dir,
             loader: loader,
-            result: if name.to_str().is_some() && single_mode {
-              vec![Model::single_mode(name.to_str().unwrap())]
-            } else {
-              Vec::new()
-            },
-          });
+            scene: Scene::new(),
+            lazy,
+          };
+
+          if !lazy {
+            parser.parse()?
+          }
+
+          return Ok(parser);
         }
         Err(e) => return Err(ParserError::IoError(e)),
       }
@@ -72,9 +91,9 @@ where
     Err(ParserError::NotAValidPath)
   }
 
-  pub fn parse(&mut self) -> Result<&Vec<Model>, ParserError> {
+  fn parse(&mut self) -> Result<(), ParserError> {
     if self.loader.is_done() {
-      return Ok(&self.result);
+      return Ok(());
     }
 
     for line in &mut self.loader {
@@ -89,30 +108,43 @@ where
           }
           "v" => {
             self
-              .result
-              .last_mut()
-              .ok_or(ParserError::ParseIncomplete)?
+              .scene
               .add_vertex(parse_token!(tokens.next(), Vec3 = x:f32, y:f32, z:f32)?);
           }
           "vn" => {
             self
-              .result
-              .last_mut()
-              .ok_or(ParserError::ParseIncomplete)?
+              .scene
               .add_normal(parse_token!(tokens.next(), Vec3 = x:f32, y:f32, z:f32)?);
           }
           "vt" => {
             self
-              .result
-              .last_mut()
-              .ok_or(ParserError::ParseIncomplete)?
+              .scene
               .add_texture_coordinate(parse_token!(tokens.next(), Vec2 = x:f32, y:f32)?);
           }
-          _ => {}
+          _ => {
+            continue;
+            // _ => return Err(ParserError::UnknownToken(s.to_string())),
+          }
         }
       }
     }
 
-    Ok(&self.result)
+    // Ok(&self.result)
+    Ok(())
   }
+
+  pub fn get_result(&mut self) -> &Scene {
+    let res = self.parse();
+
+    if res.is_ok() {
+      &self.scene
+    } else {
+      &self.empty
+    }
+  }
+}
+
+pub fn load_obj(relative_path: &str, mode: ParserMode) -> Result<ObjParser, ParserError> {
+  let fullpath = std::path::Path::new(relative_path);
+  Ok(ObjParser::new(fullpath, mode)?)
 }

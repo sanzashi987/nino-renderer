@@ -15,9 +15,6 @@ pub struct Face {
 pub struct Model {
   name: String,
   faces: Vec<Face>,
-  vertices: Vec<Vec3>,
-  normals: Vec<Vec3>,
-  texture_coordinates: Vec<Vec2>,
 }
 
 impl Model {
@@ -28,6 +25,21 @@ impl Model {
     Self {
       name: filename.to_string(),
       faces: Default::default(),
+    }
+  }
+}
+
+pub struct Scene {
+  models: Vec<Model>,
+  vertices: Vec<Vec3>,
+  normals: Vec<Vec3>,
+  texture_coordinates: Vec<Vec2>,
+}
+
+impl Scene {
+  pub fn new() -> Self {
+    Self {
+      models: Vec::new(),
       vertices: Default::default(),
       normals: Default::default(),
       texture_coordinates: Default::default(),
