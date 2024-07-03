@@ -1,15 +1,26 @@
 use std::path::Path;
 
 use crate::math::{Vec2, Vec3};
+
+use super::ParserError;
 #[derive(Debug, Default, Clone, Copy)]
 pub struct VertexPointer {
   vertex_index: u32,
   normal_index: Option<u32>,
   texture_index: Option<u32>,
 }
+impl VertexPointer {
+  pub fn new(vertex_index: u32, normal_index: Option<u32>, texture_index: Option<u32>) -> Self {
+    Self {
+      vertex_index,
+      normal_index,
+      texture_index,
+    }
+  }
+}
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Face {
-  vertices: [VertexPointer; 3],
+  pub vertices: [VertexPointer; 3],
 }
 #[derive(Debug)]
 pub struct Model {
@@ -29,6 +40,7 @@ impl Model {
   }
 }
 
+#[derive(Debug)]
 pub struct Scene {
   models: Vec<Model>,
   vertices: Vec<Vec3>,
@@ -44,6 +56,20 @@ impl Scene {
       normals: Default::default(),
       texture_coordinates: Default::default(),
     }
+  }
+
+  pub fn add_model(&mut self, model: Model) {
+    self.models.push(model)
+  }
+
+  pub fn add_face(&mut self, face: Face) -> Result<(), ParserError> {
+    self
+      .models
+      .last_mut()
+      .ok_or(ParserError::ModelNotInit)?
+      .faces
+      .push(face);
+    Ok(())
   }
 
   pub fn add_vertex(&mut self, vertex: Vec3) {

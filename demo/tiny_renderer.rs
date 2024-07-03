@@ -12,10 +12,7 @@ fn main() {
 
   let mut res = load_obj(&relative_path, ParserMode::Lazy).unwrap();
 
-  let models = res.get_result();
+  let scene = res.get_result().unwrap();
 
-  println!("{:?}", models.len());
-  for m in models {
-    println!("{:?}", m);
-  }
+  println!("{:?}", scene);
 }
