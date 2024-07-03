@@ -114,6 +114,7 @@ where
           }
           "g" | "o" => {
             let name = parse_token!(tokens.next(); String)?;
+            self.scene.add_model(name);
           }
           "v" => {
             self

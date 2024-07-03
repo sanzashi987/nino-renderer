@@ -32,9 +32,9 @@ impl Model {
   // pub fn get_name(&self) -> &String {
   //   &self.name
   // }
-  pub fn single_mode(filename: &str) -> Self {
+  pub fn new(name: String) -> Self {
     Self {
-      name: filename.to_string(),
+      name,
       faces: Default::default(),
     }
   }
@@ -58,8 +58,8 @@ impl Scene {
     }
   }
 
-  pub fn add_model(&mut self, model: Model) {
-    self.models.push(model)
+  pub fn add_model(&mut self, name: String) {
+    self.models.push(Model::new(name));
   }
 
   pub fn add_face(&mut self, face: Face) -> Result<(), ParserError> {
