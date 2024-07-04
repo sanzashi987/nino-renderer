@@ -5,9 +5,9 @@ use crate::math::{Vec2, Vec3};
 use super::ParserError;
 #[derive(Debug, Default, Clone, Copy)]
 pub struct VertexPointer {
-  vertex_index: u32,
-  normal_index: Option<u32>,
-  texture_index: Option<u32>,
+  pub vertex_index: u32,
+  pub normal_index: Option<u32>,
+  pub texture_index: Option<u32>,
 }
 impl VertexPointer {
   pub fn new(vertex_index: u32, normal_index: Option<u32>, texture_index: Option<u32>) -> Self {
@@ -24,8 +24,8 @@ pub struct Face {
 }
 #[derive(Debug)]
 pub struct Model {
-  name: String,
-  faces: Vec<Face>,
+  pub name: String,
+  pub faces: Vec<Face>,
 }
 
 impl Model {
@@ -38,14 +38,18 @@ impl Model {
       faces: Default::default(),
     }
   }
+
+  pub fn get_faces(&self) -> &Vec<Face> {
+    &self.faces
+  }
 }
 
 #[derive(Debug)]
 pub struct Scene {
-  models: Vec<Model>,
-  vertices: Vec<Vec3>,
-  normals: Vec<Vec3>,
-  texture_coordinates: Vec<Vec2>,
+  pub models: Vec<Model>,
+  pub vertices: Vec<Vec3>,
+  pub normals: Vec<Vec3>,
+  pub texture_coordinates: Vec<Vec2>,
 }
 
 impl Scene {
