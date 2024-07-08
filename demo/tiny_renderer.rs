@@ -1,7 +1,6 @@
 const RESOURCE_PATH: &str = "./resources";
 const FOLDER: &str = "african";
 const MODEL: &str = "head.obj";
-use fltk::{self, app::set_visual, enums::Mode, prelude::*, text, window::Window};
 
 use tinyrenderer::{
   bresenham_line::line,
@@ -18,43 +17,6 @@ const WINDOW_WIDTH: f32 = 1080.0;
 const WINDOW_HEIGHT: f32 = 1080.0;
 const HALF_WIDTH: f32 = (WINDOW_WIDTH - 1.0) / 2.0;
 const HALF_HEIGHT: f32 = (WINDOW_HEIGHT - 1.0) / 2.0;
-
-fn run_fltk<F: FnMut(&mut Window) + 'static>(cb: F) {
-  let app = fltk::app::App::default();
-
-  let mut window = Window::new(
-    100,
-    100,
-    WINDOW_WIDTH as i32,
-    WINDOW_HEIGHT as i32,
-    "runner",
-  );
-
-  window.draw(cb);
-
-  window.handle(move |_, event| false);
-  window.end();
-  set_visual(Mode::Rgb).unwrap();
-  window.show();
-
-  // fltk::app::add_idle3(move |_| {
-  //   window.redraw();
-  // });
-
-  app.run().unwrap();
-}
-
-fn draw_image(pixels_buffer: &[u8]) {
-  fltk::draw::draw_image(
-    pixels_buffer,
-    0,
-    0,
-    WINDOW_WIDTH as i32,
-    WINDOW_HEIGHT as i32,
-    fltk::enums::ColorDepth::Rgb8,
-  )
-  .unwrap();
-}
 
 fn main() {
   let relative_path = get_resource_filepath(MODEL);
@@ -85,7 +47,10 @@ fn main() {
     }
   }
 
-  run_fltk(move |_| draw_image(color_buffer.data()));
+  let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, false);
+  let draw_image = sandbox.make_draw_image();
+
+  sandbox.run_fltk(move |_| draw_image.as_ref()(color_buffer.data()));
 
   // println!("{:?}", scene);
 }

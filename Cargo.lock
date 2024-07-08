@@ -382,6 +382,7 @@ dependencies = [
  "fltk",
  "image",
  "renderer_macro_derive",
+ "sandbox",
  "tinyrenderer",
 ]
 
@@ -504,6 +505,13 @@ version = "0.1.0"
 dependencies = [
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "sandbox"
+version = "0.1.0"
+dependencies = [
+ "fltk",
 ]
 
 [[package]]
