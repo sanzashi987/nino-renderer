@@ -77,7 +77,10 @@ impl Scene {
   }
 
   pub fn add_vertex(&mut self, vertex: Vec3) {
-    self.vertices.push(vertex)
+    let mut nextVertex =  vertex;
+    // nextVertex.y = 1.0 - nextVertex.y;
+    
+    self.vertices.push(nextVertex)
   }
 
   pub fn add_normal(&mut self, normal: Vec3) {

@@ -43,6 +43,10 @@ impl DataArray<u8> {
   }
 
   pub fn set(&mut self, x: u32, y: u32, color: &math::Vec4) {
+    let p = (x + y * self.w) as usize * 3;
+    if p >= self.data.len() {
+      return;
+    }
     self.data[(x + y * self.w) as usize * 3] = (color.x * 255.0) as u8;
     self.data[(x + y * self.w) as usize * 3 + 1] = (color.y * 255.0) as u8;
     self.data[(x + y * self.w) as usize * 3 + 2] = (color.z * 255.0) as u8;
