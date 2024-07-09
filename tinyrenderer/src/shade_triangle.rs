@@ -22,6 +22,9 @@ pub fn shade_triangle(points: &mut [Vec3; 3], result: &mut ColorBuffer, color: &
   if p1.y > p2.y {
     std::mem::swap(p1, p2);
   }
+
+  // println!("{}, {}, {}", p0.y, p1.y, p2.y);
+
   let total_span = p2.y - p0.y;
   let top_span = p1.y - p0.y;
   let bottom_span = p2.y - p1.y;
@@ -29,7 +32,7 @@ pub fn shade_triangle(points: &mut [Vec3; 3], result: &mut ColorBuffer, color: &
   for y in 0..total_span as i32 {
     let alpha = y as f32 / total_span;
     let bottom_half = y as f32 > top_span || p1.y == p0.y;
-    let segment_height = if bottom_half { top_span } else { bottom_span };
+    let segment_height = if bottom_half { bottom_span } else { top_span };
 
     let beta = (y as f32 - if bottom_half { top_span } else { 0.0 }) / segment_height;
 
@@ -44,8 +47,8 @@ pub fn shade_triangle(points: &mut [Vec3; 3], result: &mut ColorBuffer, color: &
       std::mem::swap(&mut left, &mut right);
     }
 
-    for x in (left as i32)..(right as i32) {
-      result.set(x as u32, y as u32, color);
+    for x in (left as i32)..(right as i32 + 1) {
+      result.set(x as u32, y as u32 + p0.y as u32, color);
     }
   }
 }

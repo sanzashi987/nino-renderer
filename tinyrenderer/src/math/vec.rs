@@ -1,3 +1,32 @@
+use std::ops::{Add, Div, Mul, Sub};
+
+macro_rules! define_vec_op {
+  ($name:ident,$trait_name:ident,  $func_name:ident, $op:tt, $($p:ident),+) => {
+    impl $trait_name for $name {
+      type Output = Self;
+
+      fn $func_name(self, rhs: $name) -> Self::Output {
+        Self {
+          $(
+            $p: self.$p $op rhs.$p,
+          )+
+        }
+      }
+    }
+
+    impl $trait_name<f32> for $name {
+      type Output = Self;
+      fn $func_name(self, rhs: f32) -> Self::Output {
+        $name {
+          $(
+            $p:self.$p $op rhs,
+          )+
+        }
+      }
+    }
+  };
+}
+
 macro_rules! define_vec {
   ($name:ident, $($p:ident),+) => {
     #[derive(Debug, PartialEq, Copy, Clone, Default)]
@@ -6,6 +35,11 @@ macro_rules! define_vec {
         pub $p:f32,
       )+
     }
+
+    define_vec_op!($name, Add, add, + ,$($p),+);
+    define_vec_op!($name, Sub, sub, + ,$($p),+);
+    define_vec_op!($name, Mul, mul, + ,$($p),+);
+    define_vec_op!($name, Div, div, + ,$($p),+);
 
     impl $name {
       pub fn new($($p:f32),+) -> Self {

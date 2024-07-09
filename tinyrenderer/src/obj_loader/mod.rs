@@ -6,3 +6,4 @@ mod error;
 
 pub use error::ParserError;
 pub use obj_parser::{load_obj, ParserMode};
+pub use model::Face;
