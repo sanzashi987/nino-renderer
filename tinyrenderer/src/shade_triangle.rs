@@ -1,6 +1,6 @@
 use crate::{
-  data_array::ColorBuffer,
-  math::{Vec3, Vec4},
+  data_array::{ColorBuffer, DepthBuffer},
+  math::{lerp, Vec3, Vec4},
 };
 
 pub struct Barycentric {
@@ -10,7 +10,12 @@ pub struct Barycentric {
 }
 
 pub fn barycentric() {}
-pub fn shade_triangle(points: &mut [Vec3; 3], result: &mut ColorBuffer, color: &Vec4) {
+pub fn shade_triangle(
+  points: &mut [Vec3; 3],
+  depth: &mut DepthBuffer,
+  result: &mut ColorBuffer,
+  color: &Vec4,
+) {
   let [p0, p1, p2] = points;
 
   if p0.y > p1.y {
@@ -36,19 +41,35 @@ pub fn shade_triangle(points: &mut [Vec3; 3], result: &mut ColorBuffer, color: &
 
     let beta = (y as f32 - if bottom_half { top_span } else { 0.0 }) / segment_height;
 
-    let mut left = p0.x + (p2.x - p0.x) * alpha;
+    let mut left = lerp(p0.x, p2.x, alpha); //p0.x + (p2.x - p0.x) * alpha;
     let mut right = if bottom_half {
-      p1.x + (p2.x - p1.x) * beta
+      lerp(p1.x, p2.x, beta)
     } else {
-      p0.x + (p1.x - p0.x) * beta
+      lerp(p0.x, p1.x, beta)
+    };
+
+    let mut left_z = lerp(p0.z, p2.z, alpha);
+    let mut right_z = if bottom_half {
+      lerp(p1.z, p2.z, beta)
+    } else {
+      lerp(p0.z, p1.z, beta)
     };
 
     if left > right {
       std::mem::swap(&mut left, &mut right);
+      std::mem::swap(&mut left_z, &mut right_z);
     }
 
+    let line_span = right as i32 - left as i32;
     for x in (left as i32)..(right as i32 + 1) {
+      let progress = (left as f32 + x as f32) / line_span as f32;
+
+      let z = lerp(left_z, right_z, progress);
+
+      // if depth.get(x as u32, y as u32 + p0.y as u32) > z {
+      // depth.set(x as u32, y as u32 + p0.y as u32, z);
       result.set(x as u32, y as u32 + p0.y as u32, color);
+      // }
     }
   }
 }

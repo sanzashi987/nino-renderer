@@ -3,10 +3,14 @@ const FOLDER: &str = "african";
 const MODEL: &str = "head.obj";
 // const FOLDER: &str = "Red";
 // const MODEL: &str = "Red.obj";
+// const FOLDER: &str = "plane";
+// const MODEL: &str = "plane.obj";
+
+use rand;
 
 use tinyrenderer::{
   bresenham_line::line,
-  data_array::ColorBuffer,
+  data_array::{ColorBuffer, DepthBuffer},
   math::{Vec2, Vec3, Vec4},
   obj_loader::{load_obj, Face, ParserMode},
   shade_triangle::shade_triangle,
@@ -43,14 +47,15 @@ fn static_wireframe(vertices: &Vec<Vec3>, face: &Face, color_buffer: &mut ColorB
 /**
  * lesson 2
  */
-fn direct_light_shading(vertices: &Vec<Vec3>, face: &Face, color_buffer: &mut ColorBuffer) {
-  println!(
-    "{},{},{}",
-    face.vertices[0].vertex_index, face.vertices[1].vertex_index, face.vertices[2].vertex_index
-  );
-  let v0 = vertices[face.vertices[0].vertex_index as usize - 1];
-  let v1 = vertices[face.vertices[1].vertex_index as usize - 1];
-  let v2 = vertices[face.vertices[2].vertex_index as usize - 1];
+fn direct_light_shading(
+  vertices: &Vec<Vec3>,
+  face: &Face,
+  color_buffer: &mut ColorBuffer,
+  depth_buffer: &mut DepthBuffer,
+) {
+  let v0 = vertices[face.vertices[0].vertex_index as usize];
+  let v1 = vertices[face.vertices[1].vertex_index as usize];
+  let v2 = vertices[face.vertices[2].vertex_index as usize];
 
   // let n0 = normals[face.vertices[0].normal_index.unwrap() as usize];
   // let n1 = normals[face.vertices[1].normal_index.unwrap() as usize];
@@ -78,14 +83,24 @@ fn direct_light_shading(vertices: &Vec<Vec3>, face: &Face, color_buffer: &mut Co
 
   let mut points = [pt0, pt1, pt2];
 
-  // println!("{}", light_intense);
-  if light_intense > 0.0 {
-    shade_triangle(
-      &mut points,
-      color_buffer,
-      &Vec4::new(light_intense, light_intense, light_intense, 1.0),
-    )
-  }
+  // let light_intense = (v0.z + v1.z + v2.z) / 3.0;
+
+  // let a = rand::random::<f32>();
+
+  println!("{}", light_intense);
+  // if light_intense > 0.0 {
+  shade_triangle(
+    &mut points,
+    depth_buffer,
+    color_buffer,
+    &Vec4::new(
+      rand::random::<f32>(),
+      rand::random::<f32>(),
+      rand::random::<f32>(),
+      1.0,
+    ),
+  )
+  // }
 }
 
 fn main() {
@@ -96,6 +111,7 @@ fn main() {
   let scene = res.get_result().unwrap();
 
   let mut color_buffer = ColorBuffer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
+  let mut depth_buffer = DepthBuffer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
 
   let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, false);
   let draw_image = sandbox.make_draw_image();
@@ -106,7 +122,8 @@ fn main() {
   for model in &scene.models {
     for face in &model.faces {
       // static_wireframe(vertices, face, &mut color_buffer);
-      direct_light_shading(vertices, face, &mut color_buffer);
+      // println!("{:?}", face);
+      // direct_light_shading(vertices, face, &mut color_buffer, &mut depth_buffer);
     }
   }
 

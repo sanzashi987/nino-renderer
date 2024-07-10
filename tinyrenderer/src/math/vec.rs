@@ -108,3 +108,10 @@ impl Vec3 {
     }
   }
 }
+
+pub fn lerp<T>(a: T, b: T, t: f32) -> T
+where
+  T: Sub<Output = T> + Add<Output = T> + Mul<f32, Output = T> + Copy + Clone,
+{
+  a + (b - a) * t
+}

@@ -78,7 +78,7 @@ impl Scene {
 
   pub fn add_vertex(&mut self, vertex: Vec3) {
     let mut next_vertex =  vertex;
-    // next_vertex.y =  -next_vertex.y;
+    next_vertex.y =  -next_vertex.y;
     // next_vertex.z =  -next_vertex.z;
     
     self.vertices.push(next_vertex)
