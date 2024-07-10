@@ -87,7 +87,7 @@ fn direct_light_shading(
 
   // let a = rand::random::<f32>();
 
-  println!("{}", light_intense);
+  // println!("{}", light_intense);
   // if light_intense > 0.0 {
   shade_triangle(
     &mut points,
@@ -123,7 +123,7 @@ fn main() {
     for face in &model.faces {
       // static_wireframe(vertices, face, &mut color_buffer);
       // println!("{:?}", face);
-      // direct_light_shading(vertices, face, &mut color_buffer, &mut depth_buffer);
+      direct_light_shading(vertices, face, &mut color_buffer, &mut depth_buffer);
     }
   }
 

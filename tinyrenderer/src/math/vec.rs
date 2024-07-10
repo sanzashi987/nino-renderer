@@ -37,9 +37,9 @@ macro_rules! define_vec {
     }
 
     define_vec_op!($name, Add, add, + ,$($p),+);
-    define_vec_op!($name, Sub, sub, + ,$($p),+);
-    define_vec_op!($name, Mul, mul, + ,$($p),+);
-    define_vec_op!($name, Div, div, + ,$($p),+);
+    define_vec_op!($name, Sub, sub, - ,$($p),+);
+    define_vec_op!($name, Mul, mul, * ,$($p),+);
+    define_vec_op!($name, Div, div, / ,$($p),+);
 
     impl $name {
       pub fn new($($p:f32),+) -> Self {
