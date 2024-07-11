@@ -114,7 +114,14 @@ fn shade_triangle_barycentric(
         continue;
       }
 
-      
+      let z = barycentric.alpha() * points[0].z
+        + barycentric.beta() * points[1].z
+        + barycentric.gamma() * points[2].z;
+
+      if depth.get(x, y) < z {
+        depth.set(x, y, z);
+        result.set(x, y, color);
+      }
     }
   }
 }

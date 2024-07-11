@@ -6,7 +6,7 @@ const MODEL: &str = "head.obj";
 // const FOLDER: &str = "plane";
 // const MODEL: &str = "plane.obj";
 
-use rand;
+// use rand;
 
 use tinyrenderer::{
   bresenham_line::line,
@@ -20,8 +20,8 @@ fn get_resource_filepath(relative: &str) -> String {
   format!("{}/{}/{}", RESOURCE_PATH, FOLDER, relative)
 }
 
-const WINDOW_WIDTH: f32 = 500.0;
-const WINDOW_HEIGHT: f32 = 500.0;
+const WINDOW_WIDTH: f32 = 800.0;
+const WINDOW_HEIGHT: f32 = 800.0;
 const HALF_WIDTH: f32 = (WINDOW_WIDTH - 1.0) / 2.0;
 const HALF_HEIGHT: f32 = (WINDOW_HEIGHT - 1.0) / 2.0;
 
@@ -45,7 +45,7 @@ fn static_wireframe(vertices: &Vec<Vec3>, face: &Face, color_buffer: &mut ColorB
 }
 
 /**
- * lesson 2
+ * lesson 2 & 3
  */
 fn direct_light_shading(
   vertices: &Vec<Vec3>,
@@ -57,18 +57,6 @@ fn direct_light_shading(
   let v1 = vertices[face.vertices[1].vertex_index as usize];
   let v2 = vertices[face.vertices[2].vertex_index as usize];
 
-  // let n0 = normals[face.vertices[0].normal_index.unwrap() as usize];
-  // let n1 = normals[face.vertices[1].normal_index.unwrap() as usize];
-  // let n2 = normals[face.vertices[2].normal_index.unwrap() as usize];
-
-  // let face_normal = ((n0 + n1 + n2) / 3.0).normalize();
-  // let mut pts = [v0, v1, v2];
-
-  // pts.sort_by(|a, b| a.x.total_cmp(&b.x));
-
-  // println!("{},{},{}", pts[0].y, pts[1].y, pts[2].y);
-
-  // let (v01, v02) = (pts[1] - pts[0], pts[2] - pts[1]);
   let (v01, v02) = (v1 - v0, v2 - v0);
   let face_normal = v02.cross(&v01).normalize();
 
@@ -88,19 +76,19 @@ fn direct_light_shading(
   // let a = rand::random::<f32>();
 
   // println!("{}", light_intense);
-  // if light_intense > 0.0 {
-  shade_triangle(
-    &mut points,
-    depth_buffer,
-    color_buffer,
-    &Vec4::new(
-      rand::random::<f32>(),
-      rand::random::<f32>(),
-      rand::random::<f32>(),
-      1.0,
-    ),
-  )
-  // }
+  if light_intense > 0.0 {
+    shade_triangle(
+      &mut points,
+      depth_buffer,
+      color_buffer,
+      &Vec4::new(
+        light_intense, //rand::random::<f32>(),
+        light_intense, //rand::random::<f32>(),
+        light_intense, //rand::random::<f32>(),
+        1.0,
+      ),
+    )
+  }
 }
 
 fn main() {
@@ -112,6 +100,8 @@ fn main() {
 
   let mut color_buffer = ColorBuffer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
   let mut depth_buffer = DepthBuffer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
+
+  depth_buffer.clear(std::f32::MIN);
 
   let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, false);
   let draw_image = sandbox.make_draw_image();
