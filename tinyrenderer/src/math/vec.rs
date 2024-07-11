@@ -107,6 +107,13 @@ impl Vec3 {
       z: self.x * rhs.y - self.y * rhs.x,
     }
   }
+
+  pub fn truncate_to_vec2(&self) -> Vec2 {
+    Vec2 {
+      x: self.x,
+      y: self.y,
+    }
+  }
 }
 
 pub fn lerp<T>(a: T, b: T, t: f32) -> T

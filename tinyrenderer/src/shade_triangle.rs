@@ -1,22 +1,17 @@
 use crate::{
   data_array::{ColorBuffer, DepthBuffer},
-  math::{lerp, Vec3, Vec4},
+  math::{lerp, Barycentric, Vec2, Vec3, Vec4},
 };
 
-pub struct Barycentric {
-  alpha: f32,
-  beta: f32,
-  gamma: f32,
-}
-
-pub fn barycentric() {}
-pub fn shade_triangle(
+fn shade_triangle_scanline(
   points: &mut [Vec3; 3],
   depth: &mut DepthBuffer,
   result: &mut ColorBuffer,
   color: &Vec4,
 ) {
-  let [p0, p1, p2] = points;
+  let mut points = points.map(|v| v.truncate_to_vec2());
+
+  let [p0, p1, p2] = &mut points;
 
   if p0.y > p1.y {
     std::mem::swap(p0, p1);
@@ -27,8 +22,6 @@ pub fn shade_triangle(
   if p1.y > p2.y {
     std::mem::swap(p1, p2);
   }
-
-  // println!("{}, {}, {}", p0.y, p1.y, p2.y);
 
   let total_span = p2.y - p0.y;
   let top_span = p1.y - p0.y;
@@ -41,11 +34,8 @@ pub fn shade_triangle(
 
     let beta = (y as f32 - if bottom_half { top_span } else { 0.0 }) / segment_height;
 
-    // let a = p0 - p2;
-
     let mut left = lerp(*p0, *p2, alpha);
 
-    // let mut left = lerp(p0.x, p2.x, alpha); //p0.x + (p2.x - p0.x) * alpha;
     let mut right = if bottom_half {
       lerp(*p1, *p2, beta)
     } else {
@@ -73,14 +63,14 @@ pub fn shade_triangle(
 // pub fn
 
 pub struct BoundaryBox {
-  x_min: f32,
-  x_max: f32,
-  y_min: f32,
-  y_max: f32,
+  pub x_min: f32,
+  pub x_max: f32,
+  pub y_min: f32,
+  pub y_max: f32,
 }
 
 impl BoundaryBox {
-  pub fn new(vertices: &[Vec3; 3], width: f32, height: f32) -> Self {
+  pub fn new(vertices: &[Vec2; 3], width: f32, height: f32) -> Self {
     let x_min = vertices
       .iter()
       .fold(std::f32::MAX, |min, v| if min < v.x { min } else { v.x })
@@ -104,5 +94,40 @@ impl BoundaryBox {
       x_max,
       y_max,
     }
+  }
+}
+
+fn shade_triangle_barycentric(
+  points: &mut [Vec3; 3],
+  depth: &mut DepthBuffer,
+  result: &mut ColorBuffer,
+  color: &Vec4,
+) {
+  let points_2d = points.map(|v| v.truncate_to_vec2());
+  let (width, height) = (result.width(), result.height());
+  let boundary = BoundaryBox::new(&points_2d, width as f32, height as f32);
+
+  for x in (boundary.x_min as u32)..(boundary.x_max as u32 + 1) {
+    for y in (boundary.y_min as u32)..(boundary.y_max as u32 + 1) {
+      let barycentric = Barycentric::new(&Vec2::new(x as f32, y as f32), &points_2d);
+      if !barycentric.is_inside() {
+        continue;
+      }
+
+      
+    }
+  }
+}
+
+pub fn shade_triangle(
+  points: &mut [Vec3; 3],
+  depth: &mut DepthBuffer,
+  result: &mut ColorBuffer,
+  color: &Vec4,
+) {
+  if cfg!(feature = "scanline") {
+    shade_triangle_scanline(points, depth, result, color);
+  } else {
+    shade_triangle_barycentric(points, depth, result, color);
   }
 }

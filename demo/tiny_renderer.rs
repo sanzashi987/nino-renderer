@@ -20,8 +20,8 @@ fn get_resource_filepath(relative: &str) -> String {
   format!("{}/{}/{}", RESOURCE_PATH, FOLDER, relative)
 }
 
-const WINDOW_WIDTH: f32 = 1080.0;
-const WINDOW_HEIGHT: f32 = 1080.0;
+const WINDOW_WIDTH: f32 = 500.0;
+const WINDOW_HEIGHT: f32 = 500.0;
 const HALF_WIDTH: f32 = (WINDOW_WIDTH - 1.0) / 2.0;
 const HALF_HEIGHT: f32 = (WINDOW_HEIGHT - 1.0) / 2.0;
 
