@@ -7,8 +7,7 @@ pub struct Vertex {
   pub texture: Option<Vec2>,
 }
 
-pub struct Model {
-  pub name: String,
+pub struct Mesh {
+  pub vertices: Vec<Vertex>,
+  pub name: Option<String>,
 }
-
-pub struct Scene {}
