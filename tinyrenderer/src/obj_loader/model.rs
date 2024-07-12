@@ -1,8 +1,6 @@
-use std::path::Path;
-
 use crate::math::{Vec2, Vec3};
 
-use super::ParserError;
+use super::{texture::Textures, ParserError};
 #[derive(Debug, Default, Clone, Copy)]
 pub struct VertexPointer {
   pub vertex_index: u32,
@@ -50,6 +48,7 @@ pub struct Scene {
   pub vertices: Vec<Vec3>,
   pub normals: Vec<Vec3>,
   pub texture_coordinates: Vec<Vec2>,
+  pub textures: Textures,
 }
 
 impl Scene {
@@ -59,6 +58,7 @@ impl Scene {
       vertices: Default::default(),
       normals: Default::default(),
       texture_coordinates: Default::default(),
+      textures: Default::default(),
     }
   }
 
@@ -77,10 +77,10 @@ impl Scene {
   }
 
   pub fn add_vertex(&mut self, vertex: Vec3) {
-    let mut next_vertex =  vertex;
-    next_vertex.y =  -next_vertex.y;
+    let mut next_vertex = vertex;
+    next_vertex.y = -next_vertex.y;
     // next_vertex.z =  -next_vertex.z;
-    
+
     self.vertices.push(next_vertex)
   }
 

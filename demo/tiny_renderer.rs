@@ -12,7 +12,7 @@ use tinyrenderer::{
   bresenham_line::line,
   data_array::{ColorBuffer, DepthBuffer},
   math::{Vec2, Vec3, Vec4},
-  obj_loader::{load_obj, Face, ParserMode},
+  obj_loader::{load_obj, Face, ParserMode, Scene},
   shade_triangle::shade_triangle,
 };
 
@@ -28,7 +28,9 @@ const HALF_HEIGHT: f32 = (WINDOW_HEIGHT - 1.0) / 2.0;
 /**
  * lesson 1
  */
-fn static_wireframe(vertices: &Vec<Vec3>, face: &Face, color_buffer: &mut ColorBuffer) {
+fn static_wireframe(scene: &Scene, face: &Face, color_buffer: &mut ColorBuffer) {
+  let vertices = &scene.vertices;
+
   for i in 0..3 {
     let i0 = face.vertices[i].vertex_index;
     let i1 = face.vertices[(i + 1) % 3].vertex_index;
@@ -36,7 +38,6 @@ fn static_wireframe(vertices: &Vec<Vec3>, face: &Face, color_buffer: &mut ColorB
     let v0 = vertices[i0 as usize];
     let v1 = vertices[i1 as usize];
 
-    // let pt0 = Vec2::new(, y);
     let pt0 = Vec2::new((v0.x + 1.0) * HALF_WIDTH, (v0.y + 1.0) * HALF_HEIGHT);
     let pt1 = Vec2::new((v1.x + 1.0) * HALF_WIDTH, (v1.y + 1.0) * HALF_HEIGHT);
 
@@ -48,14 +49,21 @@ fn static_wireframe(vertices: &Vec<Vec3>, face: &Face, color_buffer: &mut ColorB
  * lesson 2 & 3
  */
 fn direct_light_shading(
-  vertices: &Vec<Vec3>,
+  scene: &Scene,
   face: &Face,
   color_buffer: &mut ColorBuffer,
   depth_buffer: &mut DepthBuffer,
 ) {
+  let vertices = &scene.vertices;
+  let textures = &scene.texture_coordinates;
+
   let v0 = vertices[face.vertices[0].vertex_index as usize];
   let v1 = vertices[face.vertices[1].vertex_index as usize];
   let v2 = vertices[face.vertices[2].vertex_index as usize];
+
+  let t0 = textures[face.vertices[0].texture_index.unwrap() as usize];
+  let t1 = textures[face.vertices[1].texture_index.unwrap() as usize];
+  let t2 = textures[face.vertices[2].texture_index.unwrap() as usize];
 
   let (v01, v02) = (v1 - v0, v2 - v0);
   let face_normal = v02.cross(&v01).normalize();
@@ -106,14 +114,15 @@ fn main() {
   let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, false);
   let draw_image = sandbox.make_draw_image();
 
-  let vertices = &scene.vertices;
-  // let normals = &scene.normals;
+  let tga = &get_resource_filepath("african_head_diffuse.tga");
+  let tag_path = std::path::Path::new(tga);
+  let _ = scene.textures.load(tag_path, "african_head_diffuse");
 
   for model in &scene.models {
     for face in &model.faces {
-      // static_wireframe(vertices, face, &mut color_buffer);
+      // static_wireframe(&mut scene, face, &mut color_buffer);
       // println!("{:?}", face);
-      direct_light_shading(vertices, face, &mut color_buffer, &mut depth_buffer);
+      direct_light_shading(scene, face, &mut color_buffer, &mut depth_buffer);
     }
   }
 

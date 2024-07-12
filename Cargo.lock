@@ -614,6 +614,9 @@ dependencies = [
 [[package]]
 name = "tinyrenderer"
 version = "0.1.0"
+dependencies = [
+ "image",
+]
 
 [[package]]
 name = "ttf-parser"

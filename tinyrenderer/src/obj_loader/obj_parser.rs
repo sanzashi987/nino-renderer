@@ -193,10 +193,10 @@ where
     Ok(())
   }
 
-  pub fn get_result(&mut self) -> Result<&Scene, ParserError> {
+  pub fn get_result(&mut self) -> Result<&mut Scene, ParserError> {
     self.parse()?;
 
-    Ok(&self.scene)
+    Ok(&mut self.scene)
   }
 }
 
