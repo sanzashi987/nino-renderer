@@ -7,7 +7,19 @@ pub struct Vertex {
   pub texture: Option<Vec2>,
 }
 
-pub struct Mesh {
+pub struct Model {
   pub vertices: Vec<Vertex>,
   pub name: Option<String>,
+  // pub material
 }
+
+pub struct Scene {
+  pub models: Vec<Model>,
+  pub vertices: Vec<Vec3>,
+  pub normals: Vec<Vec3>,
+  pub texture_coordinates: Vec<Vec2>,
+}
+
+pub fn init_obj(filepath: &str) {}
+
+
