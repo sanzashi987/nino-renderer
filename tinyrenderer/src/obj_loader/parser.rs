@@ -7,7 +7,7 @@ use std::{borrow::BorrowMut, marker::PhantomData, ops::Not, path::Path};
 
 use super::{
   file_loader::FileLoader,
-  model::{Model, Scene, VertexPointer},
+  model::{Model, Scene, VertexIndex},
 };
 
 pub trait ParseLine {
@@ -123,7 +123,7 @@ where
                   }
                   // let str = indices[0];
                   let vertex_index = parse_num!(indices[0], u32) - 1;
-                  vertex_vec.push(VertexPointer::new(
+                  vertex_vec.push(VertexIndex::new(
                     vertex_index,
                     normal_index,
                     texture_index,
@@ -138,7 +138,7 @@ where
               // return Err(ParserError::)
             }
 
-            let vertices: [VertexPointer; 3] = [vertex_vec[0], vertex_vec[1], vertex_vec[2]];
+            let vertices: [VertexIndex; 3] = [vertex_vec[0], vertex_vec[1], vertex_vec[2]];
             self.scene.add_face(Face { vertices })?;
           }
           _ => {

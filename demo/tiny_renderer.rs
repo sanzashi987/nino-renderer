@@ -32,8 +32,8 @@ fn static_wireframe(scene: &Scene, face: &Face, color_buffer: &mut ColorBuffer) 
   let vertices = &scene.vertices;
 
   for i in 0..3 {
-    let i0 = face.vertices[i].vertex_index;
-    let i1 = face.vertices[(i + 1) % 3].vertex_index;
+    let i0 = face.vertices[i].position_index;
+    let i1 = face.vertices[(i + 1) % 3].position_index;
 
     let v0 = vertices[i0 as usize];
     let v1 = vertices[i1 as usize];
@@ -57,9 +57,9 @@ fn direct_light_shading(
   let vertices = &scene.vertices;
   let textures = &scene.texture_coordinates;
 
-  let v0 = vertices[face.vertices[0].vertex_index as usize];
-  let v1 = vertices[face.vertices[1].vertex_index as usize];
-  let v2 = vertices[face.vertices[2].vertex_index as usize];
+  let v0 = vertices[face.vertices[0].position_index as usize];
+  let v1 = vertices[face.vertices[1].position_index as usize];
+  let v2 = vertices[face.vertices[2].position_index as usize];
 
   let t0 = textures[face.vertices[0].texture_index.unwrap() as usize];
   let t1 = textures[face.vertices[1].texture_index.unwrap() as usize];

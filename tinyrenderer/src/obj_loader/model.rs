@@ -2,15 +2,15 @@ use crate::math::{Vec2, Vec3};
 
 use super::{defines::ParserError, material::Textures};
 #[derive(Debug, Default, Clone, Copy)]
-pub struct VertexPointer {
-  pub vertex_index: u32,
+pub struct VertexIndex {
+  pub position_index: u32,
   pub normal_index: Option<u32>,
   pub texture_index: Option<u32>,
 }
-impl VertexPointer {
-  pub fn new(vertex_index: u32, normal_index: Option<u32>, texture_index: Option<u32>) -> Self {
+impl VertexIndex {
+  pub fn new(position_index: u32, normal_index: Option<u32>, texture_index: Option<u32>) -> Self {
     Self {
-      vertex_index,
+      position_index,
       normal_index,
       texture_index,
     }
@@ -18,7 +18,7 @@ impl VertexPointer {
 }
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Face {
-  pub vertices: [VertexPointer; 3],
+  pub vertices: [VertexIndex; 3],
 }
 #[derive(Debug)]
 pub struct Model {
