@@ -1,6 +1,6 @@
 use crate::math::{Vec2, Vec3};
 
-use super::{texture::Textures, ParserError};
+use super::{error::ParserError, texture::Textures};
 #[derive(Debug, Default, Clone, Copy)]
 pub struct VertexPointer {
   pub vertex_index: u32,

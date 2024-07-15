@@ -1,11 +1,11 @@
+pub mod error;
 mod file_loader;
-mod model;
-mod obj_parser;
-mod mtl_parser;
-mod error;
-mod texture;
 mod material;
+mod model;
+mod mtl_parser;
+mod obj_parser;
+mod texture;
 
-pub use error::ParserError;
-pub use obj_parser::{load_obj, ParserMode};
+
 pub use model::*;
+pub use obj_parser::{load_obj, ParserMode};

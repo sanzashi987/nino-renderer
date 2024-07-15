@@ -1,4 +1,4 @@
-use super::{model::Face, ParserError};
+use super::{error::ParserError, model::Face};
 use crate::math::{Vec2, Vec3};
 use std::{ops::Not, path::Path};
 
