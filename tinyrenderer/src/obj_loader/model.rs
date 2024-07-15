@@ -1,6 +1,6 @@
 use crate::math::{Vec2, Vec3};
 
-use super::{error::ParserError, texture::Textures};
+use super::{defines::ParserError, material::Textures};
 #[derive(Debug, Default, Clone, Copy)]
 pub struct VertexPointer {
   pub vertex_index: u32,
@@ -42,7 +42,7 @@ impl Model {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Scene {
   pub models: Vec<Model>,
   pub vertices: Vec<Vec3>,
@@ -91,4 +91,22 @@ impl Scene {
   pub fn add_texture_coordinate(&mut self, texture_coordinate: Vec2) {
     self.texture_coordinates.push(texture_coordinate)
   }
+}
+
+pub fn parse<A, F>(iters: &mut A, f: F) -> Result<(), ParserError>
+where
+  A: Iterator<Item = String>,
+  F: Fn(&str) -> Result<(), ParserError>,
+{
+  for line in iters {
+    let trimmed = line.trim().to_string();
+    let mut tokens = trimmed.split_whitespace();
+
+    let token = tokens.next();
+    if let Some(s) = token {
+      f(s)?;
+    }
+  }
+
+  Ok(())
 }
