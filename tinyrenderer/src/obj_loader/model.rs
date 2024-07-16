@@ -1,6 +1,11 @@
+use std::hash::Hash;
+
 use crate::math::{Vec2, Vec3};
 
-use super::{defines::ParserError, material::Textures};
+use super::{
+  defines::ParserError,
+  material::{MoveTexutures, Textures},
+};
 #[derive(Debug, Default, Clone, Copy)]
 pub struct VertexIndex {
   pub position_index: u32,
@@ -20,7 +25,7 @@ impl VertexIndex {
 pub struct Face {
   pub vertices: [VertexIndex; 3],
 }
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Model {
   pub name: String,
   pub faces: Vec<Face>,
@@ -48,7 +53,7 @@ pub struct Scene {
   pub vertices: Vec<Vec3>,
   pub normals: Vec<Vec3>,
   pub texture_coordinates: Vec<Vec2>,
-  pub textures: Textures,
+  textures: Textures,
 }
 
 impl Scene {
@@ -90,5 +95,15 @@ impl Scene {
 
   pub fn add_texture_coordinate(&mut self, texture_coordinate: Vec2) {
     self.texture_coordinates.push(texture_coordinate)
+  }
+}
+
+impl MoveTexutures for Scene {
+  fn move_in_textures(&mut self, textures: Textures) {
+    self.textures = textures;
+  }
+
+  fn move_out_textures(self) -> Textures {
+    self.textures
   }
 }

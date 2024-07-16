@@ -4,7 +4,7 @@ use std::path::Path;
 
 use crate::math::{Vec2, Vec3, Vec4};
 
-use super::defines::ParserError;
+use super::defines::{ParserError, ParserMode};
 #[derive(Debug, Default)]
 pub struct Material {
   pub name: String,
@@ -62,9 +62,7 @@ impl Materials {
     res.ok_or(ParserError::MaterialNotFound)
   }
 
-  pub fn register_texture(filepath: String, name: String) {
-    
-  }
+  pub fn register_texture(filepath: String, name: String) {}
 }
 
 impl MoveTexutures for Materials {
@@ -81,29 +79,41 @@ impl MoveTexutures for Materials {
 pub struct Texture {
   id: u32,
   name: String,
-  image: image::DynamicImage,
+  image: Option<image::DynamicImage>,
+  path: String,
 }
 
 impl Texture {
-  pub fn load(name: &str, path: &Path, id: u32) -> Result<Self, ImageError> {
-    let image_data = image::open(path)?;
+  pub fn load(name: &str, path: &Path, id: u32, mode: ParserMode) -> Result<Self, ImageError> {
+    let image_data = if let ParserMode::Lazy = mode {
+      None
+    } else {
+      image::open(path).ok()
+    };
 
     Ok(Self {
       id,
       name: name.to_string(),
       image: image_data,
+      path: path.to_str().expect("Not a valid texture path").to_string(),
     })
   }
 
   ///  @param vt standard vt with x,y range from -1 to 1.
-  pub fn get_pixel(&self, vt: Vec2) -> Vec4 {
-    let width = self.image.width();
-    let height = self.image.height();
+  pub fn get_pixel(&mut self, vt: Vec2) -> Vec4 {
+    if let None = self.image {
+      self.image = image::open(std::path::Path::new(&self.path)).ok();
+    }
+
+    let img = self.image.as_ref().expect("Fail to load texture");
+
+    let width = img.width();
+    let height = img.height();
 
     let x = (vt.x * (width - 1) as f32) as u32;
     let y = (vt.y * (height - 1) as f32) as u32;
 
-    let rgba = self.image.get_pixel(x, y).0;
+    let rgba = img.get_pixel(x, y).0;
     Vec4::new(
       rgba[0] as f32 / 255.0,
       rgba[1] as f32 / 255.0,
@@ -121,9 +131,15 @@ pub struct Textures {
 }
 
 impl Textures {
-  pub fn load(&mut self, filepath: &Path, name: &str) -> Result<u32, ImageError> {
+  pub fn load(&mut self, filepath: &Path, name: &str, mode: ParserMode) -> Result<u32, ImageError> {
+    if let Some(id) = self.name_id_map.get(name) {
+      return Ok(*id);
+    }
+
     let id = self.auto_incr_id;
-    self.data.insert(id, Texture::load(name, filepath, id)?);
+    self
+      .data
+      .insert(id, Texture::load(name, filepath, id, mode)?);
     self.name_id_map.insert(name.to_string(), id);
     self.auto_incr_id += 1;
     Ok(id)

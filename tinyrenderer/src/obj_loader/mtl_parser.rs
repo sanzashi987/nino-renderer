@@ -9,13 +9,16 @@ use super::{
 
 pub struct MtlParserImpl;
 
+macro_rules! parse_texture_token {
+  ($expr:expr;$type:ty) => {};
+}
+
 impl ParseLine<Materials> for MtlParserImpl {
   fn parse_line(
     data: &mut Materials,
     tokens: &mut std::str::SplitWhitespace,
     s: &str,
   ) -> Result<(), ParserError> {
-    // let texture_store = data
     let current = data.get_current()?;
     let map = &mut current.texture_map;
 

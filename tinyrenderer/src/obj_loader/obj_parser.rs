@@ -3,9 +3,7 @@ use std::ops::Not;
 use crate::math::{Vec2, Vec3};
 
 use super::{
-  defines::{self, parse_num, parse_token, ParserError},
-  parser::{ParseLine, Parser},
-  Face, Scene, VertexPointer,
+  defines::{self, parse_num, parse_token, ParserError}, mtl_parser::load_mtl, parser::{ParseLine, Parser}, Face, Scene, VertexIndex
 };
 
 pub struct ObjParserImpl;
@@ -31,6 +29,13 @@ impl ParseLine<Scene> for ObjParserImpl {
       "vt" => {
         scene.add_texture_coordinate(parse_token!(tokens.next(); Vec2 = x:f32, y:f32)?);
       }
+      "mtllib" => {
+        let filename = parse_token!(tokens.next();String)?;
+        // scene.textures
+
+        load_mtl(relative_path, global_textures, mode)
+      }
+
       "f" => {
         let mut vertex_vec = vec![];
         let mut done = false;
@@ -62,11 +67,7 @@ impl ParseLine<Scene> for ObjParserImpl {
               }
 
               let vertex_index = parse_num!(indices[0], u32) - 1;
-              vertex_vec.push(VertexPointer::new(
-                vertex_index,
-                normal_index,
-                texture_index,
-              ));
+              vertex_vec.push(VertexIndex::new(vertex_index, normal_index, texture_index));
             }
             None => {
               done = true;
@@ -77,7 +78,7 @@ impl ParseLine<Scene> for ObjParserImpl {
           return Err(ParserError::InvalidSyntax("Face Vertices".to_string()));
         }
 
-        let vertices: [VertexPointer; 3] = [vertex_vec[0], vertex_vec[1], vertex_vec[2]];
+        let vertices: [VertexIndex; 3] = [vertex_vec[0], vertex_vec[1], vertex_vec[2]];
         scene.add_face(Face { vertices })?;
       }
       _ => {}
@@ -90,5 +91,5 @@ pub type ObjParser<'a, 'b> = Parser<'a, 'b, Scene, ObjParserImpl>;
 
 pub fn load_obj(relative_path: &str, mode: defines::ParserMode) -> Result<ObjParser, ParserError> {
   let fullpath = std::path::Path::new(relative_path);
-  Ok(ObjParser::new(fullpath, mode)?)
+  ObjParser::new(fullpath, mode)
 }

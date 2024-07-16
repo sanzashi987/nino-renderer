@@ -1,10 +1,7 @@
 use super::defines::{self, ParserError};
 use std::{marker::PhantomData, path::Path};
 
-use super::{
-  file_loader::FileLoader,
-  model::{Model, Scene, VertexIndex},
-};
+use super::file_loader::FileLoader;
 
 pub trait ParseLine<Data: Default> {
   fn parse_line(

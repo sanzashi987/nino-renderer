@@ -11,10 +11,16 @@ pub enum ParserError {
   ModelNotInit,
   MaterialNotFound,
 }
-
+#[derive(Debug)]
 pub enum ParserMode {
   Lazy,
   None,
+}
+
+impl Default for ParserMode {
+  fn default() -> Self {
+    ParserMode::None
+  }
 }
 
 macro_rules! parse_num {
