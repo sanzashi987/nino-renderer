@@ -4,6 +4,8 @@ use std::path::Path;
 
 use crate::math::{Vec2, Vec3, Vec4};
 
+use super::defines::ParserError;
+#[derive(Debug, Default)]
 pub struct Material {
   pub name: String,
   pub ambient: Option<Vec3>,
@@ -18,6 +20,7 @@ pub struct Material {
   pub texture_map: TexturePointer,
 }
 
+#[derive(Debug, Default)]
 pub struct TexturePointer {
   pub ambient: Option<String>,
   pub diffuse: Option<String>,
@@ -28,23 +31,53 @@ pub struct TexturePointer {
   pub bump: Option<String>,
 }
 
+#[derive(Default)]
 pub struct Materials {
-  current: Option<Material>,
+  last: Option<String>,
   materials: HashMap<String, Material>,
+  textures: Textures,
+}
+
+pub trait MoveTexutures {
+  fn move_in_textures(&mut self, textures: Textures);
+  fn move_out_textures(self) -> Textures;
 }
 
 impl Materials {
-  pub fn new() -> Self {
-    Self {
-      current: None,
-      materials: HashMap::new(),
-    }
+  pub fn new_material(&mut self, name: &str) {
+    let name = name.to_string();
+    let mut material = Material::default();
+    material.name = name.clone();
+    self.last = Some(name.clone());
+    self.materials.insert(name, material);
   }
 
-  pub fn add_material(&mut self, name: &str) {}
+  pub fn get_current(&mut self) -> Result<&mut Material, ParserError> {
+    let res = if let Some(name) = &self.last {
+      self.materials.get_mut(name)
+    } else {
+      None
+    };
+
+    res.ok_or(ParserError::MaterialNotFound)
+  }
+
+  pub fn register_texture(filepath: String, name: String) {
+    
+  }
 }
 
-#[derive(Debug)]
+impl MoveTexutures for Materials {
+  fn move_in_textures(&mut self, textures: Textures) {
+    self.textures = textures;
+  }
+
+  fn move_out_textures(self) -> Textures {
+    self.textures
+  }
+}
+
+#[derive(Debug, Default)]
 pub struct Texture {
   id: u32,
   name: String,
@@ -88,14 +121,6 @@ pub struct Textures {
 }
 
 impl Textures {
-  pub fn new() -> Self {
-    Self {
-      auto_incr_id: Default::default(),
-      data: HashMap::new(),
-      name_id_map: HashMap::new(),
-    }
-  }
-
   pub fn load(&mut self, filepath: &Path, name: &str) -> Result<u32, ImageError> {
     let id = self.auto_incr_id;
     self.data.insert(id, Texture::load(name, filepath, id)?);
