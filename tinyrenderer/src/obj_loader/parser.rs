@@ -1,4 +1,4 @@
-use super::defines::{self, ParserError};
+use super::defines::{ParserError, ParserResult};
 use std::{marker::PhantomData, path::Path};
 
 use super::file_loader::FileLoader;
@@ -7,15 +7,16 @@ pub trait ParseLine<Data: Default> {
   fn parse_line(
     data: &mut Data,
     tokens: &mut std::str::SplitWhitespace,
+    working_dir: &str,
     s: &str,
-  ) -> Result<(), ParserError>;
+  ) -> ParserResult;
 }
 
 pub struct Parser<'a, 'b, Data: Default, Abstracts: ParseLine<Data>> {
   data: Data,
   filepath: &'a Path,
+  working_dir: &'a str,
   loader: Option<FileLoader<'b>>,
-  // lazy: bool,
   _phantom: PhantomData<Abstracts>,
 }
 impl<'a, 'b, Data, Abstracts> Parser<'a, 'b, Data, Abstracts>
@@ -24,27 +25,22 @@ where
   Data: Default,
   Abstracts: ParseLine<Data>,
 {
-  pub fn new(filepath: &'a Path, mode: defines::ParserMode) -> Result<Self, ParserError> {
-    let lazy = match mode {
-      defines::ParserMode::Lazy => true,
-      _ => false,
-    };
-
-    let mut parser = Self {
+  pub fn new(filepath: &'a Path) -> Result<Self, ParserError> {
+    let working_dir = filepath
+      .parent()
+      .unwrap()
+      .to_str()
+      .expect("Not a valid working dir str");
+    Ok(Self {
       filepath,
+      working_dir,
       loader: None,
       data: Default::default(),
       _phantom: PhantomData,
-    };
-
-    if !lazy {
-      parser.parse()?
-    }
-
-    return Ok(parser);
+    })
   }
 
-  fn parse(&mut self) -> Result<(), ParserError> {
+  fn parse(&mut self) -> ParserResult {
     if let None = self.loader {
       let loader: Result<FileLoader<'b>, ParserError> =
         FileLoader::new(self.filepath).map_err(|e| ParserError::IoError(e));
@@ -63,11 +59,10 @@ where
 
       let token = tokens.next();
       if let Some(s) = token {
-        Abstracts::parse_line(&mut self.data, &mut tokens, s)?;
+        Abstracts::parse_line(&mut self.data, &mut tokens, self.working_dir, s)?;
       }
     }
 
-    // Ok(&self.result)
     Ok(())
   }
 
@@ -75,13 +70,5 @@ where
     self.parse()?;
 
     Ok(&mut self.data)
-  }
-
-  pub fn get_data_mut(&mut self) -> &mut Data {
-    &mut self.data
-  }
-
-  pub fn get_data_own(self) -> Data {
-    self.data
   }
 }

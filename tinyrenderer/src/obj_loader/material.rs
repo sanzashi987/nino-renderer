@@ -4,7 +4,7 @@ use std::path::Path;
 
 use crate::math::{Vec2, Vec3, Vec4};
 
-use super::defines::{ParserError, ParserMode};
+use super::defines::ParserError;
 #[derive(Debug, Default)]
 pub struct Material {
   pub name: String,
@@ -31,16 +31,11 @@ pub struct TexturePointer {
   pub bump: Option<String>,
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct Materials {
   last: Option<String>,
   materials: HashMap<String, Material>,
   textures: Textures,
-}
-
-pub trait MoveTexutures {
-  fn move_in_textures(&mut self, textures: Textures);
-  fn move_out_textures(self) -> Textures;
 }
 
 impl Materials {
@@ -62,16 +57,8 @@ impl Materials {
     res.ok_or(ParserError::MaterialNotFound)
   }
 
-  pub fn register_texture(filepath: String, name: String) {}
-}
-
-impl MoveTexutures for Materials {
-  fn move_in_textures(&mut self, textures: Textures) {
-    self.textures = textures;
-  }
-
-  fn move_out_textures(self) -> Textures {
-    self.textures
+  pub fn register_texture(&mut self, filepath: String, name: String) {
+    self.textures.load(filepath, &name);
   }
 }
 
@@ -84,12 +71,8 @@ pub struct Texture {
 }
 
 impl Texture {
-  pub fn load(name: &str, path: &Path, id: u32, mode: ParserMode) -> Result<Self, ImageError> {
-    let image_data = if let ParserMode::Lazy = mode {
-      None
-    } else {
-      image::open(path).ok()
-    };
+  pub fn load(name: &str, path: &Path, id: u32) -> Result<Self, ImageError> {
+    let image_data = image::open(path).ok();
 
     Ok(Self {
       id,
@@ -131,15 +114,14 @@ pub struct Textures {
 }
 
 impl Textures {
-  pub fn load(&mut self, filepath: &Path, name: &str, mode: ParserMode) -> Result<u32, ImageError> {
+  pub fn load(&mut self, filepath: String, name: &str) -> Result<u32, ImageError> {
     if let Some(id) = self.name_id_map.get(name) {
       return Ok(*id);
     }
 
     let id = self.auto_incr_id;
-    self
-      .data
-      .insert(id, Texture::load(name, filepath, id, mode)?);
+    let path = Path::new(&filepath);
+    self.data.insert(id, Texture::load(name, path, id)?);
     self.name_id_map.insert(name.to_string(), id);
     self.auto_incr_id += 1;
     Ok(id)

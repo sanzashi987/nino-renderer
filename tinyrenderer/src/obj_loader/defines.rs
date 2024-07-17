@@ -11,17 +11,8 @@ pub enum ParserError {
   ModelNotInit,
   MaterialNotFound,
 }
-#[derive(Debug)]
-pub enum ParserMode {
-  Lazy,
-  None,
-}
 
-impl Default for ParserMode {
-  fn default() -> Self {
-    ParserMode::None
-  }
-}
+pub type ParserResult = Result<(), ParserError>;
 
 macro_rules! parse_num {
   ($var:ident,$type:ty) => {{

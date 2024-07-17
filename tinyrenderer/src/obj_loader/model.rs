@@ -1,10 +1,8 @@
-use std::hash::Hash;
-
 use crate::math::{Vec2, Vec3};
 
 use super::{
   defines::ParserError,
-  material::{MoveTexutures, Textures},
+  material::{Materials, Textures},
 };
 #[derive(Debug, Default, Clone, Copy)]
 pub struct VertexIndex {
@@ -29,6 +27,7 @@ pub struct Face {
 pub struct Model {
   pub name: String,
   pub faces: Vec<Face>,
+  pub material: Option<String>,
 }
 
 impl Model {
@@ -39,6 +38,7 @@ impl Model {
     Self {
       name,
       faces: Default::default(),
+      material: None,
     }
   }
 
@@ -53,7 +53,7 @@ pub struct Scene {
   pub vertices: Vec<Vec3>,
   pub normals: Vec<Vec3>,
   pub texture_coordinates: Vec<Vec2>,
-  textures: Textures,
+  pub materials: Materials,
 }
 
 impl Scene {
@@ -63,7 +63,7 @@ impl Scene {
       vertices: Default::default(),
       normals: Default::default(),
       texture_coordinates: Default::default(),
-      textures: Default::default(),
+      materials: Default::default(),
     }
   }
 
@@ -96,14 +96,13 @@ impl Scene {
   pub fn add_texture_coordinate(&mut self, texture_coordinate: Vec2) {
     self.texture_coordinates.push(texture_coordinate)
   }
-}
 
-impl MoveTexutures for Scene {
-  fn move_in_textures(&mut self, textures: Textures) {
-    self.textures = textures;
-  }
-
-  fn move_out_textures(self) -> Textures {
-    self.textures
+  pub fn bind_material(&mut self, material_name: String) -> Result<(), ParserError> {
+    self
+      .models
+      .last_mut()
+      .ok_or(ParserError::ModelNotInit)?
+      .material = Some(material_name);
+    Ok(())
   }
 }

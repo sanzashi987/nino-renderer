@@ -3,7 +3,10 @@ use std::ops::Not;
 use crate::math::{Vec2, Vec3};
 
 use super::{
-  defines::{self, parse_num, parse_token, ParserError}, mtl_parser::load_mtl, parser::{ParseLine, Parser}, Face, Scene, VertexIndex
+  defines::{parse_num, parse_token, ParserError, ParserResult},
+  mtl_parser::load_mtl,
+  parser::{ParseLine, Parser},
+  Face, Scene, VertexIndex,
 };
 
 pub struct ObjParserImpl;
@@ -12,30 +15,22 @@ impl ParseLine<Scene> for ObjParserImpl {
   fn parse_line(
     scene: &mut Scene,
     tokens: &mut std::str::SplitWhitespace,
+    working_dir: &str,
     s: &str,
-  ) -> Result<(), ParserError> {
+  ) -> ParserResult {
     match s {
       "#" => {}
-      "g" | "o" => {
-        let name = parse_token!(tokens.next(); String)?;
-        scene.add_model(name);
-      }
-      "v" => {
-        scene.add_vertex(parse_token!(tokens.next(); Vec3 = x:f32, y:f32, z:f32)?);
-      }
-      "vn" => {
-        scene.add_normal(parse_token!(tokens.next(); Vec3 = x:f32, y:f32, z:f32)?);
-      }
-      "vt" => {
-        scene.add_texture_coordinate(parse_token!(tokens.next(); Vec2 = x:f32, y:f32)?);
-      }
+      "g" | "o" => scene.add_model(parse_token!(tokens.next(); String)?),
+      "v" => scene.add_vertex(parse_token!(tokens.next(); Vec3 = x:f32, y:f32, z:f32)?),
+      "vn" => scene.add_normal(parse_token!(tokens.next(); Vec3 = x:f32, y:f32, z:f32)?),
+      "vt" => scene.add_texture_coordinate(parse_token!(tokens.next(); Vec2 = x:f32, y:f32)?),
       "mtllib" => {
         let filename = parse_token!(tokens.next();String)?;
-        // scene.textures
-
-        load_mtl(relative_path, global_textures, mode)
+        let mut relative_path = working_dir.to_string();
+        relative_path.push_str(&filename);
+        let parser = load_mtl(&relative_path, &mut scene.materials)?;
       }
-
+      "usemtl" => scene.bind_material(parse_token!(tokens.next(); String)?)?,
       "f" => {
         let mut vertex_vec = vec![];
         let mut done = false;
@@ -89,7 +84,7 @@ impl ParseLine<Scene> for ObjParserImpl {
 
 pub type ObjParser<'a, 'b> = Parser<'a, 'b, Scene, ObjParserImpl>;
 
-pub fn load_obj(relative_path: &str, mode: defines::ParserMode) -> Result<ObjParser, ParserError> {
+pub fn load_obj(relative_path: &str) -> Result<ObjParser, ParserError> {
   let fullpath = std::path::Path::new(relative_path);
-  ObjParser::new(fullpath, mode)
+  ObjParser::new(fullpath)
 }

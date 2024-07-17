@@ -3,20 +3,27 @@ use crate::math::Vec3;
 
 use super::{
   defines::{self, parse_num, parse_token, parse_token_ok, ParserError},
-  material::{Materials, MoveTexutures, Textures},
+  material::{Materials, Textures},
   parser::{ParseLine, Parser},
 };
 
 pub struct MtlParserImpl;
 
 macro_rules! parse_texture_token {
-  ($expr:expr;$type:ty) => {};
+  ($expr:expr;$type:ty) => {
+  {
+    let name parse_token_ok!($expr;%type);
+    current.register_texture()
+    name
+  }
+  };
 }
 
 impl ParseLine<Materials> for MtlParserImpl {
   fn parse_line(
     data: &mut Materials,
     tokens: &mut std::str::SplitWhitespace,
+    working_dir: &str,
     s: &str,
   ) -> Result<(), ParserError> {
     let current = data.get_current()?;
@@ -50,26 +57,14 @@ impl ParseLine<Materials> for MtlParserImpl {
 
 type MtlParser<'a, 'b> = Parser<'a, 'b, Materials, MtlParserImpl>;
 
-impl<'a, 'b> MoveTexutures for MtlParser<'a, 'b>
+pub fn load_mtl<'a, 'b>(
+  relative_path: &'a str,
+  materials: &mut Materials,
+) -> Result<MtlParser<'a, 'b>, ParserError>
 where
   'a: 'b,
 {
-  fn move_in_textures(&mut self, textures: Textures) {
-    self.get_data_mut().move_in_textures(textures);
-  }
-
-  fn move_out_textures(self) -> Textures {
-    self.get_data_own().move_out_textures()
-  }
-}
-
-pub fn load_mtl(
-  relative_path: &str,
-  global_textures: Textures,
-  mode: defines::ParserMode,
-) -> Result<MtlParser, ParserError> {
   let filepath = std::path::Path::new(relative_path);
-  let mut parser = MtlParser::new(filepath, mode)?;
-  parser.move_in_textures(global_textures);
+  let mut parser = MtlParser::new(filepath)?;
   Ok(parser)
 }
