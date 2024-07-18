@@ -35,7 +35,7 @@ pub struct TexturePointer {
 pub struct Materials {
   last: Option<String>,
   materials: HashMap<String, Material>,
-  textures: Textures,
+  pub textures: Textures,
 }
 
 impl Materials {
@@ -47,18 +47,34 @@ impl Materials {
     self.materials.insert(name, material);
   }
 
-  pub fn get_current(&mut self) -> Result<&mut Material, ParserError> {
-    let res = if let Some(name) = &self.last {
+  pub fn get_mutates(&mut self) -> Result<(&mut Material, &mut Textures), ParserError> {
+    let material = if let Some(name) = &self.last {
       self.materials.get_mut(name)
     } else {
       None
     };
 
-    res.ok_or(ParserError::MaterialNotFound)
+    let material = material.ok_or(ParserError::MaterialNotFound)?;
+
+    Ok((material, &mut self.textures))
+  }
+}
+
+pub trait MoveMaterials {
+  fn move_out_materials(&mut self) -> Materials;
+  fn move_in_materials(&mut self, materials: Materials);
+}
+
+#[derive(Debug, Default)]
+pub struct Mtl(pub Materials);
+
+impl MoveMaterials for Mtl {
+  fn move_out_materials(&mut self) -> Materials {
+    std::mem::replace(&mut self.0, Default::default())
   }
 
-  pub fn register_texture(&mut self, filepath: String, name: String) {
-    self.textures.load(filepath, &name);
+  fn move_in_materials(&mut self, materials: Materials) {
+    self.0 = materials;
   }
 }
 
@@ -114,13 +130,13 @@ pub struct Textures {
 }
 
 impl Textures {
-  pub fn load(&mut self, filepath: String, name: &str) -> Result<u32, ImageError> {
+  pub fn load(&mut self, filepath: &str, name: &str) -> Result<u32, ImageError> {
     if let Some(id) = self.name_id_map.get(name) {
       return Ok(*id);
     }
 
     let id = self.auto_incr_id;
-    let path = Path::new(&filepath);
+    let path = Path::new(filepath);
     self.data.insert(id, Texture::load(name, path, id)?);
     self.name_id_map.insert(name.to_string(), id);
     self.auto_incr_id += 1;

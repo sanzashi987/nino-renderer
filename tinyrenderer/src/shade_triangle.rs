@@ -145,3 +145,12 @@ pub fn shade_triangle<F: Fn(&Vec2) -> Vec4>(
     shade_triangle_barycentric(points, depth, result, color);
   }
 }
+
+pub fn shade_triangle_direct(
+  points: &mut [Vec3; 3],
+  depth: &mut DepthBuffer,
+  result: &mut ColorBuffer,
+  color: &Vec4,
+) {
+  shade_triangle_barycentric(points, depth, result, |_| *color)
+}

@@ -4,6 +4,7 @@ use crate::math::{Vec2, Vec3};
 
 use super::{
   defines::{parse_num, parse_token, ParserError, ParserResult},
+  material::MoveMaterials,
   mtl_parser::load_mtl,
   parser::{ParseLine, Parser},
   Face, Scene, VertexIndex,
@@ -26,9 +27,17 @@ impl ParseLine<Scene> for ObjParserImpl {
       "vt" => scene.add_texture_coordinate(parse_token!(tokens.next(); Vec2 = x:f32, y:f32)?),
       "mtllib" => {
         let filename = parse_token!(tokens.next();String)?;
+
+        let materials = scene.move_out_materials();
+
         let mut relative_path = working_dir.to_string();
         relative_path.push_str(&filename);
-        let parser = load_mtl(&relative_path, &mut scene.materials)?;
+
+        let mut parser = load_mtl(&relative_path, materials)?;
+        let mtl = parser.parse()?;
+        let materials = mtl.move_out_materials();
+
+        scene.move_in_materials(materials);
       }
       "usemtl" => scene.bind_material(parse_token!(tokens.next(); String)?)?,
       "f" => {

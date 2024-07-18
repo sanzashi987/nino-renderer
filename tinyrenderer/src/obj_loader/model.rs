@@ -2,7 +2,7 @@ use crate::math::{Vec2, Vec3};
 
 use super::{
   defines::ParserError,
-  material::{Materials, Textures},
+  material::{Materials, MoveMaterials, Textures},
 };
 #[derive(Debug, Default, Clone, Copy)]
 pub struct VertexIndex {
@@ -31,9 +31,6 @@ pub struct Model {
 }
 
 impl Model {
-  // pub fn get_name(&self) -> &String {
-  //   &self.name
-  // }
   pub fn new(name: String) -> Self {
     Self {
       name,
@@ -104,5 +101,15 @@ impl Scene {
       .ok_or(ParserError::ModelNotInit)?
       .material = Some(material_name);
     Ok(())
+  }
+}
+
+impl MoveMaterials for Scene {
+  fn move_out_materials(&mut self) -> Materials {
+    std::mem::replace(&mut self.materials, Default::default())
+  }
+
+  fn move_in_materials(&mut self, materials: Materials) {
+    self.materials = materials;
   }
 }

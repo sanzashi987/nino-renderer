@@ -12,8 +12,8 @@ use tinyrenderer::{
   bresenham_line::line,
   data_array::{ColorBuffer, DepthBuffer},
   math::{Vec2, Vec3, Vec4},
-  obj_loader::{load_obj, Face, ParserMode, Scene},
-  shade_triangle::shade_triangle,
+  obj_loader::{load_obj, Face, Scene},
+  shade_triangle::{shade_triangle, shade_triangle_direct},
 };
 
 fn get_resource_filepath(relative: &str) -> String {
@@ -85,7 +85,7 @@ fn direct_light_shading(
 
   // println!("{}", light_intense);
   if light_intense > 0.0 {
-    shade_triangle(
+    shade_triangle_direct(
       &mut points,
       depth_buffer,
       color_buffer,
@@ -102,9 +102,9 @@ fn direct_light_shading(
 fn main() {
   let relative_path = get_resource_filepath(MODEL);
 
-  let mut res = load_obj(&relative_path, ParserMode::Lazy).unwrap();
+  let mut res = load_obj(&relative_path).unwrap();
 
-  let scene = res.get_result().unwrap();
+  let scene = res.parse().unwrap();
 
   let mut color_buffer = ColorBuffer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
   let mut depth_buffer = DepthBuffer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
@@ -116,7 +116,7 @@ fn main() {
 
   let tga = &get_resource_filepath("african_head_diffuse.tga");
   let tag_path = std::path::Path::new(tga);
-  let _ = scene.textures.load(tag_path, "african_head_diffuse");
+  // let _ = scene.textures.load(tag_path, "african_head_diffuse");
 
   for model in &scene.models {
     for face in &model.faces {

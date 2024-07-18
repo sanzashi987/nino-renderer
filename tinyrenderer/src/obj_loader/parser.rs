@@ -1,4 +1,7 @@
-use super::defines::{ParserError, ParserResult};
+use super::{
+  defines::{ParserError, ParserResult},
+  material::MoveMaterials,
+};
 use std::{marker::PhantomData, path::Path};
 
 use super::file_loader::FileLoader;
@@ -12,7 +15,7 @@ pub trait ParseLine<Data: Default> {
   ) -> ParserResult;
 }
 
-pub struct Parser<'a, 'b, Data: Default, Abstracts: ParseLine<Data>> {
+pub struct Parser<'a, 'b, Data: Default + MoveMaterials, Abstracts: ParseLine<Data>> {
   data: Data,
   filepath: &'a Path,
   working_dir: &'a str,
@@ -22,7 +25,7 @@ pub struct Parser<'a, 'b, Data: Default, Abstracts: ParseLine<Data>> {
 impl<'a, 'b, Data, Abstracts> Parser<'a, 'b, Data, Abstracts>
 where
   'a: 'b,
-  Data: Default,
+  Data: Default + MoveMaterials,
   Abstracts: ParseLine<Data>,
 {
   pub fn new(filepath: &'a Path) -> Result<Self, ParserError> {
@@ -40,7 +43,7 @@ where
     })
   }
 
-  fn parse(&mut self) -> ParserResult {
+  fn _parse(&mut self) -> ParserResult {
     if let None = self.loader {
       let loader: Result<FileLoader<'b>, ParserError> =
         FileLoader::new(self.filepath).map_err(|e| ParserError::IoError(e));
@@ -66,9 +69,13 @@ where
     Ok(())
   }
 
-  pub fn get_result(&mut self) -> Result<&mut Data, ParserError> {
-    self.parse()?;
+  pub fn parse(&mut self) -> Result<&mut Data, ParserError> {
+    self._parse()?;
 
     Ok(&mut self.data)
+  }
+
+  pub fn get_data(&mut self)->&mut Data {
+    &mut self.data
   }
 }
