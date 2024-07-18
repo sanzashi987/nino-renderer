@@ -1,6 +1,6 @@
 pub mod defines;
 mod file_loader;
-mod material;
+pub mod material;
 mod model;
 mod mtl_parser;
 mod obj_parser;

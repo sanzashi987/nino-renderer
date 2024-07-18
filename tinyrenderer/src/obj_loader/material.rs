@@ -1,6 +1,6 @@
 use image::{GenericImageView, ImageError};
-use std::collections::HashMap;
 use std::path::Path;
+use std::{collections::HashMap, fmt::Debug};
 
 use crate::math::{Vec2, Vec3, Vec4};
 
