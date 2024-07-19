@@ -5,37 +5,68 @@ use std::{collections::HashMap, fmt::Debug};
 use crate::math::{Vec2, Vec3, Vec4};
 
 use super::defines::ParserError;
-#[derive(Debug, Default)]
-pub struct Material {
-  pub name: String,
-  pub ambient: Option<Vec3>,
-  pub diffuse: Option<Vec3>,
-  pub specular: Option<Vec3>,
-  pub emissive_coeficient: Option<Vec3>,
-  pub specular_exponent: Option<f32>,
-  pub dissolve: Option<f32>,
-  pub transmission_filter: Option<Vec3>,
-  pub optical_density: Option<f32>,
-  pub illum: Option<u8>,
-  pub texture_map: TexturePointer,
+
+macro_rules! make_material_base {
+  ($($prop:ident:$type:ty),+) => {
+
+    #[derive(Debug, Default)]
+    pub struct MaterialBase<Map: Default> {
+      pub name: String,
+      pub texture_map: Map,
+      $(
+        pub $prop: Option<$type>,
+      )+
+    }
+
+    impl<Map: Default> MaterialBase<Map> {
+      pub fn from_another_material_type<A: Default>(
+        instance: &MaterialBase<A>,
+        name: String,
+        texture_map: Map,
+      ) -> Self {
+        Self {
+          name,
+          texture_map,
+          $(
+            $prop:instance.$prop,
+          )+
+        }
+      }
+    }
+  };
 }
+make_material_base!(
+  ambient: Vec3,
+  diffuse: Vec3,
+  specular: Vec3,
+  emissive_coeficient: Vec3,
+  specular_exponent: f32,
+  dissolve: f32,
+  transmission_filter: Vec3,
+  optical_density: f32,
+  illum: u8
+);
+
+pub type Material = MaterialBase<TexturePointer>;
 
 #[derive(Debug, Default)]
-pub struct TexturePointer {
-  pub ambient: Option<String>,
-  pub diffuse: Option<String>,
-  pub specular_color: Option<String>,
-  pub specular_highlight: Option<String>,
-  pub alpha: Option<String>,
-  pub refl: Option<String>,
-  pub bump: Option<String>,
+pub struct TextureMap<T> {
+  pub ambient: Option<T>,
+  pub diffuse: Option<T>,
+  pub specular_color: Option<T>,
+  pub specular_highlight: Option<T>,
+  pub alpha: Option<T>,
+  pub refl: Option<T>,
+  pub bump: Option<T>,
 }
+
+pub type TexturePointer = TextureMap<String>;
 
 #[derive(Debug, Default)]
 pub struct Materials {
   last: Option<String>,
   materials: HashMap<String, Material>,
-  pub textures: Textures,
+  textures: Textures,
 }
 
 impl Materials {
@@ -45,6 +76,10 @@ impl Materials {
     material.name = name.clone();
     self.last = Some(name.clone());
     self.materials.insert(name, material);
+  }
+
+  pub fn get_material_by_name(&self, name: &str) -> Option<&Material> {
+    self.materials.get(name)
   }
 
   pub fn get_mutates(&mut self) -> Result<(&mut Material, &mut Textures), ParserError> {

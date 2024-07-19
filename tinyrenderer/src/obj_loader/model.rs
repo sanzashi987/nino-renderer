@@ -1,4 +1,7 @@
-use crate::math::{Vec2, Vec3};
+use crate::{
+  math::{Vec2, Vec3},
+  utils::swap_and_move,
+};
 
 use super::{
   defines::ParserError,
@@ -43,7 +46,6 @@ impl Model {
     &self.faces
   }
 }
-
 #[derive(Debug, Default)]
 pub struct Scene {
   pub models: Vec<Model>,
@@ -56,7 +58,7 @@ pub struct Scene {
 impl Scene {
   pub fn new() -> Self {
     Self {
-      models: Vec::new(),
+      models: Default::default(),
       vertices: Default::default(),
       normals: Default::default(),
       texture_coordinates: Default::default(),
@@ -106,7 +108,7 @@ impl Scene {
 
 impl MoveMaterials for Scene {
   fn move_out_materials(&mut self) -> Materials {
-    std::mem::replace(&mut self.materials, Default::default())
+    swap_and_move(&mut self.materials)
   }
 
   fn move_in_materials(&mut self, materials: Materials) {
