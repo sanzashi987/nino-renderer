@@ -39,7 +39,7 @@ pub struct Vertex {
 }
 
 impl Vertex {
-  pub fn from_vertex_index(v: VertexIndex, scene: &Scene) -> Self {
+  pub fn from_vertex_index(v: &VertexIndex, scene: &Scene) -> Self {
     let VertexIndex {
       position_index,
       normal_index,
@@ -48,7 +48,7 @@ impl Vertex {
 
     let normal = normal_index.map(|i| scene.normals[i as usize]);
     let texture = texture_index.map(|i| scene.texture_coordinates[i as usize]);
-    let position = scene.vertices[position_index as usize];
+    let position = scene.vertices[*position_index as usize];
     Self {
       position,
       normal,
@@ -68,7 +68,7 @@ impl<'a> Model<'a> {
     let name = obj_model.name.clone();
     let mut vertices = vec![];
     for obj_face in &obj_model.faces {
-      for v in obj_face.vertices {
+      for v in &obj_face.vertices {
         vertices.push(Vertex::from_vertex_index(v, scene));
       }
     }
@@ -127,11 +127,10 @@ impl<'a> Scene<'a> {
 pub fn from_obj_path(relative_path: &str) -> Result<Scene, ParserError> {
   let mut parser = load_obj(relative_path)?;
   let obj_scene = parser.parse()?;
-  {
-    let mut scene = Scene::from_obj_scene(obj_scene);
-    for obj_model in &obj_scene.models {
-      scene.models.push(Model::from_obj_model(obj_model, &scene));
-    }
-    Ok(scene)
+
+  let mut scene = Scene::from_obj_scene(obj_scene);
+  for obj_model in &obj_scene.models {
+    scene.models.push(Model::from_obj_model(obj_model, &scene));
   }
+  Ok(scene)
 }
