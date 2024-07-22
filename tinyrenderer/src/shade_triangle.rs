@@ -3,11 +3,11 @@ use crate::{
   math::{lerp, Barycentric, Vec2, Vec3, Vec4},
 };
 
-fn shade_triangle_scanline<F: Fn(&Vec2) -> Vec4>(
+fn shade_triangle_scanline(
   points: &mut [Vec3; 3],
   depth: &mut DepthBuffer,
   result: &mut ColorBuffer,
-  color: F,
+  color: &Vec4,
 ) {
   let mut points = points.map(|v| v.truncate_to_vec2());
 
@@ -102,11 +102,11 @@ impl BoundaryBox {
   }
 }
 
-fn shade_triangle_barycentric<F: Fn(&Vec2) -> Vec4>(
+fn shade_triangle_barycentric(
   points: &mut [Vec3; 3],
   depth: &mut DepthBuffer,
   result: &mut ColorBuffer,
-  color: F,
+  color: &Vec4,
 ) {
   let points_2d = points.map(|v| v.truncate_to_vec2());
   let (width, height) = (result.width(), result.height());
@@ -125,19 +125,18 @@ fn shade_triangle_barycentric<F: Fn(&Vec2) -> Vec4>(
 
       if depth.get(x, y) < z {
         depth.set(x, y, z);
-        let c = color(&Vec2::default());
 
-        result.set(x, y, &c);
+        result.set(x, y, color);
       }
     }
   }
 }
 
-pub fn shade_triangle<F: Fn(&Vec2) -> Vec4>(
+pub fn shade_triangle(
   points: &mut [Vec3; 3],
   depth: &mut DepthBuffer,
   result: &mut ColorBuffer,
-  color: F,
+  color: &Vec4,
 ) {
   if cfg!(feature = "scanline") {
     shade_triangle_scanline(points, depth, result, color);
@@ -152,5 +151,5 @@ pub fn shade_triangle_direct(
   result: &mut ColorBuffer,
   color: &Vec4,
 ) {
-  shade_triangle_barycentric(points, depth, result, |_| *color)
+  shade_triangle_barycentric(points, depth, result, color);
 }

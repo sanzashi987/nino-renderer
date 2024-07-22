@@ -12,7 +12,7 @@ use tinyrenderer::{
   bresenham_line::line,
   data_array::{ColorBuffer, DepthBuffer},
   math::{Vec2, Vec3, Vec4},
-  obj_loader::{load_obj, Face, Scene},
+  model::{self, from_obj_path, Model, Scene, Vertex},
   shade_triangle::{shade_triangle, shade_triangle_direct},
 };
 
@@ -50,21 +50,11 @@ fn static_wireframe(scene: &Scene, face: &Face, color_buffer: &mut ColorBuffer) 
  */
 fn direct_light_shading(
   scene: &Scene,
-  face: &Face,
+  model: &Model,
+  points: &mut [Vertex; 3],
   color_buffer: &mut ColorBuffer,
   depth_buffer: &mut DepthBuffer,
 ) {
-  let vertices = &scene.vertices;
-  let textures = &scene.texture_coordinates;
-
-  let v0 = vertices[face.vertices[0].position_index as usize];
-  let v1 = vertices[face.vertices[1].position_index as usize];
-  let v2 = vertices[face.vertices[2].position_index as usize];
-
-  let t0 = textures[face.vertices[0].texture_index.unwrap() as usize];
-  let t1 = textures[face.vertices[1].texture_index.unwrap() as usize];
-  let t2 = textures[face.vertices[2].texture_index.unwrap() as usize];
-
   let (v01, v02) = (v1 - v0, v2 - v0);
   let face_normal = v02.cross(&v01).normalize();
 
@@ -102,9 +92,10 @@ fn direct_light_shading(
 fn main() {
   let relative_path = get_resource_filepath(MODEL);
 
-  let mut res = load_obj(&relative_path).unwrap();
+  // let mut res = load_obj(&relative_path).unwrap();
+  // let scene = res.parse().unwrap();
 
-  let scene = res.parse().unwrap();
+  let scene = from_obj_path(&relative_path).unwrap();
 
   let mut color_buffer = ColorBuffer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
   let mut depth_buffer = DepthBuffer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
@@ -114,15 +105,31 @@ fn main() {
   let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, false);
   let draw_image = sandbox.make_draw_image();
 
-  let tga = &get_resource_filepath("african_head_diffuse.tga");
-  let tag_path = std::path::Path::new(tga);
   // let _ = scene.textures.load(tag_path, "african_head_diffuse");
 
+  // for model in &scene.models {
+  //   for face in &model.faces {
+  //     // static_wireframe(&mut scene, face, &mut color_buffer);
+  //     // println!("{:?}", face);
+  //     direct_light_shading(scene, face, &mut color_buffer, &mut depth_buffer);
+  //   }
+  // }
+
   for model in &scene.models {
-    for face in &model.faces {
-      // static_wireframe(&mut scene, face, &mut color_buffer);
-      // println!("{:?}", face);
-      direct_light_shading(scene, face, &mut color_buffer, &mut depth_buffer);
+    let vertext_number = model.vertices.len();
+    for i in 0..vertext_number / 3 {
+      let mut points = [
+        model.vertices[i * 3 + 0],
+        model.vertices[i * 3 + 1],
+        model.vertices[i * 3 + 2],
+      ];
+      direct_light_shading(
+        &scene,
+        model,
+        &mut points,
+        &mut color_buffer,
+        &mut depth_buffer,
+      )
     }
   }
 
