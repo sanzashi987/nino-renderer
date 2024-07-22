@@ -139,7 +139,10 @@ impl Texture {
       self.image = image::open(std::path::Path::new(&self.path)).ok();
     }
 
-    let img = self.image.as_ref().expect("Fail to load texture");
+    let img = self
+      .image
+      .as_ref()
+      .expect(&format!("Fail to load texture:{}", &self.path.as_str()));
 
     let width = img.width();
     let height = img.height();

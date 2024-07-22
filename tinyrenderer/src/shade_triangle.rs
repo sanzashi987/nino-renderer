@@ -1,6 +1,8 @@
 use crate::{
   data_array::{ColorBuffer, DepthBuffer},
   math::{lerp, Barycentric, Vec2, Vec3, Vec4},
+  model::Vertex,
+  obj_loader::material::Texture,
 };
 
 fn shade_triangle_scanline(
@@ -102,13 +104,14 @@ impl BoundaryBox {
   }
 }
 
-fn shade_triangle_barycentric(
-  points: &mut [Vec3; 3],
+pub fn shade_triangle_barycentric(
+  points: &mut [Vertex; 3],
   depth: &mut DepthBuffer,
   result: &mut ColorBuffer,
+  textures: &mut Texture,
   color: &Vec4,
 ) {
-  let points_2d = points.map(|v| v.truncate_to_vec2());
+  let points_2d = points.map(|v| v.position.truncate_to_vec2());
   let (width, height) = (result.width(), result.height());
   let boundary = BoundaryBox::new(&points_2d, width as f32, height as f32);
 
@@ -119,37 +122,35 @@ fn shade_triangle_barycentric(
         continue;
       }
 
-      let z = barycentric.alpha() * points[0].z
-        + barycentric.beta() * points[1].z
-        + barycentric.gamma() * points[2].z;
+      let z = barycentric.alpha() * points[0].position.z
+        + barycentric.beta() * points[1].position.z
+        + barycentric.gamma() * points[2].position.z;
+
+      let vt = points[0].texture.unwrap() * barycentric.alpha()
+        + points[1].texture.unwrap() * barycentric.beta()
+        + points[2].texture.unwrap() * barycentric.gamma();
+
+      let c = textures.get_pixel(vt);
 
       if depth.get(x, y) < z {
         depth.set(x, y, z);
 
-        result.set(x, y, color);
+        result.set(x, y, &(c * (*color)));
+        // result.set(x, y, &c);
       }
     }
   }
 }
 
-pub fn shade_triangle(
-  points: &mut [Vec3; 3],
-  depth: &mut DepthBuffer,
-  result: &mut ColorBuffer,
-  color: &Vec4,
-) {
-  if cfg!(feature = "scanline") {
-    shade_triangle_scanline(points, depth, result, color);
-  } else {
-    shade_triangle_barycentric(points, depth, result, color);
-  }
-}
-
-pub fn shade_triangle_direct(
-  points: &mut [Vec3; 3],
-  depth: &mut DepthBuffer,
-  result: &mut ColorBuffer,
-  color: &Vec4,
-) {
-  shade_triangle_barycentric(points, depth, result, color);
-}
+// pub fn shade_triangle(
+//   points: &mut [Vec3; 3],
+//   depth: &mut DepthBuffer,
+//   result: &mut ColorBuffer,
+//   color: &Vec4,
+// ) {
+//   if cfg!(feature = "scanline") {
+//     shade_triangle_scanline(points, depth, result, color);
+//   } else {
+//     shade_triangle_barycentric(points, depth, result, color);
+//   }
+// }
