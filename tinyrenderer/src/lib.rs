@@ -5,3 +5,4 @@ pub mod data_array;
 pub mod shade_triangle;
 pub mod model;
 mod utils;
+pub mod renderer;
