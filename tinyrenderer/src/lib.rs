@@ -1,9 +1,8 @@
-pub mod math;
-pub mod obj_loader;
 pub mod bresenham_line;
 pub mod data_array;
-pub mod shade_triangle;
+pub mod math;
 pub mod model;
+pub mod obj_loader;
+pub mod shade_triangle;
 mod utils;
-pub mod renderer;
-pub mod camera;
+mod renderer;

@@ -1,6 +1,6 @@
 use crate::math::{apply_eular_rotate_xyz, apply_translate, Mat4, Vec3, Vec4};
 
-pub struct Frustum {
+struct Frustum {
   near: f32,
   far: f32,
   aspect: f32,
@@ -60,9 +60,9 @@ pub struct Camera {
 }
 
 impl Camera {
-  pub fn new(near: f32, far: f32, aspect: f32, fov: f32) -> Self {
+  pub fn new(w: f32, h: f32) -> Self {
     Self {
-      frustum: Frustum::new(near, far, aspect, fov),
+      frustum: Frustum::new(1.0, 1000.0, w / h, 30f32.to_radians()),
       position: Vec3::zero(),
       rotation: Vec3::zero(),
       view_matrix: Mat4::identity(),
@@ -70,8 +70,8 @@ impl Camera {
     }
   }
 
-  pub fn update_frustum(&mut self, near: f32, far: f32, aspect: f32, fov: f32) {
-    self.frustum = Frustum::new(near, far, aspect, fov);
+  pub fn update_frustum(&mut self, near: f32, far: f32, fov: f32) {
+    self.frustum = Frustum::new(near, far, self.frustum.aspect, fov);
   }
 
   fn compute_view_matrix(&mut self) {
