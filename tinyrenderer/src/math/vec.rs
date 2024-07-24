@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 macro_rules! define_vec_op {
   ($name:ident,$trait_name:ident,  $func_name:ident, $op:tt, $($p:ident),+) => {
@@ -27,6 +27,26 @@ macro_rules! define_vec_op {
   };
 }
 
+macro_rules! define_vec_op_assign {
+  ($name:ident,$trait_name:ident, $func:ident, $op:tt, $($var:ident),+) => {
+    impl $trait_name for $name {
+      fn $func(&mut self, rhs: Self) {
+        $(
+          self.$var $op rhs.$var;
+        )+
+      }
+    }
+
+    impl $trait_name<f32> for $name {
+      fn $func(&mut self, rhs: f32) {
+        $(
+          self.$var $op rhs;
+        )+
+      }
+    }
+  };
+}
+
 macro_rules! define_vec {
   ($name:ident, $($p:ident),+) => {
     #[derive(Debug, PartialEq, Copy, Clone, Default)]
@@ -40,9 +60,13 @@ macro_rules! define_vec {
     define_vec_op!($name, Sub, sub, - ,$($p),+);
     define_vec_op!($name, Mul, mul, * ,$($p),+);
     define_vec_op!($name, Div, div, / ,$($p),+);
+    define_vec_op_assign!($name, AddAssign, add_assign, += $(,$p)+ );
+    define_vec_op_assign!($name, SubAssign, sub_assign, -= $(,$p)+ );
+    define_vec_op_assign!($name, MulAssign, mul_assign, *= $(,$p)+ );
+    define_vec_op_assign!($name, DivAssign, div_assign, /= $(,$p)+ );
 
     impl $name {
-      pub fn new($($p:f32),+) -> Self {
+      pub const fn new($($p:f32),+) -> Self {
         $name{
           $(
             $p,
@@ -114,8 +138,28 @@ impl Vec3 {
       y: self.y,
     }
   }
+
+  pub fn x_axis() -> &'static Self {
+    const V: Vec3 = Vec3::new(1.0, 0.0, 0.0);
+    &V
+  }
+
+  pub fn y_axis() -> &'static Self {
+    const V: Vec3 = Vec3::new(0.0, 1.0, 0.0);
+    &V
+  }
+
+  pub fn z_axis() -> &'static Self {
+    const V: Vec3 = Vec3::new(0.0, 0.0, 1.0);
+    &V
+  }
 }
 
+impl Vec4 {
+  pub fn truncated_to_vec3(&self) -> Vec3 {
+    Vec3::new(self.x, self.y, self.z)
+  }
+}
 pub fn lerp<T>(a: T, b: T, t: f32) -> T
 where
   T: Sub<Output = T> + Add<Output = T> + Mul<f32, Output = T> + Copy + Clone,

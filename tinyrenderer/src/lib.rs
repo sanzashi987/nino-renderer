@@ -6,3 +6,4 @@ pub mod shade_triangle;
 pub mod model;
 mod utils;
 pub mod renderer;
+pub mod camera;
