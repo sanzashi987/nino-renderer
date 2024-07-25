@@ -1,6 +1,6 @@
 use crate::math::{apply_eular_rotate_xyz, apply_translate, Mat4, Vec3, Vec4};
 
-struct Frustum {
+pub struct Frustum {
   near: f32,
   far: f32,
   aspect: f32,

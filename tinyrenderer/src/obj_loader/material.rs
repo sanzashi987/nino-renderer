@@ -49,17 +49,49 @@ make_material_base!(
 
 pub type Material = MaterialBase<TexturePointer>;
 
-#[derive(Debug, Default)]
-pub struct TextureMap<T> {
-  pub ambient: Option<T>,
-  pub diffuse: Option<T>,
-  pub specular_color: Option<T>,
-  pub specular_highlight: Option<T>,
-  pub alpha: Option<T>,
-  pub refl: Option<T>,
-  pub bump: Option<T>,
+macro_rules! make_texture_map {
+  ($($prop:ident:$type:ty),+) => {
+    #[derive(Debug, Default)]
+    pub struct TextureMap<T> {
+      $(
+        pub $prop: Option<T>,
+      )+
+    }
+    impl<T> TextureMap<T> {
+      pub fn from_another_texuture_map<A, F: Fn(&A) -> T>(instance: &TextureMap<A>, f: F) -> Self {
+        $(
+          let $prop = if let Some(v) = &instance.$prop {
+            Some(f(v))
+          } else {
+            None
+          };
+        )+
+        Self {$($prop,)+ }
+      }
+
+      pub fn get_by_key(&self, key: &str) -> Option<&T> {
+        match key {
+          $(
+            stringify!($prop) => self.$prop.as_ref(),
+          )+
+          _ => None,
+        }
+      }
+
+    }
+
+  };
 }
 
+make_texture_map!(
+  ambient:std::any::Any,
+  diffuse:std::any::Any,
+  specular_color:std::any::Any,
+  specular_highlight:std::any::Any,
+  alpha:std::any::Any,
+  refl:std::any::Any,
+  bump:std::any::Any
+);
 pub type TexturePointer = TextureMap<String>;
 
 #[derive(Debug, Default)]

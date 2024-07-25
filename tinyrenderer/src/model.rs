@@ -1,11 +1,9 @@
-use std::slice::SliceIndex;
-
 use crate::{
-  math::{Vec2, Vec3, Vec4},
+  math::{Vec2, Vec3},
   obj_loader::{
     defines::ParserError,
     load_obj,
-    material::{self, Material as ObjMaterial, MaterialBase, Materials, Texture, TextureMap},
+    material::{Material as ObjMaterial, MaterialBase, Materials, Texture, TextureMap},
     Model as ObjModel, Scene as ObjScene, VertexIndex,
   },
   utils::swap_and_move,
@@ -20,7 +18,7 @@ impl<'a> Default for TextureRefer<'a> {
   }
 }
 
-type Material<'a> = MaterialBase<TextureRefer<'a>>;
+pub type Material<'a> = MaterialBase<TextureRefer<'a>>;
 
 impl<'a> Material<'a> {
   pub fn from_obj_material(obj_material: &ObjMaterial, scene: &Scene) -> Self {
@@ -60,8 +58,8 @@ impl Vertex {
 #[derive(Debug, Default)]
 pub struct Model<'a> {
   pub vertices: Vec<Vertex>,
-  pub name: String,
-  pub material: Option<Material<'a>>,
+  name: String,
+  material: Option<Material<'a>>,
 }
 impl<'a> Model<'a> {
   pub fn from_obj_model(obj_model: &ObjModel, scene: &Scene) -> Self {
