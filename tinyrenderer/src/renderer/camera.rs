@@ -29,7 +29,7 @@ impl Frustum {
     }
   }
 
-  pub fn get_mat(&self) -> &Mat4 {
+  pub fn get_projection_matrix(&self) -> &Mat4 {
     &self.mat
   }
   pub fn contains(&self, pt: &Vec3) -> bool {
@@ -68,6 +68,10 @@ impl Camera {
       view_matrix: Mat4::identity(),
       view_direction: *Vec3::z_axis() * -1.0,
     }
+  }
+
+  pub fn get_view_matarix(&self) -> &Mat4 {
+    &self.view_matrix
   }
 
   pub fn update_frustum(&mut self, near: f32, far: f32, fov: f32) {

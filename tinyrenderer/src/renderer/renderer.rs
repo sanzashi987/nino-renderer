@@ -27,7 +27,7 @@ impl Viewport {
       y,
       w,
       h,
-      d: 255.0,
+      d: 1.0, //255.0,
       viewport_matrix: Mat4::identity(),
     };
 
@@ -48,6 +48,10 @@ impl Viewport {
      0.0    , 0.0    , half_d, half_d,
      0.0    , 0.0    , 0.0   , 1.0
     ]);
+  }
+
+  pub fn get_viewport_matrix(&self) -> &Mat4 {
+    &self.viewport_matrix
   }
 }
 
@@ -70,7 +74,9 @@ impl Renderer {
 
   pub fn render(&mut self, scene: &Scene, model_matrix: &Mat4) {
     let frustum = self.camera.get_frustum();
-    let projection_matrix = frustum.get_mat();
+    let view_matrix = self.camera.get_view_matarix();
+    let projection_matrix = frustum.get_projection_matrix();
+    let viewport_matrix = self.viewport.get_viewport_matrix();
 
     for model in &scene.models {
       let vertices = &model.vertices;
@@ -81,8 +87,15 @@ impl Renderer {
         for v in &mut vertices {
           v.position = *model_matrix * v.position;
         }
-        for v in &mut vertices {}
-        for v in &mut vertices {}
+        for v in &mut vertices {
+          v.position = *view_matrix * v.position;
+        }
+        for v in &mut vertices {
+          v.position = *projection_matrix * v.position;
+        }
+        for v in &mut vertices {
+          v.position = *viewport_matrix * v.position;
+        }
       }
     }
   }
