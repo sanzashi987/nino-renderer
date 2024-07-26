@@ -7,12 +7,13 @@ use crate::math::{Vec2, Vec3, Vec4};
 use super::defines::ParserError;
 
 macro_rules! make_material_base {
-  ($($prop:ident:$type:ty),+) => {
+  ($($prop:ident:$type:ty),+;;$($static_prop:ident:$t:ty),+) => {
 
     #[derive(Debug, Default)]
     pub struct MaterialBase<Map: Default> {
-      pub name: String,
-      pub texture_map: Map,
+      $(
+        pub $static_prop: $t,
+      )+
       $(
         pub $prop: Option<$type>,
       )+
@@ -21,12 +22,10 @@ macro_rules! make_material_base {
     impl<Map: Default> MaterialBase<Map> {
       pub fn from_another_material_type<A: Default>(
         instance: &MaterialBase<A>,
-        name: String,
-        texture_map: Map,
+        $($static_prop:$t,)+
       ) -> Self {
         Self {
-          name,
-          texture_map,
+          $($static_prop,)+
           $(
             $prop:instance.$prop,
           )+
@@ -44,14 +43,17 @@ make_material_base!(
   dissolve: f32,
   transmission_filter: Vec3,
   optical_density: f32,
-  illum: u8
+  illum: u8;;
+  name: String,
+  texture_map: Map,
+  id:u32
 );
 
 pub type Material = MaterialBase<TexturePointer>;
 
 macro_rules! make_texture_map {
-  ($($prop:ident:$type:ty),+) => {
-    #[derive(Debug, Default)]
+  ($($prop:tt),+) => {
+    #[derive(Debug, Default,Copy,Clone)]
     pub struct TextureMap<T> {
       $(
         pub $prop: Option<T>,
@@ -77,27 +79,29 @@ macro_rules! make_texture_map {
           _ => None,
         }
       }
-
     }
 
   };
 }
 
 make_texture_map!(
-  ambient:std::any::Any,
-  diffuse:std::any::Any,
-  specular_color:std::any::Any,
-  specular_highlight:std::any::Any,
-  alpha:std::any::Any,
-  refl:std::any::Any,
-  bump:std::any::Any
+  ambient,
+  diffuse,
+  specular_color,
+  specular_highlight,
+  alpha,
+  refl,
+  bump
 );
+
 pub type TexturePointer = TextureMap<String>;
 
 #[derive(Debug, Default)]
 pub struct Materials {
+  auto_incre_id: u32,
   last: Option<String>,
   materials: HashMap<String, Material>,
+  name_id_map: HashMap<u32, String>,
   textures: Textures,
 }
 
@@ -105,9 +109,13 @@ impl Materials {
   pub fn new_material(&mut self, name: &str) {
     let name = name.to_string();
     let mut material = Material::default();
+    material.id = self.auto_incre_id;
     material.name = name.clone();
     self.last = Some(name.clone());
+    let name_v = name.clone();
     self.materials.insert(name, material);
+    self.name_id_map.insert(self.auto_incre_id, name_v);
+    self.auto_incre_id += 1;
   }
 
   pub fn get_material_by_name(&self, name: &str) -> Option<&Material> {
@@ -166,11 +174,7 @@ impl Texture {
   }
 
   ///  @param vt standard vt with x,y range from -1 to 1.
-  pub fn get_pixel(&mut self, vt: Vec2) -> Vec4 {
-    if let None = self.image {
-      self.image = image::open(std::path::Path::new(&self.path)).ok();
-    }
-
+  pub fn get_pixel(&self, vt: Vec2) -> Vec4 {
     let img = self
       .image
       .as_ref()

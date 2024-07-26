@@ -69,42 +69,51 @@ fn direct_light_shading(
       let v2 = model.vertices[i * 3 + 2];
 
       let (v01, v02) = (v1.position - v0.position, v2.position - v0.position);
-      let face_normal = v02.cross(&v01).normalize();
+      let face_normal = v02
+        .truncated_to_vec3()
+        .cross(&(v01.truncated_to_vec3()))
+        .normalize();
 
       let direct_light = Vec3::new(0.0, 0.0, 1.0);
 
       let light_intense = direct_light.dot(&face_normal);
 
-      let pos0 = Vec3::new(
+      let pos0 = Vec4::new(
         (v0.position.x + 1.0) * HALF_WIDTH,
         (v0.position.y + 1.0) * HALF_HEIGHT,
         v0.position.z,
+        1.0,
       );
-      let pos1 = Vec3::new(
+      let pos1 = Vec4::new(
         (v1.position.x + 1.0) * HALF_WIDTH,
         (v1.position.y + 1.0) * HALF_HEIGHT,
         v1.position.z,
+        1.0,
       );
-      let pos2 = Vec3::new(
+      let pos2 = Vec4::new(
         (v2.position.x + 1.0) * HALF_WIDTH,
         (v2.position.y + 1.0) * HALF_HEIGHT,
         v2.position.z,
+        1.0,
       );
 
       let pt0 = Vertex {
         position: pos0,
         normal: v0.normal,
         texture: v0.texture,
+        material: None,
       };
       let pt1 = Vertex {
         position: pos1,
         normal: v1.normal,
         texture: v1.texture,
+        material: None,
       };
       let pt2 = Vertex {
         position: pos2,
         normal: v2.normal,
         texture: v2.texture,
+        material: None,
       };
 
       let mut points = [pt0, pt1, pt2];

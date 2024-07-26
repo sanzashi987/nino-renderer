@@ -159,6 +159,14 @@ impl Vec4 {
   pub fn truncated_to_vec3(&self) -> Vec3 {
     Vec3::new(self.x, self.y, self.z)
   }
+
+  pub fn truncate_to_vec2(&self) -> Vec2 {
+    Vec2::new(self.x, self.y)
+  }
+
+  pub fn from_vec3(v3: &Vec3, w: f32) -> Self {
+    Self::new(v3.x, v3.y, v3.z, w)
+  }
 }
 pub fn lerp<T>(a: T, b: T, t: f32) -> T
 where

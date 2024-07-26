@@ -1,5 +1,5 @@
 use crate::{
-  math::{Vec2, Vec3},
+  math::{Vec2, Vec3, Vec4},
   obj_loader::{
     defines::ParserError,
     load_obj,
@@ -24,20 +24,43 @@ impl<'a> Material<'a> {
   pub fn from_obj_material(obj_material: &ObjMaterial, scene: &Scene) -> Self {
     let texture_map = TextureRefer::default();
     let name = obj_material.name.clone();
+    let id = obj_material.id;
 
-    Self::from_another_material_type(obj_material, name, texture_map)
+    Self::from_another_material_type(obj_material, name, texture_map, id)
+  }
+}
+
+pub type VertexTexture = TextureMap<Vec4>;
+
+#[derive(Debug, Clone, Copy)]
+pub struct VertexMaterial {
+  pub id: u32,
+  pub textures: VertexTexture,
+}
+
+impl VertexMaterial {
+  pub fn from_model_material(material: &Material, vt: &Vec2) -> Self {
+    let textures = VertexTexture::from_another_texuture_map(&material.texture_map, |texture| {
+      texture.get_pixel(*vt)
+    });
+
+    Self {
+      id: material.id,
+      textures,
+    }
   }
 }
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Vertex {
-  pub position: Vec3,
+  pub position: Vec4,
   pub normal: Option<Vec3>,
   pub texture: Option<Vec2>,
+  pub material: Option<VertexMaterial>,
 }
 
 impl Vertex {
-  pub fn from_vertex_index(v: &VertexIndex, scene: &Scene) -> Self {
+  pub fn from_vertex_index(v: &VertexIndex, scene: &Scene, material: Option<&Material>) -> Self {
     let VertexIndex {
       position_index,
       normal_index,
@@ -46,11 +69,19 @@ impl Vertex {
 
     let normal = normal_index.map(|i| scene.normals[i as usize]);
     let texture = texture_index.map(|i| scene.texture_coordinates[i as usize]);
-    let position = scene.vertices[*position_index as usize];
+    let position = Vec4::from_vec3(&scene.vertices[*position_index as usize], 1.0);
+
+    let vertex_material = if let (Some(vt), Some(m)) = (texture, material) {
+      Some(VertexMaterial::from_model_material(m, &vt))
+    } else {
+      None
+    };
+
     Self {
       position,
       normal,
       texture,
+      material: vertex_material,
     }
   }
 }
@@ -65,20 +96,8 @@ impl<'a> Model<'a> {
   pub fn from_obj_model(obj_model: &ObjModel, scene: &Scene) -> Self {
     let name = obj_model.name.clone();
     let mut vertices = vec![];
-    for obj_face in &obj_model.faces {
-      for v in &obj_face.vertices {
-        vertices.push(Vertex::from_vertex_index(v, scene));
-      }
-    }
 
-    // let material = obj_model.material.map(|n| {
-    //   scene
-    //     .materials
-    //     .get_material_by_name(&name)
-    //     .map(|obj_material| Material::from_obj_material(obj_material, scene))
-    // });
-
-    let material = if let Some(name) = &obj_model.material {
+    let material: Option<Material<'a>> = if let Some(name) = &obj_model.material {
       if let Some(obj_material) = scene.materials.get_material_by_name(name) {
         Some(Material::from_obj_material(obj_material, scene))
       } else {
@@ -87,6 +106,12 @@ impl<'a> Model<'a> {
     } else {
       None
     };
+
+    for obj_face in &obj_model.faces {
+      for v in &obj_face.vertices {
+        vertices.push(Vertex::from_vertex_index(v, scene, material.as_ref()));
+      }
+    }
 
     Self {
       name,
