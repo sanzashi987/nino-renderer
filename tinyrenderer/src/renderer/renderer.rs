@@ -93,6 +93,14 @@ impl Renderer {
         for v in &mut vertices {
           v.position = *projection_matrix * v.position;
         }
+        // restore the x,y,z  with 1/w, as the computation times `w` before
+
+        for v in &mut vertices {
+          v.position.z = -v.position.w;
+          v.position.x /= v.position.w;
+          v.position.y /= v.position.w;
+        }
+
         for v in &mut vertices {
           v.position = *viewport_matrix * v.position;
         }
