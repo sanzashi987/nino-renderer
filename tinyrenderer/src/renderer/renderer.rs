@@ -1,7 +1,7 @@
 use super::camera::Camera;
 use crate::{
   data_array::{ColorBuffer, DepthBuffer},
-  math::Mat4,
+  math::{Barycentric, BoundaryBox, Mat4, Vec2, Vec4},
   model::Scene,
 };
 /// It means that the bi-unit cube [-1,1]*[-1,1]*[-1,1]
@@ -55,11 +55,25 @@ impl Viewport {
   }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum RenderMode {
+  Wireframe,
+  Diffuse,
+  Bump,
+}
+
+impl Default for RenderMode {
+  fn default() -> Self {
+    Self::Diffuse
+  }
+}
+
 pub struct Renderer {
   viewport: Viewport,
   camera: Camera,
   color: ColorBuffer,
   depth: DepthBuffer,
+  mode: RenderMode,
 }
 
 impl Renderer {
@@ -69,10 +83,18 @@ impl Renderer {
       camera: Camera::new(w as f32, h as f32),
       color: ColorBuffer::new(w, h),
       depth: DepthBuffer::new(w, h),
+      mode: Default::default(),
     }
   }
 
+  pub fn set_mode(&mut self, mode: RenderMode) {
+    self.mode = mode;
+  }
+
   pub fn render(&mut self, scene: &Scene, model_matrix: &Mat4) {
+    let width = self.color.width();
+    let height = self.color.height();
+
     let frustum = self.camera.get_frustum();
     let view_matrix = self.camera.get_view_matarix();
     let projection_matrix = frustum.get_projection_matrix();
@@ -104,7 +126,53 @@ impl Renderer {
         for v in &mut vertices {
           v.position = *viewport_matrix * v.position;
         }
+
+        let vertices_2d = vertices.map(|v| v.position.truncate_to_vec2());
+
+        let BoundaryBox {
+          x_max,
+          x_min,
+          y_max,
+          y_min,
+        } = BoundaryBox::new(&vertices_2d, width as f32, height as f32);
+
+        for x in (x_min as u32)..(x_max as u32 + 1) {
+          for y in (y_min as u32)..(y_max as u32 + 1) {
+            let barycentric = Barycentric::new(&Vec2::new(x as f32, y as f32), &vertices_2d);
+            if !barycentric.is_inside() {
+              continue;
+            }
+
+            let inv_z = barycentric.apply_weight(&vertices.map(|v| 1.0 / v.position.z));
+            let z = 1.0 / inv_z;
+
+            if self.depth.get(x, y) < z {
+              self.depth.set(x, y, z);
+
+              let all_has_diffuse = vertices.iter().fold(true, |last, v| {
+                let has_diffuse = if v.material.is_some() {
+                  v.material.unwrap().textures.diffuse.is_some()
+                } else {
+                  false
+                };
+                last && has_diffuse
+              });
+
+              // match self.mode {
+              //   RenderMode::Wireframe => todo!(),
+              //   RenderMode::Diffuse => todo!(),
+              //   RenderMode::Bump => todo!(),
+              // }
+            }
+          }
+        }
       }
     }
   }
 }
+
+// fn has_texture()
+
+
+
+fn render_diffuse() -> Vec4 {}

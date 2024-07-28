@@ -1,3 +1,5 @@
+use std::ops::{Add, Mul};
+
 use super::Vec2;
 
 pub struct Barycentric {
@@ -40,5 +42,12 @@ impl Barycentric {
 
   pub fn gamma(&self) -> f32 {
     self.gamma
+  }
+
+  pub fn apply_weight<T: Mul<f32, Output = T> + Add<T, Output = T> + Copy>(
+    &self,
+    vals: &[T; 3],
+  ) -> T {
+    vals[0] * self.alpha() + vals[1] * self.beta() + vals[2] * self.gamma()
   }
 }

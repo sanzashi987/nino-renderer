@@ -84,6 +84,18 @@ impl Vertex {
       material: vertex_material,
     }
   }
+
+  pub fn has_texture(&self, texture_type: &str) -> bool {
+    self
+      .material
+      .is_some_and(|m| m.textures.get_by_key(texture_type).is_some())
+  }
+
+  pub fn get_texutre(&self, texture_type: &str) -> Option<&Vec4> {
+    self
+      .material
+      .map_or(None, |m| m.textures.get_by_key(texture_type))
+  }
 }
 
 #[derive(Debug, Default)]
