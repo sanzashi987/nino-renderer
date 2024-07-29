@@ -2,7 +2,8 @@ use super::camera::Camera;
 use crate::{
   data_array::{ColorBuffer, DepthBuffer},
   math::{Barycentric, BoundaryBox, Mat4, Vec2, Vec4},
-  model::Scene,
+  model::{Scene, VertexMaterial},
+  obj_loader::material::Texture,
 };
 /// It means that the bi-unit cube [-1,1]*[-1,1]*[-1,1]
 /// is mapped onto the screen cube [x,x+w]*[y,y+h]*[0,d].
@@ -32,7 +33,7 @@ impl Viewport {
     };
 
     viewport.recompute_matrix();
-
+    // println!("{:?}", viewport.viewport_matrix);
     viewport
   }
 
@@ -70,7 +71,7 @@ impl Default for RenderMode {
 
 pub struct Renderer {
   viewport: Viewport,
-  camera: Camera,
+  pub camera: Camera,
   color: ColorBuffer,
   depth: DepthBuffer,
   mode: RenderMode,
@@ -78,11 +79,14 @@ pub struct Renderer {
 
 impl Renderer {
   pub fn new(w: u32, h: u32) -> Self {
+    let mut depth = DepthBuffer::new(w, h);
+    depth.clear(std::f32::MIN);
+
     Self {
       viewport: Viewport::new(0.0, 0.0, w as f32, h as f32),
       camera: Camera::new(w as f32, h as f32),
       color: ColorBuffer::new(w, h),
-      depth: DepthBuffer::new(w, h),
+      depth,
       mode: Default::default(),
     }
   }
@@ -91,7 +95,7 @@ impl Renderer {
     self.mode = mode;
   }
 
-  pub fn render(&mut self, scene: &Scene, model_matrix: &Mat4) {
+  pub fn render(&mut self, scene: &Scene, model_matrix: Mat4, texture: &Texture) {
     let width = self.color.width();
     let height = self.color.height();
 
@@ -107,8 +111,9 @@ impl Renderer {
         let mut vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
 
         for v in &mut vertices {
-          v.position = *model_matrix * v.position;
+          v.position = model_matrix * v.position;
         }
+
         for v in &mut vertices {
           v.position = *view_matrix * v.position;
         }
@@ -121,6 +126,7 @@ impl Renderer {
           v.position.z = -v.position.w;
           v.position.x /= v.position.w;
           v.position.y /= v.position.w;
+          v.position.w = 1.0;
         }
 
         for v in &mut vertices {
@@ -129,6 +135,7 @@ impl Renderer {
 
         let vertices_2d = vertices.map(|v| v.position.truncate_to_vec2());
 
+        // return;
         let BoundaryBox {
           x_max,
           x_min,
@@ -139,6 +146,7 @@ impl Renderer {
         for x in (x_min as u32)..(x_max as u32 + 1) {
           for y in (y_min as u32)..(y_max as u32 + 1) {
             let barycentric = Barycentric::new(&Vec2::new(x as f32, y as f32), &vertices_2d);
+
             if !barycentric.is_inside() {
               continue;
             }
@@ -149,30 +157,42 @@ impl Renderer {
             if self.depth.get(x, y) < z {
               self.depth.set(x, y, z);
 
-              let all_has_diffuse = vertices.iter().fold(true, |last, v| {
-                let has_diffuse = if v.material.is_some() {
-                  v.material.unwrap().textures.diffuse.is_some()
-                } else {
-                  false
-                };
-                last && has_diffuse
-              });
+              match self.mode {
+                RenderMode::Wireframe => {}
+                RenderMode::Diffuse => {
+                  // let all_has_diffuse = vertices.iter().all(|v| v.has_texture("diffuse"));
 
-              // match self.mode {
-              //   RenderMode::Wireframe => todo!(),
-              //   RenderMode::Diffuse => todo!(),
-              //   RenderMode::Bump => todo!(),
-              // }
+                  // if all_has_diffuse {
+                  let vt = barycentric
+                    .apply_weight(&vertices.map(|v| v.texture.unwrap() / v.position.z))
+                    * z;
+
+                  // let material = model.get_material().unwrap();
+                  // let diffuse_texture = material.texture_map.diffuse.unwrap();
+
+                  let color = texture.get_pixel(vt);
+
+                  self.color.set(x, y, &color);
+                  // }
+                }
+                RenderMode::Bump => {}
+              }
             }
           }
         }
       }
     }
   }
+
+  pub fn take_color(&mut self) -> ColorBuffer {
+    let w = self.color.width();
+    let h = self.color.height();
+    self.depth.clear(std::f32::MIN);
+
+    std::mem::replace(&mut self.color, ColorBuffer::new(w, h))
+  }
 }
 
 // fn has_texture()
 
-
-
-fn render_diffuse() -> Vec4 {}
+// fn render_diffuse() -> Vec4 {}

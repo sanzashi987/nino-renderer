@@ -1,6 +1,8 @@
 const RESOURCE_PATH: &str = "./resources";
-const FOLDER: &str = "african";
-const MODEL: &str = "head.obj";
+const FOLDER: &str = "african_head";
+const MODEL: &str = "african_head.obj";
+
+const MODEL_PATH: &str = "./resources/african_head/african_head.obj";
 // const FOLDER: &str = "Red";
 // const MODEL: &str = "Red.obj";
 // const FOLDER: &str = "plane";
@@ -8,12 +10,14 @@ const MODEL: &str = "head.obj";
 
 // use rand;
 
+use fltk::draw;
 use tinyrenderer::{
   bresenham_line::line,
   data_array::{ColorBuffer, DepthBuffer},
-  math::{Vec2, Vec3, Vec4},
+  math::{self, Mat4, Vec2, Vec3, Vec4},
   model::{self, from_obj_path, Model, Scene, Vertex},
   obj_loader::material::Texture,
+  renderer::renderer::Renderer,
   shade_triangle::shade_triangle_barycentric,
 };
 
@@ -136,20 +140,23 @@ fn direct_light_shading(
   }
 }
 
+/// lesson 4,5,
+// fn render_pipeline(texture: &Texture) -> ColorBuffer {}
+
 fn main() {
-  let relative_path = get_resource_filepath(MODEL);
+  // let relative_path = get_resource_filepath(MODEL);
 
   // let mut res = load_obj(&relative_path).unwrap();
   // let scene = res.parse().unwrap();
 
-  let scene = from_obj_path(&relative_path).unwrap();
+  // let scene = from_obj_path(&relative_path).unwrap();
 
   let mut color_buffer = ColorBuffer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
   let mut depth_buffer = DepthBuffer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
 
   depth_buffer.clear(std::f32::MIN);
 
-  let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, false);
+  let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, true);
   let draw_image = sandbox.make_draw_image();
 
   // let _ = scene.textures.load(tag_path, "african_head_diffuse");
@@ -162,9 +169,39 @@ fn main() {
   //   }
   // }
 
-  direct_light_shading(&scene, &mut color_buffer, &mut depth_buffer);
+  // direct_light_shading(&scene, &mut color_buffer, &mut depth_buffer);
+  // let color_buffer = render_pipeline();
 
-  sandbox.run_fltk(move |_| draw_image.as_ref()(color_buffer.data()));
+  // lesson 4, 5
+  let mut rotation = 0.0f32;
+  // let relative_path = get_resource_filepath(MODEL);
+  let path_str = get_resource_filepath("african_head_diffuse.tga");
+  let path = std::path::Path::new(&path_str);
+  let texture = Texture::load("233", path, 1).unwrap();
+  let mut renderer = Renderer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
+  renderer.camera.move_to(Vec3 {
+    x: 3.0,
+    y: -2.0,
+    z: 5.0,
+  });
+
+  renderer.camera.lookat(Vec3::new(0.0, 0.0, 0.0));
+  // renderer.camera.set_rotation(Vec3::new(0.0, 0.0, 0.0));
+
+  let scene = from_obj_path(MODEL_PATH).unwrap();
+
+  // sandbox.run_fltk(move |_| draw_image.as_ref()(color_buffer.data()));
+  sandbox.run_fltk(move |_| {
+    let model = math::apply_translate(&math::Vec3::new(0.0, 0.0, 0.0))
+      * math::apply_eular_rotate_y(rotation.to_radians());
+
+    // println!("{:?}", model);
+
+    renderer.render(&scene, model, &texture);
+    let color = renderer.take_color();
+    draw_image.as_ref()(color.data());
+    rotation += 1.0;
+  });
 
   // println!("{:?}", scene);
 }

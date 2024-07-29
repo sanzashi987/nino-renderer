@@ -25,6 +25,16 @@ impl<T> DataArray<T> {
   }
 }
 
+impl<T> Default for DataArray<T> {
+  fn default() -> Self {
+    Self {
+      data: Default::default(),
+      w: Default::default(),
+      h: Default::default(),
+    }
+  }
+}
+
 impl DataArray<u8> {
   pub fn new(w: u32, h: u32) -> Self {
     Self {

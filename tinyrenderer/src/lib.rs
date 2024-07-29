@@ -5,4 +5,4 @@ pub mod model;
 pub mod obj_loader;
 pub mod shade_triangle;
 mod utils;
-mod renderer;
+pub mod renderer;

@@ -88,12 +88,14 @@ impl Vertex {
   pub fn has_texture(&self, texture_type: &str) -> bool {
     self
       .material
+      .as_ref()
       .is_some_and(|m| m.textures.get_by_key(texture_type).is_some())
   }
 
   pub fn get_texutre(&self, texture_type: &str) -> Option<&Vec4> {
     self
       .material
+      .as_ref()
       .map_or(None, |m| m.textures.get_by_key(texture_type))
   }
 }
@@ -105,6 +107,10 @@ pub struct Model<'a> {
   material: Option<Material<'a>>,
 }
 impl<'a> Model<'a> {
+  pub fn get_material(&self) -> Option<&Material<'a>> {
+    self.material.as_ref()
+  }
+
   pub fn from_obj_model(obj_model: &ObjModel, scene: &Scene) -> Self {
     let name = obj_model.name.clone();
     let mut vertices = vec![];

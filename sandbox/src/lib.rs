@@ -44,6 +44,7 @@ impl Sandbox {
     let height = self.height;
 
     let f = move |pixels_buffer: &[u8]| {
+      // println!("{:?} ; {:?}", pixels_buffer.len(), width * height * 3);
       fltk::draw::draw_image(
         pixels_buffer,
         0,

@@ -62,7 +62,7 @@ pub struct Camera {
 impl Camera {
   pub fn new(w: f32, h: f32) -> Self {
     Self {
-      frustum: Frustum::new(1.0, 1000.0, w / h, 30f32.to_radians()),
+      frustum: Frustum::new(1.0, 1000.0, w / h, 14f32.to_radians()),
       position: Vec3::zero(),
       rotation: Vec3::zero(),
       view_matrix: Mat4::identity(),

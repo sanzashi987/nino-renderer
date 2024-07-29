@@ -82,7 +82,7 @@ impl Scene {
 
   pub fn add_vertex(&mut self, vertex: Vec3) {
     let mut next_vertex = vertex;
-    next_vertex.y = -next_vertex.y;
+    next_vertex.y = -1.0 * next_vertex.y;
     // next_vertex.z =  -next_vertex.z;
 
     self.vertices.push(next_vertex)
@@ -93,7 +93,10 @@ impl Scene {
   }
 
   pub fn add_texture_coordinate(&mut self, texture_coordinate: Vec2) {
-    self.texture_coordinates.push(texture_coordinate)
+    let mut next_vt = texture_coordinate;
+    // next_vt.y = 1.0 - next_vt.y;
+
+    self.texture_coordinates.push(next_vt);
   }
 
   pub fn bind_material(&mut self, material_name: String) -> Result<(), ParserError> {
