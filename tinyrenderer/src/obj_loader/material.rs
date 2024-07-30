@@ -184,7 +184,7 @@ impl Texture {
     let height = img.height();
 
     let x = (vt.x * (width - 1) as f32) as u32;
-    let y = (vt.y * (height - 1) as f32) as u32;
+    let y = ((1.0 - vt.y) * (height - 1) as f32) as u32;
 
     let rgba = img.get_pixel(x, y).0;
     Vec4::new(

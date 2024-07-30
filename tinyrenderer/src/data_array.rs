@@ -7,15 +7,7 @@ pub struct DataArray<T> {
   h: u32,
 }
 
-impl<T: Copy + From<u32>> DataArray<T> {
-  pub fn new(w: u32, h: u32) -> Self {
-    Self {
-      data: vec![T::from(0); (w * h * 3) as usize],
-      w,
-      h,
-    }
-  }
-
+impl<T> DataArray<T> {
   pub fn width(&self) -> u32 {
     self.w
   }
@@ -79,3 +71,22 @@ impl DataArray<f32> {
 
 pub type ColorBuffer = DataArray<u8>;
 pub type DepthBuffer = DataArray<f32>;
+
+impl DepthBuffer {
+  pub fn new(w: u32, h: u32) -> Self {
+    Self {
+      data: vec![0.0; (w * h) as usize],
+      w,
+      h,
+    }
+  }
+}
+impl ColorBuffer {
+  pub fn new(w: u32, h: u32) -> Self {
+    Self {
+      data: vec![0; (w * h * 3) as usize],
+      w,
+      h,
+    }
+  }
+}

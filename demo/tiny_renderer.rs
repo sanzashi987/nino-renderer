@@ -180,9 +180,9 @@ fn main() {
   let texture = Texture::load("233", path, 1).unwrap();
   let mut renderer = Renderer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
   renderer.camera.move_to(Vec3 {
-    x: 3.0,
-    y: -2.0,
-    z: 5.0,
+    x: -3.0,
+    y: 0.0,
+    z: 3.0,
   });
 
   renderer.camera.lookat(Vec3::new(0.0, 0.0, 0.0));
@@ -200,7 +200,7 @@ fn main() {
     renderer.render(&scene, model, &texture);
     let color = renderer.take_color();
     draw_image.as_ref()(color.data());
-    rotation += 1.0;
+    rotation += 5.0;
   });
 
   // println!("{:?}", scene);
