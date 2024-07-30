@@ -7,7 +7,15 @@ pub struct DataArray<T> {
   h: u32,
 }
 
-impl<T> DataArray<T> {
+impl<T: Copy + From<u32>> DataArray<T> {
+  pub fn new(w: u32, h: u32) -> Self {
+    Self {
+      data: vec![T::from(0); (w * h * 3) as usize],
+      w,
+      h,
+    }
+  }
+
   pub fn width(&self) -> u32 {
     self.w
   }
@@ -36,14 +44,6 @@ impl<T> Default for DataArray<T> {
 }
 
 impl DataArray<u8> {
-  pub fn new(w: u32, h: u32) -> Self {
-    Self {
-      data: vec![0; (w * h * 3) as usize],
-      w,
-      h,
-    }
-  }
-
   pub fn clear(&mut self, color: &math::Vec4) {
     for x in 0..self.w {
       for y in 0..self.h {
@@ -64,14 +64,6 @@ impl DataArray<u8> {
 }
 
 impl DataArray<f32> {
-  pub fn new(w: u32, h: u32) -> Self {
-    Self {
-      w,
-      h,
-      data: vec![0.0; (w * h) as usize],
-    }
-  }
-
   pub fn clear(&mut self, value: f32) {
     self.data.fill(value)
   }
