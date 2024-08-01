@@ -42,6 +42,6 @@ impl Varying {
 pub type Uniform = Varying;
 
 pub trait Shader {
-  fn vertex(v: &Vertex, u: &Uniform, va: &mut Varying) -> Vertex;
-  fn fragment(v: &Vertex, u: &Uniform, va: &Varying) -> Vec4;
+  fn vertex(&self, v: &Vertex, u: &Uniform, va: &mut Varying) -> Vertex;
+  fn fragment(&self, v: &Vertex, u: &Uniform, va: &Varying) -> Vec4;
 }
