@@ -101,24 +101,9 @@ fn direct_light_shading(
         1.0,
       );
 
-      let pt0 = Vertex {
-        position: pos0,
-        normal: v0.normal,
-        texture: v0.texture,
-        material: None,
-      };
-      let pt1 = Vertex {
-        position: pos1,
-        normal: v1.normal,
-        texture: v1.texture,
-        material: None,
-      };
-      let pt2 = Vertex {
-        position: pos2,
-        normal: v2.normal,
-        texture: v2.texture,
-        material: None,
-      };
+      let pt0 = Vertex::new(pos0, v0.normal, v0.texture);
+      let pt1 = Vertex::new(pos1, v1.normal, v1.texture);
+      let pt2 = Vertex::new(pos2, v2.normal, v2.texture);
 
       let mut points = [pt0, pt1, pt2];
 
@@ -200,7 +185,7 @@ fn main() {
     renderer.render(&scene, model, &texture);
     let color = renderer.take_color();
     draw_image.as_ref()(color.data());
-    rotation += 5.0;
+    rotation += 1.0;
   });
 
   // println!("{:?}", scene);

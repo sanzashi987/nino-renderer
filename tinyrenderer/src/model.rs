@@ -57,9 +57,20 @@ pub struct Vertex {
   pub normal: Option<Vec3>,
   pub texture: Option<Vec2>,
   pub material: Option<VertexMaterial>,
+  pub rhw: f32,
 }
 
 impl Vertex {
+  pub fn new(pos: Vec4, norm: Option<Vec3>, text: Option<Vec2>) -> Self {
+    Self {
+      position: pos,
+      normal: norm,
+      texture: text,
+      material: None,
+      rhw: 1.0,
+    }
+  }
+
   pub fn from_vertex_index(v: &VertexIndex, scene: &Scene, material: Option<&Material>) -> Self {
     let VertexIndex {
       position_index,
@@ -82,6 +93,7 @@ impl Vertex {
       normal,
       texture,
       material: vertex_material,
+      rhw: 1.0,
     }
   }
 

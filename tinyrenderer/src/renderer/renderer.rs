@@ -123,10 +123,13 @@ impl Renderer {
         // restore the x,y,z  with 1/w, as the computation times `w` before
 
         for v in &mut vertices {
-          v.position.z = -v.position.w;
-          v.position.x /= v.position.w;
-          v.position.y /= v.position.w;
-          v.position.w = 1.0;
+          v.rhw = -1.0 / v.position.w;
+
+          v.position /= v.position.w;
+          // v.position.z = -v.position.w;
+          // v.position.x /= v.position.w;
+          // v.position.y /= v.position.w;
+          // v.position.w = 1.0;
         }
 
         for v in &mut vertices {
@@ -151,7 +154,7 @@ impl Renderer {
               continue;
             }
 
-            let inv_z = barycentric.apply_weight(&vertices.map(|v| 1.0 / v.position.z));
+            let inv_z = barycentric.apply_weight(&vertices.map(|v| v.rhw));
             let z = 1.0 / inv_z;
 
             if self.depth.get(x, y) < z {
@@ -164,7 +167,7 @@ impl Renderer {
 
                   // if all_has_diffuse {
                   let vt = barycentric
-                    .apply_weight(&vertices.map(|v| v.texture.unwrap() / v.position.z))
+                    .apply_weight(&vertices.map(|v| v.texture.unwrap() * v.rhw))
                     * z;
 
                   // let material = model.get_material().unwrap();
