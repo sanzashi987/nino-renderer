@@ -1,26 +1,19 @@
-use super::basic::{Shader, Uniform, Varying};
-use crate::{
-  math::{Vec3, Vec4},
-  model::Vertex,
-};
+use crate::math::{Vec3, Vec4};
+use crate::obj_loader::shader::{GLTypes, Shader};
 
-pub struct GouraudShader {
-  pub light_dir: Vec3,
-}
+pub fn make_gouraud_shader(light_dir: Vec3) -> Shader {
+  let mut shader = Shader::default();
 
-impl Shader for GouraudShader {
-  fn vertex(&self, v: &Vertex, u: &Uniform, va: &mut Varying) -> Vertex {
-    if let Some(normal) = v.normal {
-      va.set(
-        "light-intense",
-        super::basic::GLTypes::Float(normal.dot(&self.light_dir)),
-      )
+  shader.vertex = Box::new(move |_, gl_vertex, _, varying| {
+    if let Some(normal) = gl_vertex.normal {
+      varying.set("light-intense", GLTypes::Float(normal.dot(&light_dir)))
     }
 
-    *v
-  }
+    *gl_vertex
+  });
 
-  fn fragment(&self, v: &Vertex, u: &Uniform, va: &Varying) -> Vec4 {
-    todo!()
-  }
+
+  shader.fragment = Box::new(|_, _, _| Vec4::zero());
+
+  shader
 }

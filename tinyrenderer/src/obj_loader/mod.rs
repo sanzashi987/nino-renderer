@@ -5,6 +5,7 @@ mod model;
 mod mtl_parser;
 mod obj_parser;
 mod parser;
+pub mod shader;
 
 pub use model::*;
 pub use obj_parser::load_obj;

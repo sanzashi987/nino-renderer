@@ -1,8 +1,8 @@
+use super::shader::{self, Shader};
+use crate::math::{Vec2, Vec3, Vec4};
 use image::{GenericImageView, ImageError};
 use std::path::Path;
 use std::{collections::HashMap, fmt::Debug};
-
-use crate::math::{Vec2, Vec3, Vec4};
 
 use super::defines::ParserError;
 
@@ -44,6 +44,8 @@ make_material_base!(
   transmission_filter: Vec3,
   optical_density: f32,
   illum: u8;;
+  // below are fixed;
+  shader:Shader,
   name: String,
   texture_map: Map,
   id:u32

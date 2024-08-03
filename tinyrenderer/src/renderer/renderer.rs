@@ -3,7 +3,7 @@ use crate::{
   data_array::{ColorBuffer, DepthBuffer},
   math::{Barycentric, BoundaryBox, Mat4, Vec2, Vec4},
   model::{Scene, VertexMaterial},
-  obj_loader::material::Texture,
+  obj_loader::{material::Texture, shader::GlMatrix},
 };
 /// It means that the bi-unit cube [-1,1]*[-1,1]*[-1,1]
 /// is mapped onto the screen cube [x,x+w]*[y,y+h]*[0,d].
@@ -99,16 +99,25 @@ impl Renderer {
     let width = self.color.width();
     let height = self.color.height();
 
-    let frustum = self.camera.get_frustum();
+    let frustum: &super::camera::Frustum = self.camera.get_frustum();
     let view_matrix = self.camera.get_view_matarix();
     let projection_matrix = frustum.get_projection_matrix();
     let viewport_matrix = self.viewport.get_viewport_matrix();
 
+    let gl_matrix = GlMatrix::new(
+      &model_matrix,
+      self.camera.get_view_matarix(),
+      frustum.get_projection_matrix(),
+    );
+
     for model in &scene.models {
       let vertices = &model.vertices;
+      let material = model.get_material();
       for i in 0..vertices.len() / 3_usize {
         let index = (i * 3) as usize;
         let mut vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
+
+        for v in &mut vertices {}
 
         for v in &mut vertices {
           v.position = model_matrix * v.position;
@@ -122,6 +131,7 @@ impl Renderer {
         }
         // restore the x,y,z  with 1/w, as the computation times `w` before
 
+        // store the rhw and perform the v.position.w
         for v in &mut vertices {
           v.rhw = -1.0 / v.position.w;
 
@@ -166,9 +176,8 @@ impl Renderer {
                   // let all_has_diffuse = vertices.iter().all(|v| v.has_texture("diffuse"));
 
                   // if all_has_diffuse {
-                  let vt = barycentric
-                    .apply_weight(&vertices.map(|v| v.texture.unwrap() * v.rhw))
-                    * z;
+                  let vt =
+                    barycentric.apply_weight(&vertices.map(|v| v.texture.unwrap() * v.rhw)) * z;
 
                   // let material = model.get_material().unwrap();
                   // let diffuse_texture = material.texture_map.diffuse.unwrap();

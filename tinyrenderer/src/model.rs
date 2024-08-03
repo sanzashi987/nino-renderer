@@ -4,6 +4,7 @@ use crate::{
     defines::ParserError,
     load_obj,
     material::{Material as ObjMaterial, MaterialBase, Materials, Texture, TextureMap},
+    shader::Shader,
     Model as ObjModel, Scene as ObjScene, VertexIndex,
   },
   utils::swap_and_move,
@@ -25,8 +26,9 @@ impl<'a> Material<'a> {
     let texture_map = TextureRefer::default();
     let name = obj_material.name.clone();
     let id = obj_material.id;
+    let shader = Shader::default();
 
-    Self::from_another_material_type(obj_material, name, texture_map, id)
+    Self::from_another_material_type(obj_material, shader, name, texture_map, id)
   }
 }
 
