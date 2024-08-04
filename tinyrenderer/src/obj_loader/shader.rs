@@ -1,18 +1,64 @@
-use std::{collections::HashMap, fmt::Debug};
+use std::{
+  collections::HashMap,
+  fmt::Debug,
+  ops::{Add, Mul},
+};
 
 use crate::{
   math::{Barycentric, Mat4, Vec2, Vec3, Vec4},
   model::Vertex,
 };
-#[derive(Debug, Clone, Copy)]
-pub enum GLTypes {
-  Int(i32),
-  Float(f32),
-  Vec2(Vec2),
-  Vec3(Vec3),
-  Vec4(Vec4),
+
+macro_rules! define_union_type_enum {
+  ($enum:tt;$($name:tt@$type:ty),+) => {
+    #[derive(Debug, Clone, Copy)]
+    pub enum $enum {
+      $(
+        $name($type),
+      )+
+    }
+
+    impl Add<Self> for $enum {
+      type Output = Self;
+      fn add(self, rhs: Self) -> Self::Output {
+        match self{
+          $(
+            Self::$name(val) => {
+              if let Self::$name(r_val) = rhs {
+                Self::$name(val + r_val)
+              } else {
+                panic!()
+              }
+            }
+          )+
+        }
+      }
+    }
+  };
 }
 
+define_union_type_enum!(
+  GLTypes;
+  Int@i32,
+  Float@f32,
+  Vec2@Vec2,
+  Vec3@Vec3,
+  Vec4@Vec4
+);
+
+impl Mul<f32> for GLTypes {
+  type Output = Self;
+
+  fn mul(self, rhs: f32) -> Self::Output {
+    match self {
+      GLTypes::Int(val) => GLTypes::Float(rhs * (val as f32)),
+      GLTypes::Float(val) => GLTypes::Float(rhs * val),
+      GLTypes::Vec2(val) => GLTypes::Vec2(val * rhs),
+      GLTypes::Vec3(val) => GLTypes::Vec3(val * rhs),
+      GLTypes::Vec4(val) => GLTypes::Vec4(val * rhs),
+    }
+  }
+}
 pub struct GlMatrix<'a> {
   model_matrix: &'a Mat4,
   view_matrix: &'a Mat4,
@@ -73,7 +119,6 @@ type FragmentShader = Box<dyn Fn(&Vertex, &Uniform, &Varying) -> Vec4>;
 
 pub struct Shader {
   uniforms: Uniform,
-  varyings: Varyings,
   pub vertex: VertexShader,
   pub fragment: FragmentShader,
 }
@@ -82,7 +127,6 @@ impl Debug for Shader {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("Shader")
       .field("uniforms", &self.uniforms)
-      .field("varyings", &self.varyings)
       .field("vertex", &"/** vertex clousure */".to_string())
       .field("fragment", &"/** fragment clousure */".to_string())
       .finish()
@@ -92,7 +136,6 @@ impl Default for Shader {
   fn default() -> Self {
     Self {
       uniforms: Default::default(),
-      varyings: Default::default(),
       vertex: Self::default_vertex(),
       fragment: Self::default_fragment(),
     }
@@ -120,19 +163,36 @@ impl Shader {
     fragment
   }
 
-  pub fn run_vertex(&mut self, gl_matrix: &GlMatrix, gl_vertex: &Vertex) -> Vertex {
-    (self.vertex)(gl_matrix, gl_vertex, &self.uniforms, &mut self.varyings)
+  pub fn run_vertex(
+    &self,
+    gl_matrix: &GlMatrix,
+    gl_vertex: &Vertex,
+    varyings: &mut Varyings,
+  ) -> Vertex {
+    (self.vertex)(gl_matrix, gl_vertex, &self.uniforms, varyings)
   }
 
-  pub fn run_fragment(&self, gl_vertex: &Vertex, bar: &Barycentric) -> Vec4 {
-    let varying = self.lerp_varyings();
+  pub fn run_fragment(&self, gl_vertex: &Vertex, bar: &Barycentric, varyings: &Varyings) -> Vec4 {
+    let varying = self.lerp_varyings(bar, varyings);
 
     (self.fragment)(gl_vertex, &self.uniforms, &varying)
   }
 
-  pub fn lerp_varyings(&self) -> Varying {
-    let result = Varying::default();
-    for key in self.varyings.data.keys() {}
+  pub fn lerp_varyings(&self, bar: &Barycentric, varyings: &Varyings) -> Varying {
+    let mut result = Varying::default();
+    for key in varyings.data.keys() {
+      let vec = varyings.data.get(key).unwrap();
+
+      if vec.len() < 3 {
+        continue;
+      }
+
+      let arr = [vec[0], vec[1], vec[2]];
+
+      let lerpped_val = bar.apply_weight(&arr);
+
+      result.set(key, lerpped_val);
+    }
 
     result
   }
