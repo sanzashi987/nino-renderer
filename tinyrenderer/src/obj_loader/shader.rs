@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fmt::Debug};
 
 use crate::{
-  math::{Mat4, Vec2, Vec3, Vec4},
+  math::{Barycentric, Mat4, Vec2, Vec3, Vec4},
   model::Vertex,
 };
 #[derive(Debug, Clone, Copy)]
@@ -29,18 +29,35 @@ impl<'a> GlMatrix<'a> {
   }
 }
 #[derive(Debug, Default)]
-pub struct GlCollection {
-  data: HashMap<String, GLTypes>,
+pub struct Varyings {
+  data: HashMap<String, Vec<GLTypes>>,
 }
 
-impl GlCollection {
+impl Varyings {
   pub fn new() -> Self {
     Self {
       data: HashMap::new(),
     }
   }
-  pub fn set(&mut self, key: &str, val: GLTypes) {
-    self.data.insert(key.to_string(), val);
+  pub fn set(&mut self, key: &str, gl_values: GLTypes) {
+    if !self.data.contains_key(key) {
+      self.data.insert(key.to_string(), vec![]);
+    }
+
+    let val = self.data.get_mut(key).unwrap();
+    val.push(gl_values);
+
+    // self.data.insert(key.to_string(), val);
+  }
+}
+#[derive(Debug, Default)]
+pub struct GlCollection {
+  data: HashMap<String, GLTypes>,
+}
+
+impl GlCollection {
+  pub fn set(&mut self, key: &str, gl_values: GLTypes) {
+    self.data.insert(key.to_string(), gl_values);
   }
 
   pub fn get(&self, key: &str) -> Option<GLTypes> {
@@ -48,15 +65,15 @@ impl GlCollection {
   }
 }
 
-pub type Varying = GlCollection;
-pub type Uniform = Varying;
+type Uniform = GlCollection;
+type Varying = GlCollection;
 
-type VertexShader = Box<dyn Fn(&GlMatrix, &Vertex, &Uniform, &mut Varying) -> Vertex>;
+type VertexShader = Box<dyn Fn(&GlMatrix, &Vertex, &Uniform, &mut Varyings) -> Vertex>;
 type FragmentShader = Box<dyn Fn(&Vertex, &Uniform, &Varying) -> Vec4>;
 
 pub struct Shader {
   uniforms: Uniform,
-  varyings: Varying,
+  varyings: Varyings,
   pub vertex: VertexShader,
   pub fragment: FragmentShader,
 }
@@ -101,5 +118,22 @@ impl Shader {
   pub fn default_fragment() -> FragmentShader {
     let fragment: FragmentShader = Box::new(|_, _, _| Vec4::new(1.0, 1.0, 1.0, 1.0));
     fragment
+  }
+
+  pub fn run_vertex(&mut self, gl_matrix: &GlMatrix, gl_vertex: &Vertex) -> Vertex {
+    (self.vertex)(gl_matrix, gl_vertex, &self.uniforms, &mut self.varyings)
+  }
+
+  pub fn run_fragment(&self, gl_vertex: &Vertex, bar: &Barycentric) -> Vec4 {
+    let varying = self.lerp_varyings();
+
+    (self.fragment)(gl_vertex, &self.uniforms, &varying)
+  }
+
+  pub fn lerp_varyings(&self) -> Varying {
+    let result = Varying::default();
+    for key in self.varyings.data.keys() {}
+
+    result
   }
 }
