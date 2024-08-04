@@ -15,7 +15,7 @@ use tinyrenderer::{
   bresenham_line::line,
   data_array::{ColorBuffer, DepthBuffer},
   math::{self, Mat4, Vec2, Vec3, Vec4},
-  model::{self, from_obj_path, Model, Scene, Vertex},
+  model::{self, from_obj_path, Material, Model, Scene, Vertex},
   obj_loader::material::Texture,
   renderer::renderer::Renderer,
   shade_triangle::shade_triangle_barycentric,
@@ -174,6 +174,8 @@ fn main() {
   // renderer.camera.set_rotation(Vec3::new(0.0, 0.0, 0.0));
 
   let scene = from_obj_path(MODEL_PATH).unwrap();
+
+  let material = Material::default();
 
   // sandbox.run_fltk(move |_| draw_image.as_ref()(color_buffer.data()));
   sandbox.run_fltk(move |_| {
