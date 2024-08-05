@@ -3,7 +3,7 @@ use crate::math::Vec3;
 
 use super::{
   defines::{self, parse_num, parse_token, parse_token_ok, ParserError},
-  material::{Materials, MoveMaterials, Mtl, Textures},
+  material::{MoveMaterials, Mtl, MtlStores, Textures},
   parser::{ParseLine, Parser},
 };
 
@@ -36,7 +36,10 @@ impl ParseLine<Mtl> for MtlParserImpl {
 
     match s {
       "#" => {}
-      "newmtl" => data.0.new_material(&parse_token!(tokens.next();String)?),
+      "newmtl" => data
+        .0
+        .materials
+        .new_material(&parse_token!(tokens.next();String)?),
       "Ns" => current.specular_exponent = parse_token_ok!(tokens.next();f32),
       "Ka" => current.ambient = parse_token_ok!(tokens.next();Vec3=x:f32,y:f32,z:f32),
       "Kd" => current.diffuse = parse_token_ok!(tokens.next();Vec3=x:f32,y:f32,z:f32),
@@ -66,7 +69,7 @@ type MtlParser<'a, 'b> = Parser<'a, 'b, Mtl, MtlParserImpl>;
 
 pub fn load_mtl<'a, 'b>(
   relative_path: &'a str,
-  materials: Materials,
+  materials: MtlStores,
 ) -> Result<MtlParser<'a, 'b>, ParserError>
 where
   'a: 'b,

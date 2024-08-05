@@ -1,5 +1,6 @@
-use super::shader::{self, Shader};
+use super::shader::Shader;
 use crate::math::{Vec2, Vec3, Vec4};
+use crate::utils::swap_and_move;
 use image::{GenericImageView, ImageError};
 use std::path::Path;
 use std::{collections::HashMap, fmt::Debug};
@@ -45,7 +46,7 @@ make_material_base!(
   optical_density: f32,
   illum: u8;;
   // below are fixed;
-  shader:Shader,
+  shader: Shader,
   name: String,
   texture_map: Map,
   id:u32
@@ -98,13 +99,29 @@ make_texture_map!(
 
 pub type TexturePointer = TextureMap<String>;
 
+// static GLOBAL_STORE: MtlStores = MtlStores::default();
+
+#[derive(Debug, Default)]
+pub struct MtlStores {
+  pub materials: Materials,
+  pub texutres: Textures,
+}
+
+impl MtlStores {
+  pub fn get_mutates(&mut self) -> Result<(&mut Material, &mut Textures), ParserError> {
+    self
+      .materials
+      .get_mutates()
+      .map(|m| (m, &mut self.texutres))
+  }
+}
+
 #[derive(Debug, Default)]
 pub struct Materials {
   auto_incre_id: u32,
   last: Option<String>,
-  materials: HashMap<String, Material>,
+  data: HashMap<String, Material>,
   name_id_map: HashMap<u32, String>,
-  textures: Textures,
 }
 
 impl Materials {
@@ -115,43 +132,53 @@ impl Materials {
     material.name = name.clone();
     self.last = Some(name.clone());
     let name_v = name.clone();
-    self.materials.insert(name, material);
+    self.data.insert(name, material);
     self.name_id_map.insert(self.auto_incre_id, name_v);
     self.auto_incre_id += 1;
   }
 
-  pub fn get_material_by_name(&self, name: &str) -> Option<&Material> {
-    self.materials.get(name)
-  }
-
-  pub fn get_mutates(&mut self) -> Result<(&mut Material, &mut Textures), ParserError> {
+  pub fn get_mutates(&mut self) -> Result<&mut Material, ParserError> {
     let material = if let Some(name) = &self.last {
-      self.materials.get_mut(name)
+      self.data.get_mut(name)
     } else {
       None
     };
 
     let material = material.ok_or(ParserError::MaterialNotFound)?;
 
-    Ok((material, &mut self.textures))
+    Ok(material)
+
+    // Ok((material, &mut self.textures))
+  }
+
+  pub fn get_material_by_name(&self, name: &str) -> Option<&Material> {
+    self.data.get(name)
+  }
+
+  pub fn get_material_by_id(&self, id: u32) -> Option<&Material> {
+    if let Some(name) = self.name_id_map.get(&id) {
+      self.get_material_by_name(name)
+    } else {
+      None
+    }
   }
 }
 
 pub trait MoveMaterials {
-  fn move_out_materials(&mut self) -> Materials;
-  fn move_in_materials(&mut self, materials: Materials);
+  fn move_out_materials(&mut self) -> MtlStores;
+  fn move_in_materials(&mut self, stores: MtlStores);
 }
 
 #[derive(Debug, Default)]
-pub struct Mtl(pub Materials);
+pub struct Mtl(pub MtlStores);
 
 impl MoveMaterials for Mtl {
-  fn move_out_materials(&mut self) -> Materials {
-    std::mem::replace(&mut self.0, Default::default())
+  fn move_out_materials(&mut self) -> MtlStores {
+    swap_and_move(&mut self.0)
   }
 
-  fn move_in_materials(&mut self, materials: Materials) {
-    self.0 = materials;
+  fn move_in_materials(&mut self, stores: MtlStores) {
+    self.0 = stores;
   }
 }
 

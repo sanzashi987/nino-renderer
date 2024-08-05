@@ -1,12 +1,10 @@
-use std::borrow::BorrowMut;
-
 use super::{camera::Camera, shader};
 use crate::{
   data_array::{ColorBuffer, DepthBuffer},
   math::{Barycentric, BoundaryBox, Mat4, Vec2, Vec4},
-  model::{Scene, VertexMaterial},
+  model::Scene,
   obj_loader::{
-    material::Texture,
+    material::{MtlStores, Texture},
     shader::{GlMatrix, Shader, Varyings},
   },
 };
@@ -66,6 +64,8 @@ pub struct Renderer {
   pub camera: Camera,
   color: ColorBuffer,
   depth: DepthBuffer,
+  stores: MtlStores,
+  default_shader: Shader,
 }
 
 impl Renderer {
@@ -78,6 +78,8 @@ impl Renderer {
       camera: Camera::new(w as f32, h as f32),
       color: ColorBuffer::new(w, h),
       depth,
+      stores: Default::default(),
+      default_shader: Default::default(),
     }
   }
 
@@ -94,13 +96,11 @@ impl Renderer {
       frustum.get_projection_matrix(),
     );
 
-    let defult_shader = Shader::default();
-
     for model in &scene.models {
       let vertices = &model.vertices;
-      let material = model.get_material();
+      let material = model.get_material(&scene.stores.materials);
 
-      let shader = material.map(|m| &m.shader).unwrap_or(&defult_shader);
+      let shader = material.map(|m| &m.shader).unwrap_or(&self.default_shader);
       let mut varyings = Varyings::default();
       for i in 0..vertices.len() / 3_usize {
         let index = (i * 3) as usize;

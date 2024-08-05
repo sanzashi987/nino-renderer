@@ -5,7 +5,7 @@ use crate::{
 
 use super::{
   defines::ParserError,
-  material::{Materials, MoveMaterials, Textures},
+  material::{MoveMaterials, MtlStores, Textures},
 };
 #[derive(Debug, Default, Clone, Copy)]
 pub struct VertexIndex {
@@ -52,7 +52,7 @@ pub struct Scene {
   pub vertices: Vec<Vec3>,
   pub normals: Vec<Vec3>,
   pub texture_coordinates: Vec<Vec2>,
-  pub materials: Materials,
+  pub stores: MtlStores,
 }
 
 impl Scene {
@@ -62,7 +62,7 @@ impl Scene {
       vertices: Default::default(),
       normals: Default::default(),
       texture_coordinates: Default::default(),
-      materials: Default::default(),
+      stores: Default::default(),
     }
   }
 
@@ -110,11 +110,11 @@ impl Scene {
 }
 
 impl MoveMaterials for Scene {
-  fn move_out_materials(&mut self) -> Materials {
-    swap_and_move(&mut self.materials)
+  fn move_out_materials(&mut self) -> MtlStores {
+    swap_and_move(&mut self.stores)
   }
 
-  fn move_in_materials(&mut self, materials: Materials) {
-    self.materials = materials;
+  fn move_in_materials(&mut self, stores: MtlStores) {
+    self.stores = stores;
   }
 }
