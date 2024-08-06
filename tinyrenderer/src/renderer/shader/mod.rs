@@ -1,1 +1,1 @@
-mod gouraud;
+pub mod gouraud;

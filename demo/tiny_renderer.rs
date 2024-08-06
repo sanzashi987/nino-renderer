@@ -15,9 +15,9 @@ use tinyrenderer::{
   bresenham_line::line,
   data_array::{ColorBuffer, DepthBuffer},
   math::{self, Mat4, Vec2, Vec3, Vec4},
-  model::{self, from_obj_path, Material, Model, Scene, Vertex},
-  obj_loader::material::Texture,
-  renderer::renderer::Renderer,
+  model::{self, from_obj_path, Model, Scene, Vertex},
+  obj_loader::material::{self, Material, Texture},
+  renderer::{renderer::Renderer, shader::gouraud::make_gouraud_shader},
   shade_triangle::shade_triangle_barycentric,
 };
 
@@ -136,11 +136,7 @@ fn main() {
 
   // let scene = from_obj_path(&relative_path).unwrap();
 
-  let mut color_buffer = ColorBuffer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
-  let mut depth_buffer = DepthBuffer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
-
-  depth_buffer.clear(std::f32::MIN);
-
+  let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, false);
   let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, true);
   let draw_image = sandbox.make_draw_image();
 
@@ -170,12 +166,13 @@ fn main() {
     z: 3.0,
   });
 
+  let mut material = Material::default();
+
+  material.shader = make_gouraud_shader(Vec3::new(1.0, 1.0, 1.0));
   renderer.camera.lookat(Vec3::new(0.0, 0.0, 0.0));
   // renderer.camera.set_rotation(Vec3::new(0.0, 0.0, 0.0));
 
   let scene = from_obj_path(MODEL_PATH).unwrap();
-
-  let material = Material::default();
 
   // sandbox.run_fltk(move |_| draw_image.as_ref()(color_buffer.data()));
   sandbox.run_fltk(move |_| {
@@ -184,10 +181,10 @@ fn main() {
 
     // println!("{:?}", model);
 
-    renderer.render(&scene, model, &texture);
+    renderer.render(&scene, model, &material);
     let color = renderer.take_color();
     draw_image.as_ref()(color.data());
-    rotation += 1.0;
+    rotation -= 10.0;
   });
 
   // println!("{:?}", scene);

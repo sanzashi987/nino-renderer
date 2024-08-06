@@ -74,7 +74,7 @@ impl Vertex {
 
   pub fn from_vertex_index(
     v: &VertexIndex,
-    scene: &ObjScene, /* , material: Option<&Material> */
+    scene: &Scene, /* , material: Option<&Material> */
   ) -> Self {
     let VertexIndex {
       position_index,
@@ -123,15 +123,11 @@ pub struct Model {
   material: Option<u32>,
 }
 impl Model {
-  pub fn get_material<'a>(&self, stores: &'a Materials) -> Option<&'a ObjMaterial> {
-    if let Some(id) = self.material {
-      stores.get_material_by_id(id)
-    } else {
-      None
-    }
+  pub fn get_material(&self) -> Option<u32> {
+    self.material
   }
 
-  pub fn from_obj_model(obj_model: &ObjModel, scene: &ObjScene) -> Self {
+  pub fn from_obj_model(obj_model: &ObjModel, scene: &Scene) -> Self {
     let name = obj_model.name.clone();
     let mut vertices = vec![];
 
@@ -191,9 +187,7 @@ pub fn from_obj_path(relative_path: &str) -> Result<Scene, ParserError> {
 
   let mut scene = Scene::from_obj_scene(obj_scene);
   for obj_model in &obj_scene.models {
-    scene
-      .models
-      .push(Model::from_obj_model(obj_model, &obj_scene));
+    scene.models.push(Model::from_obj_model(obj_model, &scene));
   }
   Ok(scene)
 }

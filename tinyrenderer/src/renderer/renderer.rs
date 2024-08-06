@@ -4,7 +4,7 @@ use crate::{
   math::{Barycentric, BoundaryBox, Mat4, Vec2, Vec4},
   model::Scene,
   obj_loader::{
-    material::{MtlStores, Texture},
+    material::{self, Material, MtlStores, Texture},
     shader::{GlMatrix, Shader, Varyings},
   },
 };
@@ -83,7 +83,7 @@ impl Renderer {
     }
   }
 
-  pub fn render(&mut self, scene: &Scene, model_matrix: Mat4, texture: &Texture) {
+  pub fn render(&mut self, scene: &Scene, model_matrix: Mat4, material: &Material) {
     let width = self.color.width();
     let height = self.color.height();
 
@@ -98,13 +98,15 @@ impl Renderer {
 
     for model in &scene.models {
       let vertices = &model.vertices;
-      let material = model.get_material(&scene.stores.materials);
-
+      // let material = model
+      //   .get_material()
+      //   .map_or(None, |id| scene.stores.materials.get_material_by_id(id));
+      let material = Some(material);
       let shader = material.map(|m| &m.shader).unwrap_or(&self.default_shader);
-      let mut varyings = Varyings::default();
       for i in 0..vertices.len() / 3_usize {
         let index = (i * 3) as usize;
         let mut vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
+        let mut varyings = Varyings::default();
 
         for v in &mut vertices {
           *v = shader.run_vertex(&gl_matrix, v, &mut varyings);
@@ -143,19 +145,22 @@ impl Renderer {
             if !barycentric.is_inside() {
               continue;
             }
-
+            let rhws = vertices.map(|v| v.rhw);
             let inv_z = barycentric.apply_weight(&vertices.map(|v| v.rhw));
             let z = 1.0 / inv_z;
 
             if self.depth.get(x, y) < z {
               self.depth.set(x, y, z);
 
-              let vt = barycentric.apply_weight(&vertices.map(|v| v.texture.unwrap() * v.rhw)) * z;
+              // let vt = barycentric.apply_weight(&vertices.map(|v| v.texture.unwrap() * v.rhw)) * z;
+
+              let color =
+                shader.run_fragment(&barycentric, &varyings, &self.stores.texutres, rhws, z);
 
               // let material = model.get_material().unwrap();
               // let diffuse_texture = material.texture_map.diffuse.unwrap();
 
-              let color = texture.get_pixel(vt);
+              // let color = texture.get_pixel(vt);
 
               self.color.set(x, y, &color);
             }

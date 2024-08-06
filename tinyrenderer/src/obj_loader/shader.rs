@@ -9,6 +9,8 @@ use crate::{
   model::Vertex,
 };
 
+use super::material::{GetTexture, Textures};
+
 macro_rules! define_union_type_enum {
   ($enum:tt;$($name:tt@$type:ty),+) => {
     #[derive(Debug, Clone, Copy)]
@@ -115,7 +117,7 @@ type Uniform = GlCollection;
 type Varying = GlCollection;
 
 type VertexShader = Box<dyn Fn(&GlMatrix, &Vertex, &Uniform, &mut Varyings) -> Vertex>;
-type FragmentShader = Box<dyn Fn(&Vertex, &Uniform, &Varying) -> Vec4>;
+type FragmentShader = Box<dyn Fn(&Uniform, &Varying, &Textures) -> Vec4>;
 
 pub struct Shader {
   uniforms: Uniform,
@@ -172,26 +174,41 @@ impl Shader {
     (self.vertex)(gl_matrix, gl_vertex, &self.uniforms, varyings)
   }
 
-  pub fn run_fragment(&self, gl_vertex: &Vertex, bar: &Barycentric, varyings: &Varyings) -> Vec4 {
-    let varying = self.lerp_varyings(bar, varyings);
+  pub fn run_fragment(
+    &self,
+    bar: &Barycentric,
+    varyings: &Varyings,
+    textures: &Textures,
+    rhws: [f32; 3],
+    z: f32,
+  ) -> Vec4 {
+    let varying = self.lerp_varyings(bar, varyings, rhws, z);
 
-    (self.fragment)(gl_vertex, &self.uniforms, &varying)
+    (self.fragment)(&self.uniforms, &varying, textures)
   }
 
-  pub fn lerp_varyings(&self, bar: &Barycentric, varyings: &Varyings) -> Varying {
+  pub fn lerp_varyings(
+    &self,
+    bar: &Barycentric,
+    varyings: &Varyings,
+    rhws: [f32; 3],
+    z: f32,
+  ) -> Varying {
     let mut result = Varying::default();
     for key in varyings.data.keys() {
       let vec = varyings.data.get(key).unwrap();
 
       if vec.len() < 3 {
+        println!("???");
         continue;
       }
 
-      let arr = [vec[0], vec[1], vec[2]];
+      let arr = [vec[0] * rhws[0], vec[1] * rhws[1], vec[2] * rhws[2]];
+      // let arr = [vec[0], vec[1], vec[2]];
 
-      let lerpped_val = bar.apply_weight(&arr);
+      let lerped_val = bar.apply_weight(&arr) * z;
 
-      result.set(key, lerpped_val);
+      result.set(key, lerped_val);
     }
 
     result

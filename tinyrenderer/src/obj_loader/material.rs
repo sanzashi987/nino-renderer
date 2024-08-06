@@ -232,6 +232,10 @@ pub struct Textures {
   name_id_map: HashMap<String, u32>,
 }
 
+pub trait GetTexture {
+  fn get_texture_by_id(&self, id: u32) -> Option<&Texture>;
+}
+
 impl Textures {
   pub fn load(&mut self, filepath: &str, name: &str) -> Result<u32, ImageError> {
     if let Some(id) = self.name_id_map.get(name) {
@@ -245,8 +249,10 @@ impl Textures {
     self.auto_incr_id += 1;
     Ok(id)
   }
+}
 
-  pub fn get_texture_by_id(&self, id: u32) -> Option<&Texture> {
+impl GetTexture for Textures {
+  fn get_texture_by_id(&self, id: u32) -> Option<&Texture> {
     self.data.get(&id)
   }
 }
