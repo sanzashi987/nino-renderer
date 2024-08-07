@@ -137,7 +137,7 @@ fn main() {
   // let scene = from_obj_path(&relative_path).unwrap();
 
   let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, false);
-  let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, true);
+  // let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, true);
   let draw_image = sandbox.make_draw_image();
 
   // let _ = scene.textures.load(tag_path, "african_head_diffuse");
@@ -154,7 +154,7 @@ fn main() {
   // let color_buffer = render_pipeline();
 
   // lesson 4, 5
-  let mut rotation = 0.0f32;
+  let mut rotation = -80.0f32;
   // let relative_path = get_resource_filepath(MODEL);
   let path_str = get_resource_filepath("african_head_diffuse.tga");
   let path = std::path::Path::new(&path_str);

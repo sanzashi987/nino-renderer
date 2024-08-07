@@ -11,6 +11,10 @@ use crate::{
 
 use super::material::{GetTexture, Textures};
 
+pub trait Extract<T> {
+  fn extract(&self) -> Option<T>;
+}
+
 macro_rules! define_union_type_enum {
   ($enum:tt;$($name:tt@$type:ty),+) => {
     #[derive(Debug, Clone, Copy)]
@@ -36,6 +40,18 @@ macro_rules! define_union_type_enum {
         }
       }
     }
+
+    $(
+      impl Extract<$type> for $enum {
+        fn extract(&self)->Option<$type>{
+          if let Self::$name(val) = *self {
+            Some(val)
+          } else {
+            None
+          }
+        }
+      }
+    )+
   };
 }
 

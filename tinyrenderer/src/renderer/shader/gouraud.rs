@@ -1,5 +1,6 @@
 use crate::math::{Vec3, Vec4};
-use crate::obj_loader::shader::{GLTypes, Shader};
+use crate::obj_loader::material::GetTexture;
+use crate::obj_loader::shader::{Extract, GLTypes, Shader};
 
 pub fn make_gouraud_shader(light_dir: Vec3) -> Shader {
   let mut shader = Shader::default();
@@ -22,10 +23,19 @@ pub fn make_gouraud_shader(light_dir: Vec3) -> Shader {
   shader.fragment = Box::new(|_, varying, textures| {
     let mut res = Vec4::zero();
 
+    let light_strength = varying
+      .get("light-intense")
+      .map_or(None as Option<f32>, |v| v.extract())
+      .map_or(1.0, |v| v.min(1.0));
+
     if let Some(val) = varying.get("light-intense") {
       if let GLTypes::Float(light_intense) = val {
         let s = (1.0 * light_intense).min(1.0);
         res = Vec4::new(s, s, s, 1.0);
+
+        // if let Some(t) = textures.get_texture_by_id(0) {
+        //   t.get_pixel(vt)
+        // }
       }
     };
 
