@@ -59,6 +59,7 @@ impl ParseLine<Mtl> for MtlParserImpl {
       "map_d" => map.alpha = parse_texture_token!(tokens.next();texutures;working_dir),
       "map_refl" => map.refl = parse_texture_token!(tokens.next();texutures;working_dir),
       "map_Bump" => map.bump = parse_texture_token!(tokens.next();texutures;working_dir),
+      "norm" => map.norm = parse_texture_token!(tokens.next();texutures;working_dir),
       _ => {}
     }
     Ok(())

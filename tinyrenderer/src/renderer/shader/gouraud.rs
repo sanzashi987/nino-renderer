@@ -26,17 +26,32 @@ pub fn make_gouraud_shader(light_dir: Vec3) -> Shader {
       .map_or(None as Option<f32>, |v| v.extract())
       .map_or(1.0, |v| v.min(1.0));
 
-    let vUv = varying
-      .get("vUv")
-      .map_or(None as Option<Vec2>, |v| v.extract());
+    // let vUv = varying
+    //   .get("vUv")
+    //   .map_or(None as Option<Vec2>, |v| v.extract());
 
-    if let (Some(texture), Some(uv)) = (textures.get_texture_by_id(0), vUv) {
-      let mut res = texture.get_pixel(uv) * s;
-      res.w = 1.0;
-      res
+    // if let (Some(texture), Some(uv)) = (textures.get_texture_by_id(0), vUv) {
+    //   let mut res = texture.get_pixel(uv) * s;
+    //   res.w = 1.0;
+    //   res
+    // } else {
+    //   Vec4::new(s, s, s, 1.0)
+    // }
+
+    let s = if s > 0.85 {
+      1.00
+    } else if s > 0.60 {
+      0.80
+    } else if s > 0.45 {
+      0.60
+    } else if s > 0.30 {
+      0.45
+    } else if s > 0.15 {
+      0.30
     } else {
-      Vec4::new(s, s, s, 1.0)
-    }
+      0.00
+    };
+    Vec4::new(s, s * 155.0 / 255.0, 0.0, 1.0)
   });
 
   shader

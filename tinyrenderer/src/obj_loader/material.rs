@@ -94,7 +94,8 @@ make_texture_map!(
   specular_highlight,
   alpha,
   refl,
-  bump
+  bump,
+  norm
 );
 
 pub type TexturePointer = TextureMap<String>;

@@ -159,8 +159,8 @@ fn main() {
   let mut renderer = Renderer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
 
   renderer.load_texture(
-    &format!("{}/{}/", RESOURCE_PATH, FOLDER),
-    "african_head_diffuse.tga",
+    &get_resource_filepath("african_head_diffuse.tga"),
+    "african_head_diffuse",
   );
   renderer.camera.move_to(Vec3 {
     x: -3.0,
