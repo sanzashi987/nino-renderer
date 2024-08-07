@@ -170,6 +170,10 @@ impl Renderer {
     }
   }
 
+  pub fn load_texture(&mut self, filepath: &str, name: &str) {
+    let _ = self.stores.texutres.load(filepath, name);
+  }
+
   pub fn take_color(&mut self) -> ColorBuffer {
     let w = self.color.width();
     let h = self.color.height();

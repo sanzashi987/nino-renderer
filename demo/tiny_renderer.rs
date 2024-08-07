@@ -155,11 +155,13 @@ fn main() {
 
   // lesson 4, 5
   let mut rotation = -80.0f32;
-  // let relative_path = get_resource_filepath(MODEL);
-  let path_str = get_resource_filepath("african_head_diffuse.tga");
-  let path = std::path::Path::new(&path_str);
-  let texture = Texture::load("233", path, 1).unwrap();
+
   let mut renderer = Renderer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
+
+  renderer.load_texture(
+    &format!("{}/{}/", RESOURCE_PATH, FOLDER),
+    "african_head_diffuse.tga",
+  );
   renderer.camera.move_to(Vec3 {
     x: -3.0,
     y: 0.0,
