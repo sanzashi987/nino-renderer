@@ -1,5 +1,5 @@
 use super::{Vec3, Vec4};
-use std::ops::{Div, Mul};
+use std::ops::{Add, Div, Mul};
 
 macro_rules! define_mat {
   ($name:ident, $dim:expr) => {
@@ -95,6 +95,20 @@ macro_rules! define_mat {
       type Output = Self;
       fn div(self, rhs: f32) -> Self::Output {
         self * (1.0 / rhs)
+      }
+    }
+
+    impl Add for $name {
+      type Output = Self;
+      fn add(self, rhs: Self) -> Self::Output {
+        let mut mat = $name::zeros();
+        for y in 0..$dim {
+          for x in 0..$dim {
+            let sum = self.get(x, y) + rhs.get(x, y);
+            mat.set(x, y, sum)
+          }
+        }
+        mat
       }
     }
 

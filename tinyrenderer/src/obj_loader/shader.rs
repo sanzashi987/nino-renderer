@@ -9,10 +9,10 @@ use crate::{
   model::Vertex,
 };
 
-use super::material::{GetTexture, Textures};
+use super::material::Textures;
 
 pub trait Extract<T> {
-  fn extract(&self) -> Option<T>;
+  fn extract(&self) -> Option<&T>;
 }
 
 macro_rules! define_union_type_enum {
@@ -43,8 +43,8 @@ macro_rules! define_union_type_enum {
 
     $(
       impl Extract<$type> for $enum {
-        fn extract(&self)->Option<$type>{
-          if let Self::$name(val) = *self {
+        fn extract(&self)->Option<&$type>{
+          if let Self::$name(val) = self {
             Some(val)
           } else {
             None
@@ -61,7 +61,8 @@ define_union_type_enum!(
   Float@f32,
   Vec2@Vec2,
   Vec3@Vec3,
-  Vec4@Vec4
+  Vec4@Vec4,
+  Mat4@Mat4
 );
 
 impl Mul<f32> for GLTypes {
@@ -74,21 +75,7 @@ impl Mul<f32> for GLTypes {
       GLTypes::Vec2(val) => GLTypes::Vec2(val * rhs),
       GLTypes::Vec3(val) => GLTypes::Vec3(val * rhs),
       GLTypes::Vec4(val) => GLTypes::Vec4(val * rhs),
-    }
-  }
-}
-pub struct GlMatrix<'a> {
-  model_matrix: &'a Mat4,
-  view_matrix: &'a Mat4,
-  projection_matrix: &'a Mat4,
-}
-
-impl<'a> GlMatrix<'a> {
-  pub fn new(model_matrix: &'a Mat4, view_matrix: &'a Mat4, projection_matrix: &'a Mat4) -> Self {
-    Self {
-      model_matrix,
-      view_matrix,
-      projection_matrix,
+      GLTypes::Mat4(val) => GLTypes::Mat4(val * rhs),
     }
   }
 }
@@ -114,12 +101,15 @@ impl Varyings {
     // self.data.insert(key.to_string(), val);
   }
 }
+
+pub type GlTypeMap = HashMap<String, GLTypes>;
+
 #[derive(Debug, Default)]
-pub struct GlCollection {
-  data: HashMap<String, GLTypes>,
+pub struct Varying {
+  data: GlTypeMap,
 }
 
-impl GlCollection {
+impl Varying {
   pub fn set(&mut self, key: &str, gl_values: GLTypes) {
     self.data.insert(key.to_string(), gl_values);
   }
@@ -129,14 +119,35 @@ impl GlCollection {
   }
 }
 
-type Uniform = GlCollection;
-type Varying = GlCollection;
+pub fn take_value<T: Copy>(v: &T) -> T {
+  *v
+}
 
-type VertexShader = Box<dyn Fn(&GlMatrix, &Vertex, &Uniform, &mut Varyings) -> Vertex>;
+pub struct Uniform<'a> {
+  global: &'a GlTypeMap,
+  data: GlTypeMap,
+}
+
+impl<'a> Uniform<'a> {
+  pub fn new(global: &'a GlTypeMap, data: GlTypeMap) -> Self {
+    Self { global, data }
+  }
+
+  pub fn get(&self, key: &str) -> Option<&GLTypes> {
+    let res = self.data.get(key);
+
+    if res.is_none() {
+      self.global.get(key)
+    } else {
+      res
+    }
+  }
+}
+
+type VertexShader = Box<dyn Fn(&Vertex, &Uniform, &mut Varyings) -> Vertex>;
 type FragmentShader = Box<dyn Fn(&Uniform, &Varying, &Textures) -> Vec4>;
 
 pub struct Shader {
-  uniforms: Uniform,
   pub vertex: VertexShader,
   pub fragment: FragmentShader,
 }
@@ -144,7 +155,6 @@ pub struct Shader {
 impl Debug for Shader {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("Shader")
-      .field("uniforms", &self.uniforms)
       .field("vertex", &"/** vertex clousure */".to_string())
       .field("fragment", &"/** fragment clousure */".to_string())
       .finish()
@@ -153,7 +163,6 @@ impl Debug for Shader {
 impl Default for Shader {
   fn default() -> Self {
     Self {
-      uniforms: Default::default(),
       vertex: Self::default_vertex(),
       fragment: Self::default_fragment(),
     }
@@ -162,15 +171,12 @@ impl Default for Shader {
 
 impl Shader {
   pub fn default_vertex() -> VertexShader {
-    let vertex: VertexShader = Box::new(|gl_matrix, v, u, vary| {
-      let GlMatrix {
-        model_matrix,
-        view_matrix,
-        projection_matrix,
-      } = gl_matrix;
+    let vertex: VertexShader = Box::new(|v, u, _| {
+      let model_matrix: &Mat4 = u.get("model_matrix").unwrap().extract().unwrap();
+      let view_matrix: &Mat4 = u.get("view_matrix").unwrap().extract().unwrap();
+      let projection_matrix: &Mat4 = u.get("projection_matrix").unwrap().extract().unwrap();
       let mut next_v = *v;
-      next_v.position =
-        (**projection_matrix) * (**view_matrix) * (**model_matrix) * next_v.position;
+      next_v.position = (*projection_matrix) * (*view_matrix) * (*model_matrix) * next_v.position;
 
       next_v
     });
@@ -183,16 +189,17 @@ impl Shader {
 
   pub fn run_vertex(
     &self,
-    gl_matrix: &GlMatrix,
     gl_vertex: &Vertex,
+    uniforms: &Uniform,
     varyings: &mut Varyings,
   ) -> Vertex {
-    (self.vertex)(gl_matrix, gl_vertex, &self.uniforms, varyings)
+    (self.vertex)(gl_vertex, uniforms, varyings)
   }
 
   pub fn run_fragment(
     &self,
     bar: &Barycentric,
+    uniforms: &Uniform,
     varyings: &Varyings,
     textures: &Textures,
     rhws: [f32; 3],
@@ -200,7 +207,7 @@ impl Shader {
   ) -> Vec4 {
     let varying = self.lerp_varyings(bar, varyings, rhws, z);
 
-    (self.fragment)(&self.uniforms, &varying, textures)
+    (self.fragment)(uniforms, &varying, textures)
   }
 
   pub fn lerp_varyings(

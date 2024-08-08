@@ -21,9 +21,15 @@ use tinyrenderer::{
   shade_triangle::shade_triangle_barycentric,
 };
 
-fn get_resource_filepath(relative: &str) -> String {
-  format!("{}/{}/{}", RESOURCE_PATH, FOLDER, relative)
+macro_rules! file {
+  ($name:tt) => {
+    &format!("{}/{}/{}", RESOURCE_PATH, FOLDER, $name)
+  };
 }
+
+// fn get_resource_filepath(relative: &str) -> String {
+//   format!("{}/{}/{}", RESOURCE_PATH, FOLDER, relative)
+// }
 
 const WINDOW_WIDTH: f32 = 800.0;
 const WINDOW_HEIGHT: f32 = 800.0;
@@ -61,7 +67,7 @@ fn direct_light_shading(
   color_buffer: &mut ColorBuffer,
   depth_buffer: &mut DepthBuffer,
 ) {
-  let path_str = get_resource_filepath("african_head_diffuse.tga");
+  let path_str = file!("african_head_diffuse.tga");
   let path = std::path::Path::new(&path_str);
   let mut texture = Texture::load("233", path, 1).unwrap();
 
@@ -158,9 +164,11 @@ fn main() {
 
   let mut renderer = Renderer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
 
+  renderer.load_texture(file!("african_head_diffuse.tga"), "african_head_diffuse");
+  renderer.load_texture(file!("african_head_nm.tga"), "african_head_nm");
   renderer.load_texture(
-    &get_resource_filepath("african_head_diffuse.tga"),
-    "african_head_diffuse",
+    file!("african_head_nm_tangent.tga"),
+    "african_head_nm_tangent",
   );
   renderer.camera.move_to(Vec3 {
     x: -3.0,
