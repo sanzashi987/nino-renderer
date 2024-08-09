@@ -250,10 +250,15 @@ impl Textures {
     self.auto_incr_id += 1;
     Ok(id)
   }
-}
 
-impl GetTexture for Textures {
-  fn get_texture_by_id(&self, id: u32) -> Option<&Texture> {
+  pub fn get_texture_by_id(&self, id: u32) -> Option<&Texture> {
     self.data.get(&id)
+  }
+
+  pub fn get_texture_by_ids(&self, ids: Vec<u32>) -> Vec<Option<&Texture>> {
+    ids
+      .into_iter()
+      .map(|id| self.get_texture_by_id(id))
+      .collect()
   }
 }

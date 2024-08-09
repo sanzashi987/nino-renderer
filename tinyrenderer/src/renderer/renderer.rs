@@ -90,17 +90,23 @@ impl Renderer {
     let frustum: &super::camera::Frustum = self.camera.get_frustum();
     let viewport_matrix = self.viewport.get_viewport_matrix();
 
+    let view_matrix = *(self.camera.get_view_matarix());
+    let projection_matrix = *(frustum.get_projection_matrix());
+    let mvp_it = (projection_matrix * view_matrix * model_matrix).inverse_transpose();
+
     let global_uniforms: GlTypeMap = GlTypeMap::from([
-      ("model_matrix".to_string(), GLTypes::Mat4(model_matrix)),
+      (format!("model_matrix"), GLTypes::Mat4(model_matrix)),
+      (format!("view_matrix"), GLTypes::Mat4(view_matrix)),
       (
-        "view_matrix".to_string(),
-        GLTypes::Mat4(*(self.camera.get_view_matarix())),
+        format!("projection_matrix"),
+        GLTypes::Mat4(projection_matrix),
       ),
-      (
-        "projection_matrix".to_string(),
-        GLTypes::Mat4(*(frustum.get_projection_matrix())),
-      ),
+      (format!("mvp_it"), GLTypes::Mat4(mvp_it.unwrap_or_default())),
     ]);
+    // let mvp = projection_matrix * view_matrix * model_matrix;
+    // dbg!(mvp);
+    // dbg!(mvp_it.unwrap_or_default());
+    // dbg!(mvp_it.unwrap_or_default() * mvp);
 
     for model in &scene.models {
       let vertices = &model.vertices;

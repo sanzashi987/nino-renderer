@@ -9,11 +9,11 @@ macro_rules! define_mat {
     }
 
     impl $name {
-      pub fn from_row(data: &[f32; $dim * $dim]) -> $name {
-        $name { data: data.clone() }
+      pub fn from_row(data: &[f32; $dim * $dim]) -> Self {
+        Self { data: data.clone() }
       }
 
-      pub fn from_col(data: &[f32; $dim * $dim]) -> $name {
+      pub fn from_col(data: &[f32; $dim * $dim]) -> Self {
         let mut mat = $name::zeros();
         for x in 0..$dim {
           for y in 0..$dim {
@@ -23,18 +23,18 @@ macro_rules! define_mat {
         mat
       }
 
-      pub fn zeros() -> $name {
-        $name {
+      pub fn zeros() -> Self {
+        Self {
           data: [0.0; $dim * $dim],
         }
       }
-      pub fn ones() -> $name {
-        $name {
+      pub fn ones() -> Self {
+        Self {
           data: [1.0; $dim * $dim],
         }
       }
 
-      pub fn identity() -> $name {
+      pub fn identity() -> Self {
         let mut mat = $name::zeros();
         for i in 0..$dim {
           mat.set(i, i, 1.0);
@@ -50,8 +50,8 @@ macro_rules! define_mat {
         self.data[x + y * $dim] = value;
       }
 
-      pub fn transpose(&self) -> $name {
-        let mut result = $name::identity();
+      pub fn transpose(&self) -> Self {
+        let mut result = Self::identity();
         for x in 0..$dim {
           for y in 0..$dim {
             result.set(y, x, self.get(x, y));
@@ -146,6 +146,108 @@ impl Mul<Vec4> for Mat4 {
         + self.get(2, 3) * rhs.z
         + self.get(3, 3) * rhs.w,
     )
+  }
+}
+
+impl Mat2 {
+  pub fn det(&self) -> f32 {
+    self.get(0, 0) * self.get(1, 1) - self.get(1, 0) * self.get(0, 1)
+  }
+
+  #[rustfmt::skip]
+  pub fn inverse(&self) -> Option<Self> {
+    let d = self.det();
+    if d.abs() <= f32::EPSILON {
+      return None;
+    }
+    Some(Mat2::from_row(&[
+      self.get(1, 1) / d, -self.get(1, 0) / d,
+      -self.get(0, 1) / d, self.get(0, 0) / d
+    ]))
+  }
+}
+
+impl Mat3 {
+  #[rustfmt::skip]
+  pub fn det(&self) -> f32 {
+    self.get(0, 0) * self.get(1, 1) * self.get(2, 2)
+      + self.get(2, 0) * self.get(0, 1) * self.get(1, 2)
+      + self.get(1, 0) * self.get(2, 1) * self.get(0, 2)
+      - (self.get(2, 0) * self.get(1, 1) * self.get(0, 2)
+          + self.get(1, 0) * self.get(0, 1) * self.get(2, 2)
+          + self.get(0, 0) * self.get(1, 2) * self.get(2, 1))
+    }
+
+  #[rustfmt::skip]
+  pub fn inverse(&self) -> Option<Self> {
+    let d = self.det();
+    if d.abs() <= f32::EPSILON {
+      return None;
+    }
+    Some(Mat3::from_row(&[
+      self.get(1, 1) * self.get(2, 2) - self.get(2, 1) * self.get(1, 2),
+      self.get(2, 0) * self.get(1, 2) - self.get(1, 0) * self.get(2, 2),
+      self.get(1, 0) * self.get(2, 1) - self.get(2, 0) * self.get(1, 1),
+      self.get(2, 1) * self.get(0, 2) - self.get(0, 1) * self.get(2, 2),
+      self.get(0, 0) * self.get(2, 2) - self.get(2, 0) * self.get(0, 2),
+      self.get(0, 1) * self.get(2, 1) - self.get(0, 0) * self.get(2, 0),
+      self.get(0, 1) * self.get(1, 2) - self.get(1, 1) * self.get(0, 2),
+      self.get(1, 0) * self.get(0, 2) - self.get(0, 0) * self.get(1, 2),
+      self.get(0, 0) * self.get(1, 1) - self.get(1, 0) * self.get(0, 1),
+    ]) / d)
+  }
+}
+
+impl Mat4 {
+  pub fn get_algebraic_cofactor(&self, x: usize, y: usize) -> Mat3 {
+    let mut result = Mat3::identity();
+    for x_iter in 0..4 {
+      if x_iter == x {
+        continue;
+      }
+      for y_iter in 0..4 {
+        if y_iter == y {
+          continue;
+        }
+
+        let real_x = if x_iter > x { x_iter - 1 } else { x_iter };
+        let real_y = if y_iter > y { y_iter - 1 } else { y_iter };
+        result.set(real_x, real_y, self.get(x_iter, y_iter));
+      }
+    }
+    result
+  }
+
+  pub fn get_cofactor(&self, x: usize, y: usize) -> Mat3 {
+    self.get_algebraic_cofactor(x, y) * if (x + y) % 2 == 0 { 1 } else { -1 } as f32
+  }
+
+  #[rustfmt::skip]
+  pub fn det(&self) -> f32 {
+    self.get_cofactor(0, 0).det() * self.get(0, 0)
+      + self.get_cofactor(1, 0).det() * self.get(1, 0)
+      + self.get_cofactor(2, 0).det() * self.get(2, 0)
+      + self.get_cofactor(3, 0).det() * self.get(3, 0)
+  }
+
+  #[rustfmt::skip]
+  pub fn inverse_transpose(&self) -> Option<Mat4> {
+    let d: f32 = self.det();
+    if d.abs() <= std::f32::EPSILON {
+        return None;
+    }
+
+    let mut result = Mat4::identity();
+    for x in 0..4 {
+      for y in 0..4 {
+        result.set(x, y, self.get_cofactor(x, y).det() / d);
+      }
+    }
+    Some(result)
+  }
+
+  pub fn inverse(&self) -> Option<Self> {
+    self.inverse_transpose().map(|v| v.transpose())
   }
 }
 
