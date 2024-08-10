@@ -103,10 +103,11 @@ impl Renderer {
       ),
       (format!("mvp_it"), GLTypes::Mat4(mvp_it.unwrap_or_default())),
     ]);
+
     // let mvp = projection_matrix * view_matrix * model_matrix;
     // dbg!(mvp);
     // dbg!(mvp_it.unwrap_or_default());
-    // dbg!(mvp_it.unwrap_or_default() * mvp);
+    // dbg!(mvp_it.unwrap_or_default().transpose() * mvp);
 
     for model in &scene.models {
       let vertices = &model.vertices;

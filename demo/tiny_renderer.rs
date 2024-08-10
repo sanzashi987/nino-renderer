@@ -17,7 +17,10 @@ use tinyrenderer::{
   math::{self, Mat4, Vec2, Vec3, Vec4},
   model::{self, from_obj_path, Model, Scene, Vertex},
   obj_loader::material::{self, Material, Texture},
-  renderer::{renderer::Renderer, shader::{gouraud::make_gouraud_shader, phong::make_phong_shader}},
+  renderer::{
+    renderer::Renderer,
+    shader::{gouraud::make_gouraud_shader, phong::make_phong_shader},
+  },
   shade_triangle::shade_triangle_barycentric,
 };
 
@@ -160,8 +163,8 @@ fn main() {
   // let color_buffer = render_pipeline();
 
   // lesson 4, 5
-  let mut rotation = -80.0f32;
-  // let mut rotation = 0.0f32;
+  // let mut rotation = -80.0f32;
+  let mut rotation = 0.0f32;
 
   let mut renderer = Renderer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
 
@@ -172,11 +175,7 @@ fn main() {
     "african_head_nm_tangent",
   );
   renderer.load_texture(file!("african_head_spec.tga"), "african_head_spec");
-  renderer.camera.move_to(Vec3 {
-    x: -3.0,
-    y: 0.0,
-    z: 3.0,
-  });
+  renderer.camera.move_to(Vec3::new(2.0, 1.5, 5.0));
 
   let mut material = Material::default();
 

@@ -1,5 +1,3 @@
-use std::iter::Inspect;
-
 use crate::{
   math::{Mat4, Vec2, Vec3, Vec4},
   obj_loader::shader::{take_value, Extract, GLTypes, Shader},
@@ -22,16 +20,16 @@ pub fn make_phong_shader(light_dir: Vec3) -> Shader {
       .get("vUv")
       .map_or(None as Option<Vec2>, |v| v.extract().map(take_value));
 
-    let mit: &Mat4 = uniforms.get("mvp_it").unwrap().extract().unwrap();
-    let model_matrix: &Mat4 = uniforms.get("model_matrix").unwrap().extract().unwrap();
-    let view_matrix: &Mat4 = uniforms.get("view_matrix").unwrap().extract().unwrap();
-    let projection_matrix: &Mat4 = uniforms
-      .get("projection_matrix")
-      .unwrap()
-      .extract()
-      .unwrap();
+    // let mit: &Mat4 = uniforms.get("mvp_it").unwrap().extract().unwrap();
+    // let model_matrix: &Mat4 = uniforms.get("model_matrix").unwrap().extract().unwrap();
+    // let view_matrix: &Mat4 = uniforms.get("view_matrix").unwrap().extract().unwrap();
+    // let projection_matrix: &Mat4 = uniforms
+    //   .get("projection_matrix")
+    //   .unwrap()
+    //   .extract()
+    //   .unwrap();
 
-    let mv = *projection_matrix * (*view_matrix) * (*model_matrix);
+    // let mvp = *projection_matrix * (*view_matrix) * (*model_matrix);
 
     let mut color = Vec4::new(1.0, 1.0, 1.0, 1.0);
 
@@ -44,28 +42,32 @@ pub fn make_phong_shader(light_dir: Vec3) -> Shader {
 
       // let t = textures.get_texture_by_ids(vec![2, 3]);
 
-      if let (Some(normal), Some(spec)) = (t[0], t[1]) {
+      if let (Some(normal), Some(specular)) = (t[0], t[1]) {
         let mut nn = normal.get_pixel(uv);
-        nn = nn / 0.5 - 0.5;
+        nn = nn * 2.0 - 1.0;
 
-        let n = (*mit * nn).truncated_to_vec3().normalize();
-
-        let l = (mv * Vec4::from_vec3(&light_dir, 1.0))
-          .truncated_to_vec3()
-          .normalize();
+        // std::mem::swap(&mut nn.x, &mut nn.z);
+        // dbg!(*mit);
+        // let n = (*mit * nn).truncated_to_vec3().normalize();
+        let n = nn.truncated_to_vec3().normalize();
+        // let l = (mvp * Vec4::from_vec3(&light_dir, 1.0))
+        //   .truncated_to_vec3()
+        //   .normalize();
+        let l = light_dir.normalize();
 
         let r = (n * (n.dot(&l) * 2.0) - l).normalize();
-        let spe = r.z.max(0.0).powf(spec.get_pixel(uv).x);
+        let spec_strength = r.z.max(0.0).powf(specular.get_pixel(uv).z * 255.0);
+
         let intense = n.dot(&l).max(0.0);
 
-        color = color * intense;
-        color.w = 1.0;
-        // color = Vec4::new(
-        //   (5.0 + color.x * 255.0 * (intense + 0.6 * spe)).min(255.0) / 255.0,
-        //   (5.0 + color.y * 255.0 * (intense + 0.6 * spe)).min(255.0) / 255.0,
-        //   (5.0 + color.z * 255.0 * (intense + 0.6 * spe)).min(255.0) / 255.0,
-        //   color.w,
-        // );
+        // color = color * intense;
+        // color.w = 1.0;
+        color = Vec4::new(
+          (5.0 + color.x * 255.0 * (intense + 1.6 * spec_strength)).min(255.0) / 255.0,
+          (5.0 + color.y * 255.0 * (intense + 1.6 * spec_strength)).min(255.0) / 255.0,
+          (5.0 + color.z * 255.0 * (intense + 1.6 * spec_strength)).min(255.0) / 255.0,
+          color.w,
+        );
       }
 
       // if let Some(normal) = textures.get_texture_by_id(1) {}
