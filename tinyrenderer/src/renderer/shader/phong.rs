@@ -20,16 +20,16 @@ pub fn make_phong_shader(light_dir: Vec3) -> Shader {
       .get("vUv")
       .map_or(None as Option<Vec2>, |v| v.extract().map(take_value));
 
-    // let mit: &Mat4 = uniforms.get("mvp_it").unwrap().extract().unwrap();
+    let mv_it: &Mat4 = uniforms.get("mv_it").unwrap().extract().unwrap();
     // let model_matrix: &Mat4 = uniforms.get("model_matrix").unwrap().extract().unwrap();
     // let view_matrix: &Mat4 = uniforms.get("view_matrix").unwrap().extract().unwrap();
-    // let projection_matrix: &Mat4 = uniforms
-    //   .get("projection_matrix")
-    //   .unwrap()
-    //   .extract()
-    //   .unwrap();
+    // // let projection_matrix: &Mat4 = uniforms
+    // //   .get("projection_matrix")
+    // //   .unwrap()
+    // //   .extract()
+    // //   .unwrap();
 
-    // let mvp = *projection_matrix * (*view_matrix) * (*model_matrix);
+    // let mvp = (*model_matrix);
 
     let mut color = Vec4::new(1.0, 1.0, 1.0, 1.0);
 
@@ -46,10 +46,10 @@ pub fn make_phong_shader(light_dir: Vec3) -> Shader {
         let mut nn = normal.get_pixel(uv);
         nn = nn * 2.0 - 1.0;
 
-        // std::mem::swap(&mut nn.x, &mut nn.z);
+        std::mem::swap(&mut nn.x, &mut nn.z);
         // dbg!(*mit);
-        // let n = (*mit * nn).truncated_to_vec3().normalize();
-        let n = nn.truncated_to_vec3().normalize();
+        let n = (*mv_it * nn).truncated_to_vec3().normalize();
+        // let n = nn.truncated_to_vec3().normalize();
         // let l = (mvp * Vec4::from_vec3(&light_dir, 1.0))
         //   .truncated_to_vec3()
         //   .normalize();

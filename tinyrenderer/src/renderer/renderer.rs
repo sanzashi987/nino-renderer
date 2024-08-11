@@ -92,7 +92,7 @@ impl Renderer {
 
     let view_matrix = *(self.camera.get_view_matarix());
     let projection_matrix = *(frustum.get_projection_matrix());
-    let mvp_it = (projection_matrix * view_matrix * model_matrix).inverse_transpose();
+    let mvp_it = (view_matrix * model_matrix).inverse_transpose();
 
     let global_uniforms: GlTypeMap = GlTypeMap::from([
       (format!("model_matrix"), GLTypes::Mat4(model_matrix)),
@@ -101,12 +101,13 @@ impl Renderer {
         format!("projection_matrix"),
         GLTypes::Mat4(projection_matrix),
       ),
-      (format!("mvp_it"), GLTypes::Mat4(mvp_it.unwrap_or_default())),
+      (format!("mv_it"), GLTypes::Mat4(mvp_it.unwrap_or_default())),
     ]);
 
     // let mvp = projection_matrix * view_matrix * model_matrix;
     // dbg!(mvp);
-    // dbg!(mvp_it.unwrap_or_default());
+    // dbg!(view_matrix * model_matrix);
+    // dbg!((view_matrix * model_matrix).inverse_transpose());
     // dbg!(mvp_it.unwrap_or_default().transpose() * mvp);
 
     for model in &scene.models {
