@@ -198,6 +198,26 @@ impl Mat3 {
   }
 }
 
+impl Mul<Vec3> for Mat3 {
+  type Output = Vec3;
+
+  fn mul(self, rhs: Vec3) -> Self::Output {
+    Vec3::new(
+      self.get(0, 0) * rhs.x + self.get(1, 0) * rhs.y + self.get(2, 0) * rhs.z,
+      self.get(0, 1) * rhs.x + self.get(1, 1) * rhs.y + self.get(2, 1) * rhs.z,
+      self.get(0, 2) * rhs.x + self.get(1, 2) * rhs.y + self.get(2, 2) * rhs.z,
+    )
+  }
+}
+
+impl Mat3 {
+  pub fn set_col(&mut self, col: usize, column: Vec3) {
+    self.set(col, 0, column.x);
+    self.set(col, 1, column.y);
+    self.set(col, 2, column.z);
+  }
+}
+
 impl Mat4 {
   pub fn get_algebraic_cofactor(&self, x: usize, y: usize) -> Mat3 {
     let mut result = Mat3::identity();

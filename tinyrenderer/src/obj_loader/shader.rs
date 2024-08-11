@@ -15,6 +15,38 @@ pub trait Extract<T> {
   fn extract(&self) -> Option<&T>;
 }
 
+macro_rules! uniform {
+  ($store:ident, $type:ty, $key:tt, !) => {
+    Extract::<$type>::extract(
+      &($store
+        .get($key)
+        .expect(&format!("error from getting {} from unifroms", $key))),
+    )
+    .expect(&format!(
+      "errot from parsing uniform '{}' value to  type '{}'",
+      $key,
+      stringify!($type)
+    ));
+  };
+  ($store:ident, $type:ty, $key:tt) => {{
+    {
+      let res: Option<$type> = $store.get($key).map_or(None, |v| v.extract().map(|v| *v));
+      res
+    }
+  }};
+}
+
+macro_rules! varying {
+  ($store:ident, $type:ty, $key:tt, !) => {
+    uniform!($store, $type, $key, !)
+  };
+  ($store:ident, $type:ty, $key:tt) => {
+    uniform!($store, $type, $key)
+  };
+}
+pub(crate) use uniform;
+pub(crate) use varying;
+
 macro_rules! define_union_type_enum {
   ($enum:tt;$($name:tt@$type:ty),+) => {
     #[derive(Debug, Clone, Copy)]
@@ -142,6 +174,10 @@ impl<'a> Uniform<'a> {
       res
     }
   }
+
+  pub fn set(&mut self, key: &str, gl_values: GLTypes) {
+    self.data.insert(key.to_string(), gl_values);
+  }
 }
 
 type VertexShader = Box<dyn Fn(&Vertex, &Uniform, &mut Varyings) -> Vertex>;
@@ -172,9 +208,9 @@ impl Default for Shader {
 impl Shader {
   pub fn default_vertex() -> VertexShader {
     let vertex: VertexShader = Box::new(|v, u, _| {
-      let model_matrix: &Mat4 = u.get("model_matrix").unwrap().extract().unwrap();
-      let view_matrix: &Mat4 = u.get("view_matrix").unwrap().extract().unwrap();
-      let projection_matrix: &Mat4 = u.get("projection_matrix").unwrap().extract().unwrap();
+      let model_matrix = uniform!(u, Mat4, "model_matrix", !);
+      let view_matrix = uniform!(u, Mat4, "view_matrix", !);
+      let projection_matrix = uniform!(u, Mat4, "projection_matrix", !);
       let mut next_v = *v;
       next_v.position = (*projection_matrix) * (*view_matrix) * (*model_matrix) * next_v.position;
 
@@ -220,18 +256,21 @@ impl Shader {
     let mut result = Varying::default();
     for key in varyings.data.keys() {
       let vec = varyings.data.get(key).unwrap();
+      let length = vec.len();
 
-      if vec.len() < 3 {
-        println!("???");
-        continue;
+      match length {
+        1 => {
+          let val = vec[0];
+          result.set(key, val);
+        }
+
+        3 => {
+          let arr = [vec[0] * rhws[0], vec[1] * rhws[1], vec[2] * rhws[2]];
+          let lerped_val = bar.apply_weight(&arr) * z;
+          result.set(key, lerped_val);
+        }
+        _ => continue,
       }
-
-      let arr = [vec[0] * rhws[0], vec[1] * rhws[1], vec[2] * rhws[2]];
-      // let arr = [vec[0], vec[1], vec[2]];
-
-      let lerped_val = bar.apply_weight(&arr) * z;
-
-      result.set(key, lerped_val);
     }
 
     result

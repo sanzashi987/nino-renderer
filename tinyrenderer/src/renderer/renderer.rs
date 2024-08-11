@@ -109,10 +109,11 @@ impl Renderer {
     // dbg!(view_matrix * model_matrix);
     // dbg!((view_matrix * model_matrix).inverse_transpose());
     // dbg!(mvp_it.unwrap_or_default().transpose() * mvp);
-
+    
+    // todo make material mutable then it can call the mutable shaders
     for model in &scene.models {
       let vertices = &model.vertices;
-      let uniforms = Uniform::new(&global_uniforms, Default::default());
+      let mut uniforms = Uniform::new(&global_uniforms, Default::default());
       // let material = model
       //   .get_material()
       //   .map_or(None, |id| scene.stores.materials.get_material_by_id(id));
@@ -123,7 +124,8 @@ impl Renderer {
         let mut vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
         let mut varyings = Varyings::default();
 
-        for v in &mut vertices {
+        for (index, ref mut v) in &mut vertices.into_iter().enumerate() {
+          uniforms.set("vertex_index", GLTypes::Float(index as f32));
           *v = shader.run_vertex(v, &uniforms, &mut varyings);
         }
 
