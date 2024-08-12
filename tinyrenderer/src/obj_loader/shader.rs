@@ -12,13 +12,13 @@ use crate::{
 use super::material::Textures;
 
 pub trait Extract<T> {
-  fn extract(&self) -> Option<&T>;
+  fn extract(self) -> Option<T>;
 }
 
 macro_rules! uniform {
   ($store:ident, $type:ty, $key:tt, !) => {
     Extract::<$type>::extract(
-      &($store
+      ($store
         .get($key)
         .expect(&format!("error from getting {} from unifroms", $key))),
     )
@@ -30,7 +30,7 @@ macro_rules! uniform {
   };
   ($store:ident, $type:ty, $key:tt) => {{
     {
-      let res: Option<$type> = $store.get($key).map_or(None, |v| v.extract().map(|v| *v));
+      let res: Option<$type> = $store.get($key).map_or(None, |v| v.extract());
       res
     }
   }};
@@ -75,7 +75,7 @@ macro_rules! define_union_type_enum {
 
     $(
       impl Extract<$type> for $enum {
-        fn extract(&self)->Option<&$type>{
+        fn extract(self)->Option<$type>{
           if let Self::$name(val) = self {
             Some(val)
           } else {
@@ -147,7 +147,7 @@ impl Varying {
   }
 
   pub fn get(&self, key: &str) -> Option<GLTypes> {
-    self.data.get(key).map(|e| *e)
+    self.data.get(key).map(take_value)
   }
 }
 
@@ -165,13 +165,13 @@ impl<'a> Uniform<'a> {
     Self { global, data }
   }
 
-  pub fn get(&self, key: &str) -> Option<&GLTypes> {
+  pub fn get(&self, key: &str) -> Option<GLTypes> {
     let res = self.data.get(key);
 
     if res.is_none() {
-      self.global.get(key)
+      self.global.get(key).map(take_value)
     } else {
-      res
+      res.map(take_value)
     }
   }
 
@@ -212,7 +212,7 @@ impl Shader {
       let view_matrix = uniform!(u, Mat4, "view_matrix", !);
       let projection_matrix = uniform!(u, Mat4, "projection_matrix", !);
       let mut next_v = *v;
-      next_v.position = (*projection_matrix) * (*view_matrix) * (*model_matrix) * next_v.position;
+      next_v.position = projection_matrix * view_matrix * model_matrix * next_v.position;
 
       next_v
     });

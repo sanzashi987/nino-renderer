@@ -36,7 +36,7 @@ pub fn make_phong_shader(light_dir: Vec3) -> Shader {
         std::mem::swap(&mut nn.x, &mut nn.z);
 
         // dbg!(*mit);
-        let n = (*mv_it * nn).truncated_to_vec3().normalize();
+        let n = (mv_it * nn).truncated_to_vec3().normalize();
         // let n = nn.truncated_to_vec3().normalize();
         // let l = (mvp * Vec4::from_vec3(&light_dir, 1.0))
         //   .truncated_to_vec3()
@@ -107,9 +107,9 @@ pub fn make_phong_shader_with_tangent_normal_map(light_dir: Vec3) -> Shader {
     let bn = varying!(varyings, Vec3, "normal", !);
     let mut A = Mat3::default();
 
-    A.set_col(0, (*p1 - *p0).truncated_to_vec3());
-    A.set_col(1, (*p2 - *p0).truncated_to_vec3());
-    A.set_col(2, *bn);
+    A.set_col(0, (p1 - p0).truncated_to_vec3());
+    A.set_col(1, (p2 - p0).truncated_to_vec3());
+    A.set_col(2, bn);
 
     let AI = A.inverse().unwrap();
 
@@ -119,7 +119,7 @@ pub fn make_phong_shader_with_tangent_normal_map(light_dir: Vec3) -> Shader {
     let mut B = Mat3::default();
     B.set_col(0, i.normalize());
     B.set_col(1, j.normalize());
-    B.set_col(2, *bn);
+    B.set_col(2, bn);
 
     Vec4::default()
   });

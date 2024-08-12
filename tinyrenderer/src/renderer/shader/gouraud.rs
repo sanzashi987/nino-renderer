@@ -22,12 +22,12 @@ pub fn make_gouraud_shader(light_dir: Vec3) -> Shader {
   shader.fragment = Box::new(|_, varying, textures| {
     let s = varying
       .get("light-intense")
-      .map_or(None as Option<f32>, |v| v.extract().map(take_value))
+      .map_or(None as Option<f32>, |v| v.extract())
       .map_or(1.0, |v| v.min(1.0));
 
     let vUv = varying
       .get("vUv")
-      .map_or(None as Option<Vec2>, |v| v.extract().map(take_value));
+      .map_or(None as Option<Vec2>, |v| v.extract());
 
     if let (Some(texture), Some(uv)) = (textures.get_texture_by_id(0), vUv) {
       let mut res = texture.get_pixel(uv) * s;
