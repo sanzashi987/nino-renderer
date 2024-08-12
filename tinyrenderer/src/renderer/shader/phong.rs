@@ -92,8 +92,14 @@ pub fn make_phong_shader_with_tangent_normal_map(light_dir: Vec3) -> Shader {
     v
   });
 
-  shader.fragment = Box::new(|uniforms, varyings, textures| {
-    // let ma =
+  shader.fragment = Box::new(move |uniforms, varyings, textures| {
+    let uv = varying!(varyings, Vec2, "vUv", !);
+
+    let mut color = Vec4::new(1.0, 1.0, 1.0, 1.0);
+
+    if let Some(diffuse) = textures.get_texture_by_id(0) {
+      color = diffuse.get_pixel(uv);
+    }
 
     let p0 = varying!(varyings, Vec4, "vertex_0", !);
     let p1 = varying!(varyings, Vec4, "vertex_1", !);
@@ -121,7 +127,19 @@ pub fn make_phong_shader_with_tangent_normal_map(light_dir: Vec3) -> Shader {
     B.set_col(1, j.normalize());
     B.set_col(2, bn);
 
-    Vec4::default()
+    let t = textures.get_texture_by_ids(vec![2, 3]);
+
+    let mut n = Vec3::zero();
+    if let (Some(normal), Some(specular)) = (t[0], t[1]) {
+      let nn = normal.get_pixel(uv);
+
+      n = B * nn.truncated_to_vec3();
+      let diff = n.normalize().dot(&light_dir).max(0.0);
+      color = color * diff;
+      color.w = 1.0;
+    };
+
+    color
   });
 
   shader
