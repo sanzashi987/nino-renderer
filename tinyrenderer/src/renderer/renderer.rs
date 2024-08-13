@@ -109,7 +109,7 @@ impl Renderer {
     // dbg!(view_matrix * model_matrix);
     // dbg!((view_matrix * model_matrix).inverse_transpose());
     // dbg!(mvp_it.unwrap_or_default().transpose() * mvp);
-    
+
     // todo make material mutable then it can call the mutable shaders
     for model in &scene.models {
       let vertices = &model.vertices;
@@ -124,9 +124,11 @@ impl Renderer {
         let mut vertices = [vertices[index], vertices[index + 1], vertices[index + 2]];
         let mut varyings = Varyings::default();
 
-        for (index, ref mut v) in &mut vertices.into_iter().enumerate() {
+        let mut index = 0.0;
+        for v in &mut vertices {
           uniforms.set("vertex_index", GLTypes::Float(index as f32));
           *v = shader.run_vertex(v, &uniforms, &mut varyings);
+          index += 1.0;
         }
 
         // restore the x,y,z  with 1/w, as the computation times `w` before
@@ -170,7 +172,7 @@ impl Renderer {
               self.depth.set(x, y, z);
 
               // let vt = barycentric.apply_weight(&vertices.map(|v| v.texture.unwrap() * v.rhw)) * z;
-
+              uniforms.set("z", GLTypes::Float(z));
               let color = shader.run_fragment(
                 &barycentric,
                 &uniforms,

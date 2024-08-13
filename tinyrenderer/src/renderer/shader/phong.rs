@@ -129,11 +129,11 @@ pub fn make_phong_shader_with_tangent_normal_map(light_dir: Vec3) -> Shader {
 
     let t = textures.get_texture_by_ids(vec![2, 3]);
 
-    let mut n = Vec3::zero();
     if let (Some(normal), Some(specular)) = (t[0], t[1]) {
       let nn = normal.get_pixel(uv);
-
-      n = B * nn.truncated_to_vec3();
+      
+      // let mut n = Vec3::zero();
+      let n = B * nn.truncated_to_vec3();
       let diff = n.normalize().dot(&light_dir).max(0.0);
       color = color * diff;
       color.w = 1.0;

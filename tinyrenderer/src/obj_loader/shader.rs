@@ -26,7 +26,7 @@ macro_rules! uniform {
       "errot from parsing uniform '{}' value to  type '{}'",
       $key,
       stringify!($type)
-    ));
+    ))
   };
   ($store:ident, $type:ty, $key:tt) => {{
     {
@@ -211,9 +211,9 @@ impl Shader {
       let model_matrix = uniform!(u, Mat4, "model_matrix", !);
       let view_matrix = uniform!(u, Mat4, "view_matrix", !);
       let projection_matrix = uniform!(u, Mat4, "projection_matrix", !);
+
       let mut next_v = *v;
       next_v.position = projection_matrix * view_matrix * model_matrix * next_v.position;
-
       next_v
     });
     vertex

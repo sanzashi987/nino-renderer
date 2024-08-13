@@ -19,7 +19,7 @@ use tinyrenderer::{
   obj_loader::material::{self, Material, Texture},
   renderer::{
     renderer::Renderer,
-    shader::{gouraud::make_gouraud_shader, phong::make_phong_shader},
+    shader::{gouraud::make_gouraud_shader, phong::make_phong_shader, shadow::make_shadow_shader},
   },
   shade_triangle::shade_triangle_barycentric,
 };
@@ -180,7 +180,8 @@ fn main() {
   let mut material = Material::default();
 
   // material.shader = make_gouraud_shader(Vec3::new(1.0, 1.0, 1.0));
-  material.shader = make_phong_shader(Vec3::new(1.0, 1.0, 1.0));
+  // material.shader = make_phong_shader(Vec3::new(1.0, 1.0, 1.0));
+  material.shader = make_shadow_shader();
   renderer.camera.lookat(Vec3::new(0.0, 0.0, 0.0));
   // renderer.camera.set_rotation(Vec3::new(0.0, 0.0, 0.0));
 
