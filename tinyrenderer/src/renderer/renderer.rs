@@ -59,6 +59,12 @@ impl Viewport {
   }
 }
 
+macro_rules! f {
+  ($tt:tt) => {
+    format!($tt)
+  };
+}
+
 pub struct Renderer {
   viewport: Viewport,
   pub camera: Camera,
@@ -71,7 +77,7 @@ pub struct Renderer {
 impl Renderer {
   pub fn new(w: u32, h: u32) -> Self {
     let mut depth = DepthBuffer::new(w, h);
-    depth.clear(std::f32::MIN);
+    depth.clear(std::f32::MAX);
 
     Self {
       viewport: Viewport::new(0.0, 0.0, w as f32, h as f32),
@@ -95,13 +101,10 @@ impl Renderer {
     let mvp_it = (view_matrix * model_matrix).inverse_transpose();
 
     let global_uniforms: GlTypeMap = GlTypeMap::from([
-      (format!("model_matrix"), GLTypes::Mat4(model_matrix)),
-      (format!("view_matrix"), GLTypes::Mat4(view_matrix)),
-      (
-        format!("projection_matrix"),
-        GLTypes::Mat4(projection_matrix),
-      ),
-      (format!("mv_it"), GLTypes::Mat4(mvp_it.unwrap_or_default())),
+      (f!("model_matrix"), GLTypes::Mat4(model_matrix)),
+      (f!("view_matrix"), GLTypes::Mat4(view_matrix)),
+      (f!("projection_matrix"), GLTypes::Mat4(projection_matrix)),
+      (f!("mv_it"), GLTypes::Mat4(mvp_it.unwrap_or_default())),
     ]);
 
     // let mvp = projection_matrix * view_matrix * model_matrix;
@@ -135,7 +138,8 @@ impl Renderer {
 
         // store the rhw and perform the v.position.w
         for v in &mut vertices {
-          v.rhw = -1.0 / v.position.w;
+          // v.rhw = -1.0 / v.position.w;
+          v.rhw = 1.0 / v.position.w;
 
           v.position /= v.position.w;
           // v.position.z = -v.position.w;
@@ -164,22 +168,18 @@ impl Renderer {
             if !barycentric.is_inside() {
               continue;
             }
-            let rhws = vertices.map(|v| v.rhw);
-            let inv_z = barycentric.apply_weight(&vertices.map(|v| v.rhw));
-            let z = 1.0 / inv_z;
 
-            if self.depth.get(x, y) < z {
-              self.depth.set(x, y, z);
+            let depth = barycentric.apply_weight(&vertices.map(|v| v.position.z));
 
-              // let vt = barycentric.apply_weight(&vertices.map(|v| v.texture.unwrap() * v.rhw)) * z;
-              uniforms.set("z", GLTypes::Float(z));
+            if self.depth.get(x, y) >= depth {
+              self.depth.set(x, y, depth);
+
               let color = shader.run_fragment(
+                &vertices,
                 &barycentric,
                 &uniforms,
                 &varyings,
                 &self.stores.texutres,
-                rhws,
-                z,
               );
 
               // let material = model.get_material().unwrap();
@@ -202,7 +202,7 @@ impl Renderer {
   pub fn take_color(&mut self) -> ColorBuffer {
     let w = self.color.width();
     let h = self.color.height();
-    self.depth.clear(std::f32::MIN);
+    self.depth.clear(std::f32::MAX);
 
     std::mem::replace(&mut self.color, ColorBuffer::new(w, h))
   }

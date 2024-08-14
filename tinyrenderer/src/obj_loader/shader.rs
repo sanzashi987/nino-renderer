@@ -234,13 +234,16 @@ impl Shader {
 
   pub fn run_fragment(
     &self,
+    vertices: &[Vertex; 3],
     bar: &Barycentric,
     uniforms: &Uniform,
     varyings: &Varyings,
     textures: &Textures,
-    rhws: [f32; 3],
-    z: f32,
   ) -> Vec4 {
+    let rhws = vertices.map(|v| v.rhw);
+    let inv_z = bar.apply_weight(&vertices.map(|v| v.rhw));
+    let z = 1.0 / inv_z;
+
     let varying = self.lerp_varyings(bar, varyings, rhws, z);
 
     (self.fragment)(uniforms, &varying, textures)
