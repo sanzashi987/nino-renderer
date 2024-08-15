@@ -31,7 +31,7 @@ impl Viewport {
       y,
       w,
       h,
-      d: 1.0, //255.0,
+      d: 1.0,
       viewport_matrix: Mat4::identity(),
     };
 
@@ -72,6 +72,7 @@ pub struct Renderer {
   depth: DepthBuffer,
   stores: MtlStores,
   default_shader: Shader,
+  blend: bool,
 }
 
 impl Renderer {
@@ -86,6 +87,7 @@ impl Renderer {
       depth,
       stores: Default::default(),
       default_shader: Default::default(),
+      blend: false,
     }
   }
 
@@ -104,6 +106,7 @@ impl Renderer {
       (f!("model_matrix"), GLTypes::Mat4(model_matrix)),
       (f!("view_matrix"), GLTypes::Mat4(view_matrix)),
       (f!("projection_matrix"), GLTypes::Mat4(projection_matrix)),
+      (f!("viewport_matrix"), GLTypes::Mat4(*viewport_matrix)),
       (f!("mv_it"), GLTypes::Mat4(mvp_it.unwrap_or_default())),
     ]);
 
@@ -138,14 +141,8 @@ impl Renderer {
 
         // store the rhw and perform the v.position.w
         for v in &mut vertices {
-          // v.rhw = -1.0 / v.position.w;
           v.rhw = 1.0 / v.position.w;
-
           v.position /= v.position.w;
-          // v.position.z = -v.position.w;
-          // v.position.x /= v.position.w;
-          // v.position.y /= v.position.w;
-          // v.position.w = 1.0;
         }
 
         for v in &mut vertices {

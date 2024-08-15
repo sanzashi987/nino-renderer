@@ -180,8 +180,8 @@ fn main() {
   let mut material = Material::default();
 
   // material.shader = make_gouraud_shader(Vec3::new(1.0, 1.0, 1.0));
-  material.shader = make_phong_shader(Vec3::new(1.0, 1.0, 1.0));
-  // material.shader = make_shadow_shader();
+  // material.shader = make_phong_shader(Vec3::new(1.0, 1.0, 1.0));
+  material.shader = make_shadow_shader();
   renderer.camera.lookat(Vec3::new(0.0, 0.0, 0.0));
   // renderer.camera.set_rotation(Vec3::new(0.0, 0.0, 0.0));
 
@@ -197,7 +197,7 @@ fn main() {
     renderer.render(&scene, model, &material);
     let color = renderer.take_color();
     draw_image.as_ref()(color.data());
-    rotation -= 10.0;
+    // rotation -= 10.0;
   });
 
   // println!("{:?}", scene);

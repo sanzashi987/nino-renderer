@@ -27,8 +27,6 @@ pub fn make_phong_shader(light_dir: Vec3) -> Shader {
 
       let t = textures.get_texture_by_ids(vec![1, 3]);
 
-      // let t = textures.get_texture_by_ids(vec![2, 3]);
-
       if let (Some(normal), Some(specular)) = (t[0], t[1]) {
         let mut nn = normal.get_pixel(uv);
         nn = nn * 2.0 - 1.0;
@@ -37,10 +35,6 @@ pub fn make_phong_shader(light_dir: Vec3) -> Shader {
 
         // dbg!(*mit);
         let n = (mv_it * nn).truncated_to_vec3().normalize();
-        // let n = nn.truncated_to_vec3().normalize();
-        // let l = (mvp * Vec4::from_vec3(&light_dir, 1.0))
-        //   .truncated_to_vec3()
-        //   .normalize();
         let l = light_dir.normalize();
 
         let r = (n * (n.dot(&l) * 2.0) - l).normalize();
@@ -48,8 +42,6 @@ pub fn make_phong_shader(light_dir: Vec3) -> Shader {
 
         let intense = n.dot(&l).max(0.0);
 
-        // color = color * intense;
-        // color.w = 1.0;
         color = Vec4::new(
           (5.0 + color.x * 255.0 * (intense + 1.6 * spec_strength)).min(255.0) / 255.0,
           (5.0 + color.y * 255.0 * (intense + 1.6 * spec_strength)).min(255.0) / 255.0,
@@ -58,9 +50,6 @@ pub fn make_phong_shader(light_dir: Vec3) -> Shader {
         );
       }
 
-      // if let Some(normal) = textures.get_texture_by_id(1) {}
-      // if let Some(normal_tan) = textures.get_texture_by_id(2) {}
-      // if let Some(spec) = textures.get_texture_by_id(3) {}
     }
 
     color
