@@ -8,11 +8,7 @@ pub fn make_shadow_shader() -> Shader {
   let default_vertex = shader.vertex;
 
   shader.vertex = Box::new(move |vertex, uniforms, varyings| {
-    if let Some(uv) = vertex.texture {
-      varyings.set("vUv", GLTypes::Vec2(uv));
-    }
     let vertex = default_vertex(vertex, uniforms, varyings);
-
     varyings.set("p", GLTypes::Vec4(vertex.position / vertex.position.w));
 
     vertex

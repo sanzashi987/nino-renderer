@@ -175,7 +175,8 @@ fn main() {
     "african_head_nm_tangent",
   );
   renderer.load_texture(file!("african_head_spec.tga"), "african_head_spec");
-  renderer.camera.move_to(Vec3::new(2.0, 1.5, 5.0));
+  renderer.camera.move_to(Vec3::new(3.0, 3.0, 3.0));
+  // renderer.camera.move_to(Vec3::new(5.0, 5.0, 5.0));
 
   let mut material = Material::default();
 

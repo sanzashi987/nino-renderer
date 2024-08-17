@@ -110,12 +110,6 @@ impl Renderer {
       (f!("mv_it"), GLTypes::Mat4(mvp_it.unwrap_or_default())),
     ]);
 
-    // let mvp = projection_matrix * view_matrix * model_matrix;
-    // dbg!(mvp);
-    // dbg!(view_matrix * model_matrix);
-    // dbg!((view_matrix * model_matrix).inverse_transpose());
-    // dbg!(mvp_it.unwrap_or_default().transpose() * mvp);
-
     // todo make material mutable then it can call the mutable shaders
     for model in &scene.models {
       let vertices = &model.vertices;

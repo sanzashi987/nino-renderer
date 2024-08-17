@@ -44,6 +44,7 @@ make_material_base!(
   dissolve: f32,
   transmission_filter: Vec3,
   optical_density: f32,
+  receive_shadow: bool,
   illum: u8;;
   // below are fixed;
   shader: Shader,

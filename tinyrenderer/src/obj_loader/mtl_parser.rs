@@ -17,7 +17,7 @@ macro_rules! parse_texture_token {
         let mut filepath = $dir.to_string();
         filepath.push_str(&n);
 
-        $textures.load(&filepath, n);
+        let _ = $textures.load(&filepath, n);
       }
       name
     }
