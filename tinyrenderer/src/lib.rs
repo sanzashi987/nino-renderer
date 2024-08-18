@@ -6,3 +6,4 @@ pub mod obj_loader;
 pub mod shade_triangle;
 mod utils;
 pub mod renderer;
+mod object;
