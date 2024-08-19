@@ -179,6 +179,10 @@ impl Scene {
       stores,
     }
   }
+
+  pub fn add_model(&mut self, model: Model) {
+    
+  }
 }
 
 pub fn from_obj_path(relative_path: &str) -> Result<Scene, ParserError> {

@@ -5,5 +5,5 @@ pub enum ObjectType {
 }
 
 pub trait Object3D {
-  fn get_type() -> ObjectType;
+  fn get_type(&self) -> ObjectType;
 }
