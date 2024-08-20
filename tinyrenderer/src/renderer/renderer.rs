@@ -65,6 +65,18 @@ macro_rules! f {
   };
 }
 
+enum ShadowMapType {
+  BasicShadowMap,
+  PCFShadowMap,
+  PCFSoftShadowMap,
+  VSMShadowMap,
+}
+
+struct ShadowMap {
+  enabled: bool,
+  map_type: ShadowMapType,
+}
+
 pub struct Renderer {
   viewport: Viewport,
   pub camera: Camera,
@@ -73,6 +85,7 @@ pub struct Renderer {
   stores: MtlStores,
   default_shader: Shader,
   blend: bool,
+  shadow_map: bool,
 }
 
 impl Renderer {
@@ -88,6 +101,7 @@ impl Renderer {
       stores: Default::default(),
       default_shader: Default::default(),
       blend: false,
+      shadow_map: false,
     }
   }
 
