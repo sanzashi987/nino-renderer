@@ -86,6 +86,7 @@ pub struct Renderer {
   default_shader: Shader,
   blend: bool,
   shadow_map: bool,
+  cull:bool
 }
 
 impl Renderer {
