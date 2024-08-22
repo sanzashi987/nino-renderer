@@ -31,7 +31,7 @@ pub fn make_phong_shader(light_dir: Vec3) -> Shader {
         let mut nn = normal.get_pixel(uv);
         nn = nn * 2.0 - 1.0;
         // bgr ---> zyx ---> xyz
-        std::mem::swap(&mut nn.x, &mut nn.z);
+        // std::mem::swap(&mut nn.x, &mut nn.z);
 
         // dbg!(*mit);
         let n = (mv_it * nn).truncated_to_vec3().normalize();

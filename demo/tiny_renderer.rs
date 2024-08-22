@@ -175,14 +175,14 @@ fn main() {
     "african_head_nm_tangent",
   );
   renderer.load_texture(file!("african_head_spec.tga"), "african_head_spec");
-  renderer.camera.move_to(Vec3::new(3.0, 3.0, 3.0));
+  renderer.camera.move_to(Vec3::new(1.0, 2.0, 5.0));
   // renderer.camera.move_to(Vec3::new(5.0, 5.0, 5.0));
 
   let mut material = Material::default();
 
   // material.shader = make_gouraud_shader(Vec3::new(1.0, 1.0, 1.0));
-  // material.shader = make_phong_shader(Vec3::new(1.0, 1.0, 1.0));
-  material.shader = make_shadow_shader();
+  material.shader = make_phong_shader(Vec3::new(1.0, 1.0, 1.0));
+  // material.shader = make_shadow_shader();
   renderer.camera.lookat(Vec3::new(0.0, 0.0, 0.0));
   // renderer.camera.set_rotation(Vec3::new(0.0, 0.0, 0.0));
 
