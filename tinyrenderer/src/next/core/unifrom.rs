@@ -2,13 +2,28 @@ use std::collections::HashMap;
 
 use crate::math::{Mat4, Vec2, Vec3, Vec4};
 
-use super::marco::define_gl_type_enum;
+use super::marco::{define_gl_type_enum, Extract};
 
-pub trait Extract<T> {
-  fn extract(self) -> Option<T>;
+trait SetGlType<T> {
+  fn set_attribute(&mut self, key: &str, val: T);
 }
 
-define_gl_type_enum!(
+macro_rules! define_uniform_trait {
+  ($name:tt; $enum_name:tt;$($prop:tt-$type:ty),+) => {
+    define_gl_type_enum!($enum_name;$($prop-$type),+);
+    $(
+      impl SetGlType<$type> for $name {
+        fn set_attribute(&mut self, key:&str ,val:$type){
+          self.attributes.insert(key.to_string(),$enum_name::$prop(val));
+        }
+      }
+    )+
+
+  };
+}
+
+define_uniform_trait!(
+  Uniform;
   UnifromTypeEnum;
   Int-i32,
   Float-f32,
@@ -20,10 +35,6 @@ define_gl_type_enum!(
 
 pub struct Uniform {
   attributes: HashMap<String, UnifromTypeEnum>,
-}
-
-trait SetGlType<T> {
-  fn set_attribute(&mut self, key: String, val: T);
 }
 
 impl Uniform {

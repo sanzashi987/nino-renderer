@@ -1,3 +1,7 @@
+pub trait Extract<T> {
+  fn extract(self) -> Option<T>;
+}
+
 macro_rules! define_gl_type_enum {
   ($enum_name:tt;$($name:tt-$type:ty),+) => {
     #[derive(Debug, Clone, Copy)]
@@ -28,9 +32,3 @@ macro_rules! define_gl_type_enum {
 }
 
 pub(super) use define_gl_type_enum;
-
-macro_rules! define_interpolatable_gl_type {
-  ($enum_name:tt;$($name:tt-$type:ty),+) => {};
-}
-
-pub(super) use define_interpolatable_gl_type;
