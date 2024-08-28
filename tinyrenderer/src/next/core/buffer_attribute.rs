@@ -1,3 +1,4 @@
+use super::marco::Extract;
 struct TypeBufferAttribute<T: Sized> {
   data: Vec<T>,
   size: usize,
@@ -34,26 +35,40 @@ impl<T: Sized + Copy> Iterator for TypeBufferAttribute<T> {
 }
 
 macro_rules! typed_array {
-  ($($enum:tt-$type:tt-$ty:tt);+) => {
+  ($enum_name:tt;$($enum:tt-$type:tt-$ty:tt);+) => {
     $(
       pub type $type = TypeBufferAttribute<$ty>;
 
       impl $type {
-        fn as_enum(self)-> TypeBufferEnum{
-          TypeBufferEnum::$enum(Box::new(self))
+        fn as_enum(self)-> $enum_name{
+          $enum_name::$enum(Box::new(self))
         }
 
       }
+
+
+      impl Extract<Box<$type>> for $enum_name {
+        fn extract(self)->Option<Box<$type>>{
+          if let Self::$enum(val) = self {
+            Some(val)
+          } else {
+            None
+          }
+        }
+      }
+
     )+
-    pub enum TypeBufferEnum {
+    pub enum $enum_name {
       $(
        $enum(Box<$type>),
       ) +
     }
+
   };
 }
 
 typed_array!(
+  TypeBufferEnum;
   F64-F64BufferAttribute-f64;
   F32-F32BufferAttribute-f32;
   U32-U32BufferAttribute-u32;

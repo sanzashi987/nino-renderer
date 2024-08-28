@@ -3,7 +3,7 @@ use std::{
   ops::{Add, Mul},
 };
 
-use crate::math::{Mat4, Vec2, Vec3, Vec4};
+use crate::math::{Barycentric, Mat4, Vec2, Vec3, Vec4};
 
 use super::marco::{define_gl_type_enum, Extract};
 
@@ -81,6 +81,23 @@ pub struct Varying {
 }
 
 impl Varying {
+  pub fn lerp(&mut self, bary: &Barycentric, rhws: [f32; 3], z: f32) {
+    for key in self.declare.keys() {
+      let vec = self.declare.get(key).unwrap();
+      let length = vec.len();
 
-  
+      match length {
+        1 => {
+          let val = vec[0];
+          self.result.insert(key.to_string(), val);
+        }
+        3 => {
+          let arr = [vec[0] * rhws[0], vec[1] * rhws[1], vec[2] * rhws[2]];
+          let lerped_val = bary.apply_weight(&arr) * z;
+          self.result.insert(key.to_string(), lerped_val);
+        }
+        _ => continue,
+      }
+    }
+  }
 }
