@@ -1,36 +1,39 @@
 pub enum ObjectType {
   Light,
   Mesh,
+  Scene,
+  Object3D,
 }
 
-pub trait IObject3D {
-  fn add(&mut self, object: Box<dyn IObject3D>);
+pub trait Object3DMethod<T> {
+  fn add(&mut self, object: Box<T>);
 }
 
-macro_rules! Object3D {
-  ($name:tt; $type:tt;) => {
-    pub struct $name {
-      pub object_type: ObjectType,
-      pub parent: Option<String>,
-      pub children: Vec<Box<dyn IObject3D>>,
-    }
-    impl $name {
-      pub fn new(object_type:ObjectType) ->Self{
-        Self {
-          object_type,
-          parent:None,
-          children:vec![]
-        }
-      }
-
-    }
-
-    impl IObject3D for $name {
-      fn add(&mut self, obj ) {
-        self.children.push(obj)
-      }
-    }
-  };
+pub struct Object3D<T> {
+  object_type: ObjectType,
+  parent: Option<String>,
+  children: Vec<Box<T>>,
 }
 
-pub(crate) use Object3D;
+impl<T> Object3D<T> {
+  pub fn new(object_type: ObjectType, parent: Option<String>, children: Vec<Box<T>>) -> Self {
+    Self {
+      object_type,
+      parent,
+      children,
+    }
+  }
+  pub fn set_parent(&mut self, parent: String) {
+    self.parent = Some(parent);
+  }
+
+  pub fn get_parent(&self) -> Option<String> {
+    self.parent.clone()
+  }
+}
+
+impl<T> Object3DMethod<T> for Object3D<T> {
+  fn add(&mut self, obj: Box<T>) {
+    self.children.push(obj)
+  }
+}

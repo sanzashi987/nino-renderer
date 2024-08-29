@@ -9,13 +9,29 @@ pub type Attribute = HashMap<String, TypeBufferEnum>;
 
 impl BufferGeometry {
   pub fn get_attribute(&self) -> &Attribute {
-    let res = self.attributes.get("").map_or(None, |v| v.extract());
+    // let res = self.attributes.get("").map_or(None, |v| v.extract());
     &self.attributes
   }
 }
 
 macro_rules! attribute {
   ($attribute:ident,$type:ty,$key:tt) => {
-    $attribute.get(k)
+    let res: Option<$type> = $attribute.get($key).map_or(None, |v| v.extract());
+    res
+  };
+
+  ($attribute:ident, $type:ty, $key:tt, !) => {
+    Extract::<$type>::extract(
+      ($attribute
+        .get($key)
+        .expect(&format!("error from getting {} from attribute", $key))),
+    )
+    .expect(&format!(
+      "errot from parsing attribute '{}' value to  type '{}'",
+      $key,
+      stringify!($type)
+    ))
   };
 }
+
+pub(crate) use attribute;
