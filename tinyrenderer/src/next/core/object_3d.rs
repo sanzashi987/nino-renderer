@@ -12,11 +12,11 @@ pub trait Object3DMethod<T> {
 pub struct Object3D<T> {
   object_type: ObjectType,
   parent: Option<String>,
-  children: Vec<Box<T>>,
+  children: Vec<T>,
 }
 
 impl<T> Object3D<T> {
-  pub fn new(object_type: ObjectType, parent: Option<String>, children: Vec<Box<T>>) -> Self {
+  pub fn new(object_type: ObjectType, parent: Option<String>, children: Vec<T>) -> Self {
     Self {
       object_type,
       parent,
@@ -30,10 +30,14 @@ impl<T> Object3D<T> {
   pub fn get_parent(&self) -> Option<String> {
     self.parent.clone()
   }
-}
 
-impl<T> Object3DMethod<T> for Object3D<T> {
-  fn add(&mut self, obj: Box<T>) {
+  pub fn add(&mut self, obj: T) {
     self.children.push(obj)
   }
 }
+
+// impl<T> Object3DMethod<T> for Object3D<T> {
+//   fn add(&mut self, obj: Box<T>) {
+//     self.children.push(obj)
+//   }
+// }
