@@ -41,3 +41,41 @@ impl<T> Object3D<T> {
 //     self.children.push(obj)
 //   }
 // }
+
+macro_rules! define_objects {
+  ($enum_name:tt;$($name:tt:$ty:ty),+) => {
+    pub enum $enum_name {
+      $(
+        $name($ty),
+      )+
+    }
+    impl $enum_name {
+
+      const supported_type: &'static[&'static str] = [
+      $(std::any::type_name::<$ty>()),+
+      ];
+
+      pub fn convert(val :T) ->Option<Self>{
+        let input_type_name = std::any::type_name::<T>();
+        let mut i = 0;
+        $(
+          if Self::supported_type[i] == input_type_name {
+            return Some(Self::$name(val))
+          } else {
+            i+=1;
+          }
+        )+
+
+
+
+      }
+    }
+
+
+    impl From<$type> for $enum_name{
+      fn from(item:$ty)->Self{
+        Self::$name(item)
+      }
+    }
+  };
+}
