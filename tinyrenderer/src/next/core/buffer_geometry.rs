@@ -12,6 +12,10 @@ impl BufferGeometry {
     // let res = self.attributes.get("").map_or(None, |v| v.extract());
     &self.attributes
   }
+
+  pub fn set_attribute(&mut self, key: &str, val: TypeBufferEnum) {
+    self.attributes.insert(key.to_string(), val);
+  }
 }
 
 macro_rules! attribute {

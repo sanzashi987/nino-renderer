@@ -42,7 +42,7 @@ impl<T> Object3D<T> {
 //   }
 // }
 
-macro_rules! define_objects {
+macro_rules! define_support_objects {
   ($enum_name:tt;$($name:tt:$ty:ty),+) => {
     pub enum $enum_name {
       $(
@@ -51,31 +51,23 @@ macro_rules! define_objects {
     }
     impl $enum_name {
 
-      const supported_type: &'static[&'static str] = [
-      $(std::any::type_name::<$ty>()),+
-      ];
-
-      pub fn convert(val :T) ->Option<Self>{
-        let input_type_name = std::any::type_name::<T>();
-        let mut i = 0;
+      pub fn convert<T:'static + Sized>(val :T) ->Option<Self>{
+        let val_any: Box<dyn std::any::Any> = Box::new(val);
         $(
-          if Self::supported_type[i] == input_type_name {
-            return Some(Self::$name(val))
-          } else {
-            i+=1;
+          match val_any.downcast::<$ty>() {
+            Ok(matched) =>{
+              return Some(Self::$name(*matched));
+            },
+            _ =>{}
           }
         )+
 
-
+        return None;
 
       }
     }
 
-
-    impl From<$type> for $enum_name{
-      fn from(item:$ty)->Self{
-        Self::$name(item)
-      }
-    }
   };
 }
+
+pub(crate) use define_support_objects;
