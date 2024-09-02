@@ -5,8 +5,8 @@ pub enum ObjectType {
   Object3D,
 }
 
-pub trait Object3DMethod<T> {
-  fn add(&mut self, object: Box<T>);
+pub trait Object3DMethod {
+  fn add<T: 'static + Sized>(&mut self, object: T) -> bool;
 }
 
 pub struct Object3D<T> {
@@ -36,12 +36,6 @@ impl<T> Object3D<T> {
   }
 }
 
-// impl<T> Object3DMethod<T> for Object3D<T> {
-//   fn add(&mut self, obj: Box<T>) {
-//     self.children.push(obj)
-//   }
-// }
-
 macro_rules! define_support_objects {
   ($enum_name:tt;$($name:tt:$ty:ty),+) => {
     pub enum $enum_name {
@@ -50,16 +44,18 @@ macro_rules! define_support_objects {
       )+
     }
     impl $enum_name {
-
+      #[allow(unused)]
       pub fn convert<T:'static + Sized>(val :T) ->Option<Self>{
         let val_any: Box<dyn std::any::Any> = Box::new(val);
         $(
-          match val_any.downcast::<$ty>() {
+          let val_any = match val_any.downcast::<$ty>() {
             Ok(matched) =>{
               return Some(Self::$name(*matched));
             },
-            _ =>{}
-          }
+            Err(instance) =>{
+              instance
+            }
+          };
         )+
 
         return None;
