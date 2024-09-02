@@ -1,8 +1,15 @@
-use crate::next::core::object_3d::{define_support_objects, Object3D};
+use super::super::{
+  core::object_3d::{define_support_objects, Object3D, Object3DMethod},
+  lights::light::Light,
+};
+
+use super::mesh::Mesh;
 
 define_support_objects!(
   GroupSupportChildren;
-  Group:Group
+  Group:Group,
+  Mesh:Mesh,
+  Light:Light
 );
 
 // pub enum GroupSupportChildren {
@@ -23,5 +30,15 @@ define_support_objects!(
 
 pub struct Group {
   base: Object3D<GroupSupportChildren>,
-  // v: Vec<Group>,
+  s: Light, // v: Vec<Group>,
+}
+
+impl Object3DMethod for Group {
+  fn add<T: 'static + Sized>(&mut self, object: T) -> bool {
+    if let Some(e) = GroupSupportChildren::convert(object) {
+      self.base.add(e);
+      return true;
+    }
+    return false;
+  }
 }
