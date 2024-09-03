@@ -5,3 +5,4 @@ pub mod objects;
 pub mod renderer;
 pub mod textures;
 pub mod lights;
+pub mod cameras;

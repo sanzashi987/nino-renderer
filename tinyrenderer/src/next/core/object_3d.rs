@@ -1,18 +1,49 @@
+use crate::math::{Mat4, Vec3};
+use std::{any::Any, collections::HashMap};
+
 pub enum ObjectType {
   Light,
   Mesh,
   Scene,
   Object3D,
+  Camera,
+}
+
+impl Default for ObjectType {
+  fn default() -> Self {
+    Self::Object3D
+  }
 }
 
 pub trait Object3DMethod {
   fn add<T: 'static + Sized>(&mut self, object: T) -> bool;
 }
 
+#[derive(Default)]
 pub struct Object3D<T> {
   object_type: ObjectType,
   parent: Option<String>,
   children: Vec<T>,
+
+  matrix: Mat4,
+  matrix_global: Mat4,
+  position: Vec3,
+  rotation: Vec3,
+  scale: Vec3,
+  visible: bool,
+  cast_shadow: bool,
+  receive_shadow: bool,
+  user_data: HashMap<String, Box<dyn Any>>,
+}
+
+pub trait Transform {
+  fn transform_matrix(&self) -> &Mat4;
+}
+
+impl<T> Transform for Object3D<T> {
+  fn transform_matrix(&self) -> &Mat4 {
+    &self.matrix
+  }
 }
 
 impl<T> Object3D<T> {
@@ -21,6 +52,7 @@ impl<T> Object3D<T> {
       object_type,
       parent,
       children,
+      // ..Default::default()
     }
   }
   pub fn set_parent(&mut self, parent: String) {
