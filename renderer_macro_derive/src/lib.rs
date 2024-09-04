@@ -4,6 +4,40 @@ use proc_macro::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{parse::Parse, parse_macro_input, AttributeArgs, DeriveInput, Field, Lit};
 
+#[proc_macro_derive(Object3D)]
+pub fn object_3d(input: TokenStream) -> TokenStream {
+  let ast: DeriveInput = syn::parse(input).unwrap();
+  let struct_name = ast.ident;
+  let mut attributes = vec![];
+
+  if let syn::Data::Struct(data_struct) = ast.data {
+    for field in data_struct.fields.iter() {
+      let Field { ident, ty, vis, .. } = field;
+      // let ident_name = ident.as_ref().unwrap().to_string().repeat(2);
+      // let ident = Some(syn::Ident::new(&ident_name, ident.as_ref().unwrap().span()));
+      let attr = quote! {
+        #vis #ident:#ty
+      };
+      attributes.push(attr)
+    }
+  }
+
+  quote! {
+    pub struct #struct_name{
+      #(#attributes)*
+    }
+
+
+    impl Transform for #struct_name {
+      fn transform_matrix(&self) -> &crate::math::Mat4 {
+        self.matrix
+      }
+    }
+
+  }
+  .into()
+}
+
 #[proc_macro_derive(RendererCommon)]
 pub fn renderer_common(input: TokenStream) -> TokenStream {
   let ast: DeriveInput = syn::parse(input).unwrap();

@@ -52,28 +52,3 @@ impl Object3DMethod for Group {
     return false;
   }
 }
-
-impl Deref for Group {
-  type Target = Object3D<GroupSupportChildren>;
-
-  fn deref(&self) -> &Self::Target {
-    &self.base
-  }
-}
-
-impl DerefMut for Group {
-  // type Target = Object3D<GroupSupportChildren>;
-
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.base
-  }
-}
-
-fn a() {
-  let aa: Vec<Box<dyn Transform>> = vec![];
-  let a: Group = Group::new();
-
-  let r: &dyn Transform = a.deref();
-
-  
-}

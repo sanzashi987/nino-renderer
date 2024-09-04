@@ -1,5 +1,5 @@
 use crate::math::{Mat4, Vec3};
-use std::{any::Any, collections::HashMap};
+use std::{any::Any, cell::RefCell, collections::HashMap, rc::Rc};
 
 pub enum ObjectType {
   Light,
@@ -19,10 +19,9 @@ pub trait Object3DMethod {
   fn add<T: 'static + Sized>(&mut self, object: T) -> bool;
 }
 
-#[derive(Default)]
 pub struct Object3D<T> {
   object_type: ObjectType,
-  parent: Option<String>,
+  parent: RefCell<Option<Rc<dyn Transform>>>,
   children: Vec<T>,
 
   matrix: Mat4,
@@ -37,7 +36,7 @@ pub struct Object3D<T> {
 }
 
 pub trait Transform {
-  fn transform_matrix(&self) -> &Mat4;
+  fn transform_matrix(&self) -> &crate::math::Mat4;
 }
 
 impl<T> Transform for Object3D<T> {
@@ -47,20 +46,21 @@ impl<T> Transform for Object3D<T> {
 }
 
 impl<T> Object3D<T> {
-  pub fn new(object_type: ObjectType, parent: Option<String>, children: Vec<T>) -> Self {
+  pub fn new(object_type: ObjectType) -> Self {
     Self {
       object_type,
-      parent,
-      children,
+      parent: RefCell::new(None),
+      children: vec![],
       // ..Default::default()
     }
   }
-  pub fn set_parent(&mut self, parent: String) {
-    self.parent = Some(parent);
+  pub fn set_parent(&self, parent: Rc<dyn Transform>) {
+    let mut p = self.parent.borrow_mut();
+    *p = Some(parent);
   }
 
-  pub fn get_parent(&self) -> Option<String> {
-    self.parent.clone()
+  pub fn get_parent(&self) -> Option<Rc<dyn Transform>> {
+    self.parent.borrow().map_or(None, |p| Some(p.clone()))
   }
 
   pub fn add(&mut self, obj: T) {
