@@ -1,19 +1,16 @@
-use renderer_macro_derive::renderer;
+use renderer_macro_derive::object_3d;
 
 struct A {}
 struct B {}
 struct C {}
 
-#[renderer("A", "C")]
+enum MyEnum {}
+#[object_3d(MyEnum, Transform)]
 struct Test {
-  a: String,
-  b: u32,
+  pub a: String,
+  pub b: u32,
 }
 
 fn main() {
   // print!("{}", 2);
-  let a = Test{
-    
-  }
-
 }

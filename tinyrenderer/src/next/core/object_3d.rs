@@ -15,57 +15,11 @@ impl Default for ObjectType {
   }
 }
 
-pub trait Object3DMethod {
-  fn add<T: 'static + Sized>(&mut self, object: T) -> bool;
-}
-
-pub struct Object3D<T> {
-  object_type: ObjectType,
-  parent: RefCell<Option<Rc<dyn Transform>>>,
-  children: Vec<T>,
-
-  matrix: Mat4,
-  matrix_global: Mat4,
-  position: Vec3,
-  rotation: Vec3,
-  scale: Vec3,
-  visible: bool,
-  cast_shadow: bool,
-  receive_shadow: bool,
-  user_data: HashMap<String, Box<dyn Any>>,
-}
-
-pub trait Transform {
+pub trait ObjectActions {
   fn transform_matrix(&self) -> &crate::math::Mat4;
-}
-
-impl<T> Transform for Object3D<T> {
-  fn transform_matrix(&self) -> &Mat4 {
-    &self.matrix
-  }
-}
-
-impl<T> Object3D<T> {
-  pub fn new(object_type: ObjectType) -> Self {
-    Self {
-      object_type,
-      parent: RefCell::new(None),
-      children: vec![],
-      // ..Default::default()
-    }
-  }
-  pub fn set_parent(&self, parent: Rc<dyn Transform>) {
-    let mut p = self.parent.borrow_mut();
-    *p = Some(parent);
-  }
-
-  pub fn get_parent(&self) -> Option<Rc<dyn Transform>> {
-    self.parent.borrow().map_or(None, |p| Some(p.clone()))
-  }
-
-  pub fn add(&mut self, obj: T) {
-    self.children.push(obj)
-  }
+  fn set_parent(&self, parent: Rc<dyn ObjectActions>);
+  fn get_parent(&self) -> Option<Rc<dyn ObjectActions>>;
+  fn add<T: 'static + Sized>(&self, val: T);
 }
 
 macro_rules! define_support_objects {
