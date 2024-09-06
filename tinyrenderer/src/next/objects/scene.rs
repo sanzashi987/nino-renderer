@@ -1,22 +1,15 @@
-use std::any::{type_name, type_name_of_val, Any};
+use renderer_macro_derive::object_3d;
 
-use crate::{
-  math::Vec2,
-  next::core::object_3d::{define_support_objects, Object3DMethod},
+use super::{
+  super::core::object_3d::{with_default_fields, ObjectActions},
+  group::GroupSupportChildren,
 };
 
-use super::{super::core::object_3d::Object3D, group::GroupSupportChildren};
+#[object_3d(GroupSupportChildren, ObjectActions)]
+pub struct Scene {}
 
-pub struct Scene {
-  base: Object3D<GroupSupportChildren>,
-}
-
-impl Object3DMethod for Scene {
-  fn add<T: 'static + Sized>(&mut self, object: T) -> bool {
-    if let Some(e) = GroupSupportChildren::convert(object) {
-      self.base.add(e);
-      return true;
-    }
-    return false;
+impl Scene {
+  pub fn new() -> Self {
+    with_default_fields![]
   }
 }

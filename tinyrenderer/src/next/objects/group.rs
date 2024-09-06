@@ -1,11 +1,9 @@
-use std::ops::{Deref, DerefMut};
-
-use crate::next::core::object_3d::Transform;
-
 use super::super::{
-  core::object_3d::{define_support_objects, Object3D, Object3DMethod},
+  core::object_3d::{define_support_objects, with_default_fields, ObjectActions},
   lights::light::Light,
 };
+
+use renderer_macro_derive::object_3d;
 
 use super::mesh::Mesh;
 
@@ -31,24 +29,28 @@ define_support_objects!(
 //     return None;
 //   }
 // }
-pub struct Group {
-  base: Object3D<GroupSupportChildren>,
-}
+#[object_3d(GroupSupportChildren, ObjectActions)]
+pub struct Group {}
+
+// impl ObjectActions for Group {
+//   fn transform_matrix(&self) -> &crate::math::Mat4 {
+//     &self.matrix
+//   }
+//   fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>) {
+//     let mut p = self.parent.borrow_mut();
+//     *p = Some(parent);
+//   }
+//   fn get_parent(&self) -> Option<std::rc::Rc<dyn ObjectActions>> {
+//     if let Some(p) = self.parent.borrow().as_ref() {
+//       Some(p.clone())
+//     } else {
+//       None
+//     }
+//   }
+// }
 
 impl Group {
   pub fn new() -> Self {
-    Group {
-      base: Object3D::<GroupSupportChildren>::new(),
-    }
-  }
-}
-
-impl Object3DMethod for Group {
-  fn add<T: 'static + Sized>(&mut self, object: T) -> bool {
-    if let Some(e) = GroupSupportChildren::convert(object) {
-      self.base.add(e);
-      return true;
-    }
-    return false;
+    with_default_fields![]
   }
 }

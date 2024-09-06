@@ -616,6 +616,7 @@ name = "tinyrenderer"
 version = "0.1.0"
 dependencies = [
  "image",
+ "renderer_macro_derive",
 ]
 
 [[package]]

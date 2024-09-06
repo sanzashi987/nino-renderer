@@ -4,6 +4,7 @@ struct A {}
 struct B {}
 struct C {}
 
+trait Transform {}
 enum MyEnum {}
 #[object_3d(MyEnum, Transform)]
 struct Test {

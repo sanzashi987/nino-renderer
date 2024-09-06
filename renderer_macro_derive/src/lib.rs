@@ -7,11 +7,9 @@ use syn::{parse::Parse, parse_macro_input, AttributeArgs, DeriveInput, Field, Li
 #[proc_macro_attribute]
 pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
   let attr_ast = parse_macro_input!(args as AttributeArgs);
-  let children = match &attr_ast[0] {
+  let enum_name = match &attr_ast[0] {
     syn::NestedMeta::Meta(syn::Meta::Path(p)) => {
-      quote! {
-        children:Vec<#p>,
-      }
+      quote! {#p }
     }
     _ => quote! {},
   };
@@ -43,7 +41,7 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
     pub struct #struct_name{
       #(#attributes)*
       parent: std::cell::RefCell<Option<std::rc::Rc<dyn #obj_trait>>>,
-      #children
+      children: std::cell::RefCell<Vec<#enum_name>>,
       matrix: crate::math::Mat4,
       matrix_global: crate::math::Mat4,
       position: crate::math::Vec3,
@@ -58,15 +56,29 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
 
     impl #obj_trait for #struct_name {
       fn transform_matrix(&self) -> &crate::math::Mat4 {
-        self.matrix
+        &self.matrix
       }
-      fn set_parent(&self, parent: Rc<dyn #obj_trait>){
+      fn set_parent(&self, parent: std::rc::Rc<dyn #obj_trait>){
         let mut p = self.parent.borrow_mut();
         *p = Some(parent);
-      };
-      fn get_parent(&self) -> Option<Rc<dyn #obj_trait>>{
-        self.parent.borrow().map_or(None, |p| Some(p.clone()))
-      };
+      }
+      fn get_parent(&self) -> Option<std::rc::Rc<dyn #obj_trait>> {
+        if let Some(p) = self.parent.borrow().as_ref() {
+          Some(p.clone())
+        } else {
+          None
+        }
+      }
+    }
+    impl #struct_name {
+       fn add<T: 'static + Sized>(&self, val: T) -> bool {
+        if let Some(e) = #enum_name::convert(val) {
+          let mut children = self.children.borrow_mut();
+          children.push(e);
+          return true;
+        };
+        return false;
+      }
     }
 
   }

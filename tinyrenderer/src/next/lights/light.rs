@@ -1,4 +1,4 @@
-use crate::{math::Vec4, next::core::object_3d::Object3D};
+use crate::math::Vec4;
 
 pub struct Light {
   pub color: Vec4,

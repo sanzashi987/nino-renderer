@@ -5,6 +5,14 @@ pub struct BufferGeometry {
   attributes: Attribute,
 }
 
+impl Default for BufferGeometry {
+  fn default() -> Self {
+    Self {
+      attributes: Default::default(),
+    }
+  }
+}
+
 pub type Attribute = HashMap<String, TypeBufferEnum>;
 
 impl BufferGeometry {

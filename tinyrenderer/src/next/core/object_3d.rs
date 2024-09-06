@@ -19,7 +19,7 @@ pub trait ObjectActions {
   fn transform_matrix(&self) -> &crate::math::Mat4;
   fn set_parent(&self, parent: Rc<dyn ObjectActions>);
   fn get_parent(&self) -> Option<Rc<dyn ObjectActions>>;
-  fn add<T: 'static + Sized>(&self, val: T);
+  // fn add<T: 'static + Sized>(&self, val: T) -> bool;
 }
 
 macro_rules! define_support_objects {
@@ -52,4 +52,24 @@ macro_rules! define_support_objects {
   };
 }
 
+macro_rules! with_default_fields {
+  ($($val:ident),*) => {
+    Self {
+      $($val,)*
+      parent: Default::default(),
+      children: Default::default(),
+      matrix: Default::default(),
+      matrix_global: Default::default(),
+      position: Default::default(),
+      rotation: Default::default(),
+      scale: Default::default(),
+      visible: Default::default(),
+      cast_shadow: Default::default(),
+      receive_shadow: Default::default(),
+      user_data: Default::default(),
+    }
+  };
+}
+
 pub(crate) use define_support_objects;
+pub(crate) use with_default_fields;

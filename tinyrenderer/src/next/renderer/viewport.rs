@@ -7,6 +7,7 @@ use crate::math::Mat4;
 ///  Here d is the resolution of the z-buffer.
 /// I like to have it equal to 255 because of simplicity of
 /// dumping black-and-white images of the z-buffer for debugging.
+#[derive(Debug, Default)]
 pub struct Viewport {
   x: f32,
   y: f32,
@@ -31,6 +32,13 @@ impl Viewport {
     // println!("{:?}", viewport.viewport_matrix);
     viewport
   }
+
+  pub fn set_size(&mut self, w: f32, h: f32) {
+    self.w = w;
+    self.h = h;
+    self.recompute_matrix();
+  }
+
 
   #[rustfmt::skip]
   pub fn recompute_matrix(&mut self) {
