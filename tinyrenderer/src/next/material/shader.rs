@@ -1,4 +1,5 @@
-use crate::math::Vec4;
+use crate::math::{Mat4, Vec4};
+use crate::next::core::unifrom::u;
 
 use super::super::core::buffer_geometry::Attribute;
 
@@ -54,5 +55,26 @@ impl Debug for Shader {
       .field("vertex", &"/** vertex clousure */".to_string())
       .field("fragment", &"/** fragment clousure */".to_string())
       .finish()
+  }
+}
+
+impl Shader {
+  pub fn default_vertex() -> VertexShader {
+    let vertex: VertexShader = Box::new(|a, unifrom, _, gl| {
+      let model_matrix = u!(unifrom, Mat4, "model_matrix", !);
+      let view_matrix = u!(unifrom, Mat4, "view_matrix", !);
+      let projection_matrix = u!(unifrom, Mat4, "projection_matrix", !);
+
+      let mut next_v = *v;
+      next_v.position = projection_matrix * view_matrix * model_matrix * next_v.position;
+      next_v
+    });
+    vertex
+  }
+  pub fn default_fragment() -> FragmentShader {
+    Box::new(|_, _, gl| {
+      gl.gl_frag_color = Vec4::new(1.0, 1.0, 1.0, 1.0);
+      true
+    })
   }
 }

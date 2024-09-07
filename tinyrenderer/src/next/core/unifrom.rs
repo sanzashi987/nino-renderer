@@ -42,3 +42,26 @@ impl Uniform {
     self.attributes.remove(&key);
   }
 }
+
+macro_rules! u {
+  ($store:ident, $type:ty, $key:tt,!) => {
+    crate::next::core::Extract::<$type>::extract(
+      ($store
+        .get($key)
+        .expect(&format!("error from getting {} from unifroms", $key))),
+    )
+    .except(&format!(
+      "errot from parsing uniform '{}' value to  type '{}'",
+      $key,
+      stringify!($type)
+    ))
+  };
+  ($store:ident, $type:ty, $key:tt) => {{
+    {
+      let res: Option<$type> = $store.get($key).map_or(None, |v| v.extract());
+      res
+    }
+  }};
+}
+
+pub(crate) use u;

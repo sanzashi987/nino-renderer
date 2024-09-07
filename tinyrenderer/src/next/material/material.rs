@@ -1,2 +1,6 @@
 #[derive(Debug, Default)]
-pub struct BasicMaterial {}
+pub struct BasicMaterial {
+  
+
+
+}

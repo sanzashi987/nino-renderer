@@ -43,7 +43,7 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
       parent: std::cell::RefCell<Option<std::rc::Rc<dyn #obj_trait>>>,
       children: std::cell::RefCell<Vec<#enum_name>>,
       matrix: crate::math::Mat4,
-      matrix_global: crate::math::Mat4,
+      global_matrix: crate::math::Mat4,
       position: crate::math::Vec3,
       rotation: crate::math::Vec3,
       scale: crate::math::Vec3,
@@ -55,8 +55,11 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
 
 
     impl #obj_trait for #struct_name {
-      fn transform_matrix(&self) -> &crate::math::Mat4 {
+      fn matrix(&self) -> &crate::math::Mat4 {
         &self.matrix
+      }
+      fn global_matrix(&self) -> &crate::math::Mat4{
+        &self.global_matrix
       }
       fn set_parent(&self, parent: std::rc::Rc<dyn #obj_trait>){
         let mut p = self.parent.borrow_mut();

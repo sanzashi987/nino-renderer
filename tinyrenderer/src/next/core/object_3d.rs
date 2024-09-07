@@ -16,7 +16,8 @@ impl Default for ObjectType {
 }
 
 pub trait ObjectActions {
-  fn transform_matrix(&self) -> &crate::math::Mat4;
+  fn matrix(&self) -> &crate::math::Mat4;
+  fn global_matrix(&self) -> &crate::math::Mat4;
   fn set_parent(&self, parent: Rc<dyn ObjectActions>);
   fn get_parent(&self) -> Option<Rc<dyn ObjectActions>>;
   // fn add<T: 'static + Sized>(&self, val: T) -> bool;
@@ -59,7 +60,7 @@ macro_rules! with_default_fields {
       parent: Default::default(),
       children: Default::default(),
       matrix: Default::default(),
-      matrix_global: Default::default(),
+      global_matrix: Default::default(),
       position: Default::default(),
       rotation: Default::default(),
       scale: Default::default(),
