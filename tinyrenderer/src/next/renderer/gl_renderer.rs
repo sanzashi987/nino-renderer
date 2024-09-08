@@ -35,7 +35,7 @@ impl GlRenderer {
     std::mem::replace(&mut self.color, ColorBuffer::new(w, h))
   }
 
-  pub fn render(&mut self, scene: Scene, camera: &dyn Camera) -> ColorBuffer {
+  pub fn render(&mut self, scene: Scene, camera: impl Camera) -> ColorBuffer {
     self.take_color()
   }
 }

@@ -41,6 +41,10 @@ impl Uniform {
   pub fn remove_attribute(&mut self, key: String) {
     self.attributes.remove(&key);
   }
+  pub fn get(&self, key: &str) -> Option<UnifromTypeEnum> {
+    let res = self.attributes.get(key);
+    res.map(|x| *x)
+  }
 }
 
 macro_rules! u {
@@ -48,9 +52,9 @@ macro_rules! u {
     crate::next::core::Extract::<$type>::extract(
       ($store
         .get($key)
-        .expect(&format!("error from getting {} from unifroms", $key))),
+        .expect(&format!("error from getting {} from uniforms", $key))),
     )
-    .except(&format!(
+    .expect(&format!(
       "errot from parsing uniform '{}' value to  type '{}'",
       $key,
       stringify!($type)

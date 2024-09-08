@@ -1,6 +1,7 @@
-use crate::math::{Mat4, Vec4};
+use crate::math::{Mat4, Vec3, Vec4};
 use crate::next::core::unifrom::u;
 
+use super::super::core::buffer_attribute::a;
 use super::super::core::buffer_geometry::Attribute;
 
 use super::super::core::unifrom::Uniform;
@@ -60,14 +61,12 @@ impl Debug for Shader {
 
 impl Shader {
   pub fn default_vertex() -> VertexShader {
-    let vertex: VertexShader = Box::new(|a, unifrom, _, gl| {
+    let vertex: VertexShader = Box::new(|attribute, unifrom, _, gl| {
       let model_matrix = u!(unifrom, Mat4, "model_matrix", !);
       let view_matrix = u!(unifrom, Mat4, "view_matrix", !);
       let projection_matrix = u!(unifrom, Mat4, "projection_matrix", !);
-
-      let mut next_v = *v;
-      next_v.position = projection_matrix * view_matrix * model_matrix * next_v.position;
-      next_v
+      let position = Vec4::from_vec3(&a!(attribute, Vec3, "position", !), 1.0);
+      gl.gl_position = projection_matrix * view_matrix * model_matrix * position;
     });
     vertex
   }
