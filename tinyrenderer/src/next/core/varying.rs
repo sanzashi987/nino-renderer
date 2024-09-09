@@ -5,15 +5,13 @@ use std::{
 
 use crate::math::{Barycentric, Mat4, Vec2, Vec3, Vec4};
 
-use super::marco::{define_gl_type_enum, Extract};
-
 trait DeclareGlType<T> {
   fn declare_attribute(&mut self, key: &str, val: T);
 }
 
 macro_rules! define_varying_trait {
   ($name:tt; $enum_name:tt;$($prop:tt-$type:ty),+) => {
-    define_gl_type_enum!($enum_name;$($prop-$type),+);
+    crate::next::core::marco::define_gl_type_enum!($enum_name;$($prop-$type),+);
     $(
 
       impl DeclareGlType<$type> for $name {
@@ -100,4 +98,39 @@ impl Varying {
       }
     }
   }
+  pub fn get(&self, key: &str) -> Option<VaryingTypeEnum> {
+    self.result.get(key).map(|x| *x)
+  }
 }
+
+macro_rules! v {
+  ($store:ident,$type:ty,$key:tt,!) => {
+    crate::next::core::Extract::<$type>::extract(
+      ($store
+        .get($key)
+        .expect(&format!("error from getting {} from varyings", $key))),
+    )
+    .expect(&format!(
+      "error from parsing varying '{}' value to  type '{}'",
+      $key,
+      stringify!($type)
+    ))
+  };
+  ($store:ident,$type:ty,$key:tt) => {{
+    let res: Option<$type> = $store.get($key).map_or(None, |v| v.extract());
+    res
+  }};
+}
+
+macro_rules! add_v {
+  ($store:ident,$key:tt,$expr:expr) => {{
+    let val = $expr;
+    $store.declare_attribute($key, val);
+  }};
+  ($store:ident,$key:tt,$val:tt) => {
+    $store.declare_attribute($key, $val);
+  };
+}
+
+pub(crate) use add_v;
+pub(crate) use v;

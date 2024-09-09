@@ -55,16 +55,14 @@ macro_rules! u {
         .expect(&format!("error from getting {} from uniforms", $key))),
     )
     .expect(&format!(
-      "errot from parsing uniform '{}' value to  type '{}'",
+      "error from parsing uniform '{}' value to  type '{}'",
       $key,
       stringify!($type)
     ))
   };
   ($store:ident, $type:ty, $key:tt) => {{
-    {
-      let res: Option<$type> = $store.get($key).map_or(None, |v| v.extract());
-      res
-    }
+    let res: Option<$type> = $store.get($key).map_or(None, |v| v.extract());
+    res
   }};
 }
 
