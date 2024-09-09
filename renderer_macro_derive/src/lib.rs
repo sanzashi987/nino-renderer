@@ -7,13 +7,13 @@ use syn::{parse::Parse, parse_macro_input, AttributeArgs, DeriveInput, Field, Li
 #[proc_macro_attribute]
 pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
   let attr_ast = parse_macro_input!(args as AttributeArgs);
-  let enum_name = match &attr_ast[0] {
-    syn::NestedMeta::Meta(syn::Meta::Path(p)) => {
-      quote! {#p }
-    }
-    _ => quote! {},
-  };
-  let obj_trait = match &attr_ast[1] {
+  // let enum_name = match &attr_ast[0] {
+  //   syn::NestedMeta::Meta(syn::Meta::Path(p)) => {
+  //     quote! {#p }
+  //   }
+  //   _ => quote! {},
+  // };
+  let obj_trait = match &attr_ast[0] {
     syn::NestedMeta::Meta(syn::Meta::Path(p)) => {
       quote! {#p}
     }
@@ -41,9 +41,11 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
     pub struct #struct_name{
       #(#attributes)*
       parent: std::cell::RefCell<Option<std::rc::Rc<dyn #obj_trait>>>,
-      children: std::cell::RefCell<Vec<#enum_name>>,
+      // children: std::cell::RefCell<Vec<#enum_name>>,
+      children: std::cell::RefCell<Vec<Box<dyn #obj_trait>>>,
       matrix: crate::math::Mat4,
-      global_matrix: crate::math::Mat4,
+      global_matrix: std::cell::RefCell<crate::math::Mat4>,
+
       position: crate::math::Vec3,
       rotation: crate::math::Vec3,
       scale: crate::math::Vec3,
@@ -55,11 +57,16 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
 
 
     impl #obj_trait for #struct_name {
-      fn matrix(&self) -> &crate::math::Mat4 {
-        &self.matrix
+      fn matrix(&self) -> crate::math::Mat4 {
+        self.matrix
       }
-      fn global_matrix(&self) -> &crate::math::Mat4{
-        &self.global_matrix
+      fn global_matrix(& self) -> crate::math::Mat4 {
+        if let Some(p) = self.parent.borrow().as_ref() {
+          let m = p.global_matrix();
+          let mut gm = self.global_matrix.borrow_mut();
+          *gm = m * *gm;
+        }
+        *self.global_matrix.borrow()
       }
       fn set_parent(&self, parent: std::rc::Rc<dyn #obj_trait>){
         let mut p = self.parent.borrow_mut();
@@ -72,15 +79,9 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
           None
         }
       }
-    }
-    impl #struct_name {
-       fn add<T: 'static + Sized>(&self, val: T) -> bool {
-        if let Some(e) = #enum_name::convert(val) {
-          let mut children = self.children.borrow_mut();
-          children.push(e);
-          return true;
-        };
-        return false;
+      fn add(&self, val: Box<dyn #obj_trait>) {
+        let mut children  = self.children.borrow_mut();
+        children.push(val);
       }
     }
 

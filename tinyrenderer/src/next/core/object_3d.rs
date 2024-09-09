@@ -16,11 +16,11 @@ impl Default for ObjectType {
 }
 
 pub trait ObjectActions {
-  fn matrix(&self) -> &crate::math::Mat4;
-  fn global_matrix(&self) -> &crate::math::Mat4;
+  fn matrix(&self) -> crate::math::Mat4;
+  fn global_matrix(&self) -> crate::math::Mat4;
   fn set_parent(&self, parent: Rc<dyn ObjectActions>);
   fn get_parent(&self) -> Option<Rc<dyn ObjectActions>>;
-  // fn add<T: 'static + Sized>(&self, val: T) -> bool;
+  fn add(&self, val: Box<dyn ObjectActions>);
 }
 
 macro_rules! define_support_objects {

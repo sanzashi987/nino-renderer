@@ -39,3 +39,10 @@ impl GlRenderer {
     self.take_color()
   }
 }
+
+fn recursive_render(color: &mut ColorBuffer) {
+
+
+
+  
+}

@@ -77,3 +77,12 @@ impl Shader {
     })
   }
 }
+
+impl Default for Shader {
+  fn default() -> Self {
+    Self {
+      vertex: Self::default_vertex(),
+      fragment: Self::default_fragment(),
+    }
+  }
+}
