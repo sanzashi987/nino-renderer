@@ -61,11 +61,6 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
         self.matrix
       }
       fn global_matrix(& self) -> crate::math::Mat4 {
-        if let Some(p) = self.parent.borrow().as_ref() {
-          let m = p.global_matrix();
-          let mut gm = self.global_matrix.borrow_mut();
-          *gm = m * *gm;
-        }
         *self.global_matrix.borrow()
       }
       fn set_parent(&self, parent: std::rc::Rc<dyn #obj_trait>){
@@ -83,6 +78,22 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
         let mut children  = self.children.borrow_mut();
         children.push(val);
       }
+      fn look_at(&self, point: crate::math::Vec3){
+
+      }
+      fn update_global_matrix(&self, update_parent: bool, update_children: bool){
+
+
+        if update_children {
+
+
+
+
+
+        }
+
+      }
+
     }
 
   }

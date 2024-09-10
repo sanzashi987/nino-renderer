@@ -1,3 +1,7 @@
+use std::{borrow::Borrow, ops::Deref};
+
+use crate::math::Mat4;
+
 use super::super::{
   core::object_3d::{define_support_objects, with_default_fields, ObjectActions},
   // lights::light::Light,
@@ -29,53 +33,69 @@ use renderer_macro_derive::object_3d;
 //     return None;
 //   }
 // }
-#[object_3d(ObjectActions)]
+// #[object_3d(ObjectActions)]
+// pub struct Group {}
+
 pub struct Group {
-  // matrix: crate::math::Mat4,
-  // global_matrix: std::cell::RefCell<crate::math::Mat4>,
-  // parent: std::cell::RefCell<Option<std::rc::Rc<dyn ObjectActions>>>,
+  parent: std::cell::RefCell<Option<std::rc::Rc<dyn ObjectActions>>>,
+  children: std::cell::RefCell<Vec<Box<dyn ObjectActions>>>,
+  matrix: std::cell::RefCell<crate::math::Mat4>,
+  global_matrix: std::cell::RefCell<crate::math::Mat4>,
+  position: crate::math::Vec3,
+  rotation: crate::math::Vec3,
+  scale: crate::math::Vec3,
+  visible: bool,
+  cast_shadow: bool,
+  receive_shadow: bool,
+  user_data: std::collections::HashMap<String, Box<dyn std::any::Any>>,
+  // matrix_world_auto_update: bool,
 }
+impl ObjectActions for Group {
+  fn matrix(&self) -> crate::math::Mat4 {
+    self.matrix
+  }
+  fn global_matrix(&self) -> crate::math::Mat4 {
+    *self.global_matrix.borrow()
+  }
+  fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>) {
+    let mut p = self.parent.borrow_mut();
+    *p = Some(parent);
+  }
+  fn get_parent(&self) -> Option<std::rc::Rc<dyn ObjectActions>> {
+    if let Some(p) = self.parent.borrow().as_ref() {
+      Some(p.clone())
+    } else {
+      None
+    }
+  }
+  fn add(&self, val: Box<dyn ObjectActions>) {
+    let mut children = self.children.borrow_mut();
+    children.push(val);
+  }
 
-// impl Group {
-//   fn global_matrix(&self) -> crate::math::Mat4 {
-//     if let Some(p) = self.parent.borrow().as_ref() {
-//       let m = p.global_matrix();
-//       let mut gm = self.global_matrix.borrow_mut();
-//       *gm = m * *gm;
-//     };
-//     self.global_matrix.borrow().clone()
-//   }
-// }
-// impl ObjectActions for Group {
-//   fn matrix(&self) -> &crate::math::Mat4 {
-//     &self.matrix
-//   }
-//   fn global_matrix(&self) -> &crate::math::Mat4 {
-//     if let Some(p) = self.parent.borrow().as_ref() {
-//       let m = p.global_matrix();
-//       let mut gm = self.global_matrix.borrow_mut();
-//       *gm = *m * *gm;
-//     }
-//     &self.global_matrix.borrow()
+  fn look_at(&self, point: crate::math::Vec3) {}
 
-//     // if let Some(p) = self.parent.borrow() {};
-//     // &self.global_matrix
-//   }
-//   // fn transform_matrix(&self) -> &crate::math::Mat4 {
-//   //   &self.matrix
-//   // }
-//   fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>) {
-//     let mut p = self.parent.borrow_mut();
-//     *p = Some(parent);
-//   }
-//   fn get_parent(&self) -> Option<std::rc::Rc<dyn ObjectActions>> {
-//     if let Some(p) = self.parent.borrow().as_ref() {
-//       Some(p.clone())
-//     } else {
-//       None
-//     }
-//   }
-// }
+  fn update_global_matrix(&self) {
+    self.update_matrix();
+
+    if let Some(parent) = self.parent.borrow().as_ref() {
+      parent.update_global_matrix();
+      let parent_global = parent.global_matrix();
+      let mut global_matrix = self.global_matrix.borrow_mut();
+      *global_matrix = parent_global * *global_matrix;
+    }
+
+    for child in self.children.borrow().deref() {
+      child.update_global_matrix();
+    }
+  }
+
+  fn update_matrix(&self) {
+    let next_matrix = Mat4::compose(self.position, self.rotation, self.scale);
+    let mut matrix = self.matrix.borrow_mut();
+    *matrix = next_matrix;
+  }
+}
 
 impl Group {
   pub fn new() -> Self {

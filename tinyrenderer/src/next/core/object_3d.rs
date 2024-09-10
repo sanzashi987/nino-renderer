@@ -21,6 +21,9 @@ pub trait ObjectActions {
   fn set_parent(&self, parent: Rc<dyn ObjectActions>);
   fn get_parent(&self) -> Option<Rc<dyn ObjectActions>>;
   fn add(&self, val: Box<dyn ObjectActions>);
+  fn look_at(&self, point: crate::math::Vec3);
+  fn update_global_matrix(&self);
+  fn update_matrix(&self);
 }
 
 macro_rules! define_support_objects {

@@ -269,6 +269,13 @@ impl Mat4 {
   pub fn inverse(&self) -> Option<Self> {
     self.inverse_transpose().map(|v| v.transpose())
   }
+
+  pub fn compose(position: Vec3, rotation: Vec3, scale: Vec3) -> Self {
+    let mut result = Self::identity();
+    result =
+      apply_translate(&position) * apply_eular_rotate_xyz(&rotation) * apply_scale(&scale) * result;
+    result
+  }
 }
 
 #[rustfmt::skip]
@@ -277,6 +284,17 @@ pub fn apply_translate(offset: &Vec3) -> Mat4 {
     1.0, 0.0, 0.0, offset.x,
     0.0, 1.0, 0.0, offset.y,
     0.0, 0.0, 1.0, offset.z,
+    0.0, 0.0, 0.0, 1.0,
+  ])
+}
+
+#[rustfmt::skip]
+pub fn apply_scale(scale: &Vec3) -> Mat4 {
+  let Vec3{x,y,z} = scale;
+  Mat4::from_row(&[
+    x  , 0.0, 0.0, 0.0,
+    0.0, y  , 0.0, 0.0,
+    0.0, 0.0, z  , 0.0,
     0.0, 0.0, 0.0, 1.0,
   ])
 }
