@@ -1,6 +1,6 @@
 use std::{borrow::Borrow, ops::Deref};
 
-use crate::math::Mat4;
+use crate::math::{Mat4, Vec3};
 
 use super::super::{
   core::object_3d::{define_support_objects, with_default_fields, ObjectActions},
@@ -48,6 +48,8 @@ pub struct Group {
   cast_shadow: bool,
   receive_shadow: bool,
   user_data: std::collections::HashMap<String, Box<dyn std::any::Any>>,
+  is_camera: bool,
+  is_light: bool,
   // matrix_world_auto_update: bool,
 }
 impl ObjectActions for Group {
@@ -73,7 +75,24 @@ impl ObjectActions for Group {
     children.push(val);
   }
 
-  fn look_at(&self, point: crate::math::Vec3) {}
+  fn look_at(&self, target: crate::math::Vec3) {
+    // let back = (self.position - target).normalize();
+    let up = Vec3::y_axis();
+    let z = if self.is_camera || self.is_light {
+      (self.position - target).normalize()
+    } else {
+      (target - self.position).normalize()
+    };
+
+    let x = up.cross(&z).normalize();
+    let y = z.cross(&x).normalize();
+
+    let orthogonal_basis = crate::math::Mat3::from_row(&[
+      x.x, x.y, x.z, y.x, y.y, y.z, z.x, z.y, z.z,
+    ]);
+
+    // self.view_direction = back * -1.0;
+  }
 
   fn update_global_matrix(&self) {
     self.update_matrix();
