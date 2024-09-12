@@ -216,9 +216,20 @@ impl Mat3 {
     self.set(col, 1, column.y);
     self.set(col, 2, column.z);
   }
+
+  pub fn get_orthogonal_basis(eye: Vec3, target: Vec3, up: Vec3) -> Self {
+    let z = (eye - target).normalize();
+    let x = up.cross(&z).normalize();
+    let y = z.cross(&x).normalize();
+    Self::from_row(&[x.x, x.y, x.z, y.x, y.y, y.z, z.x, z.y, z.z])
+  }
 }
 
 impl Mat4 {
+  pub fn extract_position(&self) -> Vec3 {
+    Vec3::new(self.get(0, 3), self.get(1, 3), self.get(2, 3))
+  }
+
   pub fn get_algebraic_cofactor(&self, x: usize, y: usize) -> Mat3 {
     let mut result = Mat3::identity();
     for x_iter in 0..4 {
@@ -292,9 +303,9 @@ pub fn apply_translate(offset: &Vec3) -> Mat4 {
 pub fn apply_scale(scale: &Vec3) -> Mat4 {
   let Vec3{x,y,z} = scale;
   Mat4::from_row(&[
-    x  , 0.0, 0.0, 0.0,
-    0.0, y  , 0.0, 0.0,
-    0.0, 0.0, z  , 0.0,
+    *x  , 0.0, 0.0, 0.0,
+    0.0, *y  , 0.0, 0.0,
+    0.0, 0.0, *z  , 0.0,
     0.0, 0.0, 0.0, 1.0,
   ])
 }

@@ -54,7 +54,7 @@ pub struct Group {
 }
 impl ObjectActions for Group {
   fn matrix(&self) -> crate::math::Mat4 {
-    self.matrix
+    *self.matrix.borrow()
   }
   fn global_matrix(&self) -> crate::math::Mat4 {
     *self.global_matrix.borrow()
@@ -77,19 +77,20 @@ impl ObjectActions for Group {
 
   fn look_at(&self, target: crate::math::Vec3) {
     // let back = (self.position - target).normalize();
-    let up = Vec3::y_axis();
-    let z = if self.is_camera || self.is_light {
-      (self.position - target).normalize()
+    self.update_global_matrix();
+
+    let position = self.global_matrix.borrow().extract_position();
+
+    let (eye, target) = if self.is_camera || self.is_light {
+      // camera default looking back along -z;
+      (position, target)
     } else {
-      (target - self.position).normalize()
+      (target, position)
     };
 
-    let x = up.cross(&z).normalize();
-    let y = z.cross(&x).normalize();
+    let orthogonal_basis = crate::math::Mat3::get_orthogonal_basis(eye, target, *Vec3::y_axis());
 
-    let orthogonal_basis = crate::math::Mat3::from_row(&[
-      x.x, x.y, x.z, y.x, y.y, y.z, z.x, z.y, z.z,
-    ]);
+    let looking_at = target - self.position;
 
     // self.view_direction = back * -1.0;
   }
@@ -116,8 +117,8 @@ impl ObjectActions for Group {
   }
 }
 
-impl Group {
-  pub fn new() -> Self {
-    with_default_fields![]
-  }
-}
+// impl Group {
+//   pub fn new() -> Self {
+//     with_default_fields![]
+//   }
+// }

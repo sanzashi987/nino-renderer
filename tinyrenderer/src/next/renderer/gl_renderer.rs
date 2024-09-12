@@ -1,10 +1,7 @@
-use super::super::cameras;
+use super::super::cameras::camera::Camera;
 use super::super::objects::scene::Scene;
 use super::viewport::Viewport;
-use crate::{
-  data_array::{ColorBuffer, DepthBuffer},
-  next::cameras::Camera,
-};
+use crate::data_array::{ColorBuffer, DepthBuffer};
 pub struct GlRenderer {
   viewport: Viewport,
   color: ColorBuffer,
@@ -40,9 +37,4 @@ impl GlRenderer {
   }
 }
 
-fn recursive_render(color: &mut ColorBuffer) {
-
-
-
-  
-}
+fn recursive_render(color: &mut ColorBuffer) {}

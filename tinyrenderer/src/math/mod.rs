@@ -7,3 +7,4 @@ pub use barycentric::Barycentric;
 mod boundary_box;
 pub use self::boundary_box::BoundaryBox;
 pub mod frustum;
+pub mod quaternion;
