@@ -1,6 +1,3 @@
-use crate::math::{Mat4, Vec3};
-use std::{any::Any, cell::RefCell, collections::HashMap, rc::Rc};
-
 pub enum ObjectType {
   Light,
   Mesh,
@@ -18,12 +15,13 @@ impl Default for ObjectType {
 pub trait ObjectActions {
   fn matrix(&self) -> crate::math::Mat4;
   fn global_matrix(&self) -> crate::math::Mat4;
-  fn set_parent(&self, parent: Rc<dyn ObjectActions>);
-  fn get_parent(&self) -> Option<Rc<dyn ObjectActions>>;
+  fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>);
+  fn get_parent(&self) -> Option<std::rc::Rc<dyn ObjectActions>>;
   fn add(&self, val: Box<dyn ObjectActions>);
   fn look_at(&self, point: crate::math::Vec3);
   fn update_global_matrix(&self);
   fn update_matrix(&self);
+  fn compose(&self);
 }
 
 macro_rules! define_support_objects {

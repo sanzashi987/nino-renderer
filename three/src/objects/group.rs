@@ -52,6 +52,13 @@ pub struct Group {
   is_light: bool,
   // matrix_world_auto_update: bool,
 }
+
+impl Group {
+  pub fn extract_position(mat: crate::math::Mat4) -> crate::math::Vec3 {
+    Vec3::new(mat.get(0, 3), mat.get(1, 3), mat.get(2, 3))
+  }
+}
+
 impl ObjectActions for Group {
   fn matrix(&self) -> crate::math::Mat4 {
     *self.matrix.borrow()
@@ -79,7 +86,7 @@ impl ObjectActions for Group {
     // let back = (self.position - target).normalize();
     self.update_global_matrix();
 
-    let position = self.global_matrix.borrow().extract_position();
+    let position = Self::extract_position(*self.global_matrix.borrow());
 
     let (eye, target) = if self.is_camera || self.is_light {
       // camera default looking back along -z;
@@ -111,7 +118,7 @@ impl ObjectActions for Group {
   }
 
   fn update_matrix(&self) {
-    let next_matrix = Mat4::compose(self.position, self.rotation, self.scale);
+    let next_matrix = crate::math::Mat4::compose(self.position, self.rotation, self.scale);
     let mut matrix = self.matrix.borrow_mut();
     *matrix = next_matrix;
   }

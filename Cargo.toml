@@ -11,6 +11,7 @@ image = "0.24.5"
 rand = "0.8"
 renderer_macro_derive = { path = "./renderer_macro_derive" }
 tinyrenderer = { path = "./tinyrenderer" }
+three = { path = './three' }
 sandbox = { path = "./sandbox" }
 
 [dev-dependencies]

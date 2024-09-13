@@ -41,9 +41,8 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
     pub struct #struct_name{
       #(#attributes)*
       parent: std::cell::RefCell<Option<std::rc::Rc<dyn #obj_trait>>>,
-      // children: std::cell::RefCell<Vec<#enum_name>>,
       children: std::cell::RefCell<Vec<Box<dyn #obj_trait>>>,
-      matrix: crate::math::Mat4,
+      matrix: std::cell::RefCell<crate::math::Mat4>,
       global_matrix: std::cell::RefCell<crate::math::Mat4>,
 
       position: crate::math::Vec3,
@@ -53,8 +52,15 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
       cast_shadow: bool,
       receive_shadow: bool,
       user_data: std::collections::HashMap<String, Box<dyn std::any::Any>>,
+      is_camera: bool,
+      is_light: bool,
     }
 
+    impl #struct_name {
+      pub fn extract_position(mat: crate::math::Mat4) -> crate::math::Vec3 {
+        Vec3::new(mat.get(0, 3), mat.get(1, 3), mat.get(2, 3))
+      }
+    }
 
     impl #obj_trait for #struct_name {
       fn matrix(&self) -> crate::math::Mat4 {
@@ -78,10 +84,11 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
         let mut children  = self.children.borrow_mut();
         children.push(val);
       }
+
       fn look_at(&self, point: crate::math::Vec3){
 
       }
-      fn update_global_matrix(&self, update_parent: bool, update_children: bool){
+      fn update_global_matrix(&self,){
 
 
         if update_children {
@@ -92,6 +99,11 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
 
         }
 
+      }
+      fn update_matrix(&self) {
+        let next_matrix = crate::math::Mat4::compose(self.position, self.rotation, self.scale);
+        let mut matrix = self.matrix.borrow_mut();
+        *matrix = next_matrix;
       }
 
     }

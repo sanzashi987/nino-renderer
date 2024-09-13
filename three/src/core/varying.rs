@@ -11,7 +11,7 @@ trait DeclareGlType<T> {
 
 macro_rules! define_varying_trait {
   ($name:tt; $enum_name:tt;$($prop:tt-$type:ty),+) => {
-    crate::next::core::marco::define_gl_type_enum!($enum_name;$($prop-$type),+);
+    crate::core::marco::define_gl_type_enum!($enum_name;$($prop-$type),+);
     $(
 
       impl DeclareGlType<$type> for $name {

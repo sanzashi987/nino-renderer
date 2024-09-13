@@ -1,6 +1,4 @@
 use crate::math::Vec3;
-
-use super::marco::Extract;
 struct TypeBufferAttribute<T: Sized + Copy> {
   data: Vec<T>,
   size: usize,
@@ -112,7 +110,7 @@ typed_array!(
 
 macro_rules! a {
   ($store:ident, $type:ty, $key:tt,!) => {
-    crate::next::core::ExtractRef::<$type>::extract(
+    crate::core::ExtractRef::<$type>::extract(
       ($store
         .get($key)
         .expect(&format!("error from getting {} from attributes", $key))),

@@ -11,7 +11,7 @@ macro_rules! define_gl_type_enum {
       )+
     }
     $(
-      impl crate::next::core::marco::Extract<$type> for $enum_name {
+      impl crate::core::marco::Extract<$type> for $enum_name {
         fn extract(self)->Option<$type>{
           if let Self::$name(val) = self {
             Some(val)

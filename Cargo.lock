@@ -384,6 +384,7 @@ dependencies = [
  "rand",
  "renderer_macro_derive",
  "sandbox",
+ "three",
  "tinyrenderer",
 ]
 
@@ -598,6 +599,14 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "three"
+version = "0.1.0"
+dependencies = [
+ "image",
+ "renderer_macro_derive",
 ]
 
 [[package]]
