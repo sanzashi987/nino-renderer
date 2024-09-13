@@ -249,7 +249,6 @@ impl Mat4 {
     self.get_algebraic_cofactor(x, y) * if (x + y) % 2 == 0 { 1 } else { -1 } as f32
   }
 
-  #[rustfmt::skip]
   pub fn det(&self) -> f32 {
     self.get_cofactor(0, 0).det() * self.get(0, 0)
       + self.get_cofactor(1, 0).det() * self.get(1, 0)
@@ -257,11 +256,10 @@ impl Mat4 {
       + self.get_cofactor(3, 0).det() * self.get(3, 0)
   }
 
-  #[rustfmt::skip]
   pub fn inverse_transpose(&self) -> Option<Mat4> {
     let d: f32 = self.det();
     if d.abs() <= std::f32::EPSILON {
-        return None;
+      return None;
     }
 
     let mut result = Mat4::identity();
@@ -275,13 +273,6 @@ impl Mat4 {
 
   pub fn inverse(&self) -> Option<Self> {
     self.inverse_transpose().map(|v| v.transpose())
-  }
-
-  pub fn compose(position: Vec3, rotation: Vec3, scale: Vec3) -> Self {
-    let mut result = Self::identity();
-    result =
-      apply_translate(&position) * apply_eular_rotate_xyz(&rotation) * apply_scale(&scale) * result;
-    result
   }
 }
 
