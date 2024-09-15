@@ -21,7 +21,8 @@ pub trait ObjectActions {
   fn look_at(&self, point: crate::math::Vec3);
   fn update_global_matrix(&self);
   fn update_matrix(&self);
-  fn compose(&self);
+  fn compose(&self) -> crate::math::Mat4;
+  fn attach(&self, child: Box<dyn ObjectActions>);
 }
 
 macro_rules! define_support_objects {
@@ -69,6 +70,8 @@ macro_rules! with_default_fields {
       cast_shadow: Default::default(),
       receive_shadow: Default::default(),
       user_data: Default::default(),
+      is_camera: Default::default(),
+      is_light: Default::default(),
     }
   };
 }

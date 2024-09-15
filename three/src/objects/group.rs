@@ -1,6 +1,6 @@
 use std::{borrow::Borrow, ops::Deref};
 
-use crate::math::{Mat4, Vec3};
+use crate::math::{apply_scale, apply_translate, Mat4, Vec3};
 
 use super::super::{
   core::object_3d::{define_support_objects, with_default_fields, ObjectActions},
@@ -42,7 +42,7 @@ pub struct Group {
   matrix: std::cell::RefCell<crate::math::Mat4>,
   global_matrix: std::cell::RefCell<crate::math::Mat4>,
   position: crate::math::Vec3,
-  rotation: crate::math::Vec3,
+  rotation: crate::math::rotate::Rotation,
   scale: crate::math::Vec3,
   visible: bool,
   cast_shadow: bool,
@@ -118,9 +118,21 @@ impl ObjectActions for Group {
   }
 
   fn update_matrix(&self) {
-    let next_matrix = crate::math::Mat4::compose(self.position, self.rotation, self.scale);
+    let next_matrix = self.compose();
     let mut matrix = self.matrix.borrow_mut();
     *matrix = next_matrix;
+  }
+
+  fn compose(&self) -> crate::math::Mat4 {
+    let translate_matrix = apply_translate(&self.position);
+    let rotate_matrix = self.rotation.quaternion.make_rotate_matrix();
+    let scale_matrix = apply_scale(&self.scale);
+
+    translate_matrix * rotate_matrix * scale_matrix
+  }
+
+  fn attach(&self, child: Box<dyn ObjectActions>) {
+    self.update_global_matrix();
   }
 }
 

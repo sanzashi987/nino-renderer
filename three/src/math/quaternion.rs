@@ -1,6 +1,6 @@
 use std::ops::{Div, Mul};
 
-use super::{Mat3, Mat4};
+use super::Mat4;
 #[derive(Debug, PartialEq)]
 pub struct Quaternion {
   /// q = w + xi + yj + zk
@@ -75,6 +75,11 @@ impl Quaternion {
   #[rustfmt::skip]
   pub fn make_rotate_matrix(&self) -> Mat4 {
     let Self { w, x, y, z } = self;
+    let (x2, y2, z2) = (x + x, y + y, z + z);
+    let (xx, xy, xz) = (x * x2, x * y2, x * z2);
+    let (yy, yz, zz) = (y * y2, y * z2, z * z2);
+    let (wx, wy, wz) = (w * x2, w * y2, w * z2);
+
     Mat4::from_row(&[
       1.0 - 2.0 * (y * y + z * z), 2.0 * (x * y - w * z), 2.0 * (x * z + w * y), 0.0,
       2.0 * (x * y + w * z), 1.0 - 2.0 * (x * x + z * z), 2.0 * (y * z - w * x), 0.0,
