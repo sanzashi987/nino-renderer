@@ -1,7 +1,7 @@
 use std::ops::{Div, Mul};
 
-use super::Mat4;
-#[derive(Debug, PartialEq)]
+use super::{Mat4, Vec4};
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Quaternion {
   /// q = w + xi + yj + zk
   w: f32,
@@ -48,7 +48,7 @@ impl Quaternion {
   }
 
   pub fn length(&self) -> f32 {
-    self.length().sqrt()
+    self.length_square().sqrt()
   }
 
   pub fn dot(&self, another: Self) -> f32 {
@@ -72,7 +72,7 @@ impl Quaternion {
   ///     [ 1 - 2(y^2 + z^2),    2(xy - wz)   ,    2(xz + wy)    ]
   /// R = [    2(xy + wz)   , 1 - 2(x^2 + z^2),    2(yz - wx)    ]
   ///     [    2(xz - wy)   ,    2(yz + wx)   , 1 - 2(x^2 + y^2) ]
-  #[rustfmt::skip]
+
   pub fn make_rotate_matrix(&self) -> Mat4 {
     let Self { w, x, y, z } = self;
     let (x2, y2, z2) = (x + x, y + y, z + z);
@@ -80,11 +80,57 @@ impl Quaternion {
     let (yy, yz, zz) = (y * y2, y * z2, z * z2);
     let (wx, wy, wz) = (w * x2, w * y2, w * z2);
 
-    Mat4::from_row(&[
-      1.0 - 2.0 * (y * y + z * z), 2.0 * (x * y - w * z), 2.0 * (x * z + w * y), 0.0,
-      2.0 * (x * y + w * z), 1.0 - 2.0 * (x * x + z * z), 2.0 * (y * z - w * x), 0.0,
-      2.0 * (x * z - w * y), 2.0 * (y * z + w * x), 1.0 - 2.0 * (x * x + y * y), 0.0,
-      0.0,                    0.0,                   0.0,                        1.0,
-    ])
+    let mut res = Mat4::identity();
+
+    res.set_col(0, Vec4::new(1.0 - (yy + zz), xy + wz, xz - wy, 0.0));
+    res.set_col(1, Vec4::new(xy - wz, 1.0 - (xx + zz), yz + wx, 0.0));
+    res.set_col(2, Vec4::new(xz + wy, yz - wx, xx + yy, 0.0));
+
+    res
+  }
+
+  pub fn update_from_rotate_matrix(&mut self, mat: Mat4) {
+    let q: Self = mat.into();
+    (self.w, self.x, self.y, self.z) = (q.w, q.x, q.y, q.z)
+  }
+}
+
+impl From<Mat4> for Quaternion {
+  fn from(value: Mat4) -> Self {
+    let Vec4 {
+      x: m11,
+      y: m21,
+      z: m31,
+      ..
+    } = value.get_col(0);
+    let Vec4 {
+      x: m12,
+      y: m22,
+      z: m32,
+      ..
+    } = value.get_col(1);
+    let Vec4 {
+      x: m13,
+      y: m23,
+      z: m33,
+      ..
+    } = value.get_col(2);
+    let trace = m11 + m22 + m33;
+    let (mut w, mut x, mut y, mut z) = (0.0, 0.0, 0.0, 0.0);
+    if trace > 0.0 {
+      let s = 0.5 / (trace + 1.0).sqrt();
+      w = 0.25 / s;
+      x = (m32 - m23) * s;
+      y = (m13 - m31) * s;
+      z = (m21 - m12) * s;
+    } else {
+      let s = 2.0 * (1.0 + m33 - m11 - m22).sqrt();
+
+      w = (m21 - m12) / s;
+      x = (m13 + m31) / s;
+      y = (m23 + m32) / s;
+      z = 0.25 * s;
+    };
+    Self { w, x, y, z }
   }
 }

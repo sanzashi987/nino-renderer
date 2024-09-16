@@ -1,11 +1,4 @@
-use std::{borrow::Borrow, ops::Deref};
-
-use crate::math::{apply_scale, apply_translate, Mat4, Vec3};
-
-use super::super::{
-  core::object_3d::{define_support_objects, with_default_fields, ObjectActions},
-  // lights::light::Light,
-};
+use super::super::core::object_3d::ObjectActions;
 
 use renderer_macro_derive::object_3d;
 
@@ -41,9 +34,9 @@ pub struct Group {
   children: std::cell::RefCell<Vec<Box<dyn ObjectActions>>>,
   matrix: std::cell::RefCell<crate::math::Mat4>,
   global_matrix: std::cell::RefCell<crate::math::Mat4>,
-  position: crate::math::Vec3,
-  rotation: crate::math::rotate::Rotation,
-  scale: crate::math::Vec3,
+  position: std::cell::RefCell<crate::math::Vec3>,
+  rotation: std::cell::RefCell<crate::math::rotate::Rotation>,
+  scale: std::cell::RefCell<crate::math::Vec3>,
   visible: bool,
   cast_shadow: bool,
   receive_shadow: bool,
@@ -51,12 +44,6 @@ pub struct Group {
   is_camera: bool,
   is_light: bool,
   // matrix_world_auto_update: bool,
-}
-
-impl Group {
-  pub fn extract_position(mat: crate::math::Mat4) -> crate::math::Vec3 {
-    Vec3::new(mat.get(0, 3), mat.get(1, 3), mat.get(2, 3))
-  }
 }
 
 impl ObjectActions for Group {
@@ -86,7 +73,7 @@ impl ObjectActions for Group {
     // let back = (self.position - target).normalize();
     self.update_global_matrix();
 
-    let position = Self::extract_position(*self.global_matrix.borrow());
+    let position = crate::math::extract_position(*self.global_matrix.borrow());
 
     let (eye, target) = if self.is_camera || self.is_light {
       // camera default looking back along -z;
@@ -95,9 +82,10 @@ impl ObjectActions for Group {
       (target, position)
     };
 
-    let orthogonal_basis = crate::math::Mat3::get_orthogonal_basis(eye, target, *Vec3::y_axis());
+    let orthogonal_basis =
+      crate::math::Mat3::get_orthogonal_basis(eye, target, *crate::math::Vec3::y_axis());
 
-    let looking_at = target - self.position;
+    let looking_at = target - *self.position.borrow();
 
     // self.view_direction = back * -1.0;
   }
@@ -112,7 +100,7 @@ impl ObjectActions for Group {
       *global_matrix = parent_global * *global_matrix;
     }
 
-    for child in self.children.borrow().deref() {
+    for child in std::ops::Deref::deref(&self.children.borrow()) {
       child.update_global_matrix();
     }
   }
@@ -124,15 +112,70 @@ impl ObjectActions for Group {
   }
 
   fn compose(&self) -> crate::math::Mat4 {
-    let translate_matrix = apply_translate(&self.position);
-    let rotate_matrix = self.rotation.quaternion.make_rotate_matrix();
-    let scale_matrix = apply_scale(&self.scale);
+    let translate_matrix = crate::math::apply_translate(&self.position.borrow());
+    let rotate_matrix = (*self.rotation.borrow()).quaternion.make_rotate_matrix();
+    let scale_matrix = crate::math::apply_scale(&self.scale.borrow());
 
     translate_matrix * rotate_matrix * scale_matrix
+  }
+  /// refer to http://facweb.cs.depaul.edu/andre/gam374/extractingTRS.pdf
+  fn decompose(&self) {
+    let mat = *self.matrix.borrow();
+    let scale = crate::math::extract_scale(mat);
+    let position = crate::math::extract_position(mat);
+
+    let mut rotate_matrix = crate::math::Mat4::zeros();
+    let scales = [scale.x, scale.y, scale.z];
+    for i in 0..2 {
+      rotate_matrix.set_col(i as usize, mat.get_col(i as usize) / scales[i]);
+    }
+
+    {
+      self
+        .rotation
+        .borrow_mut()
+        .update_quaternion_from_matrix(rotate_matrix);
+    }
+
+    {
+      let mut scale_ref = self.scale.borrow_mut();
+      *scale_ref = scale;
+    }
+    {
+      let mut position_ref = self.position.borrow_mut();
+      *position_ref = position;
+    }
+  }
+
+  fn apply_matrix(&self, matrix: crate::math::Mat4) {
+    self.update_matrix();
+    let next_matrix = matrix * *self.matrix.borrow();
+    let mut matrix_ref = self.matrix.borrow_mut();
+    *matrix_ref = next_matrix;
+    self.decompose();
+  }
+
+  fn apply_quaternion(&self, q: crate::math::Quaternion) {
+    let next_q = (*self.rotation.borrow()).quaternion * q;
+    let mut rotation_ref = self.rotation.borrow_mut();
+    rotation_ref.set_quaternion(next_q);
   }
 
   fn attach(&self, child: Box<dyn ObjectActions>) {
     self.update_global_matrix();
+
+    let global_matrix_invert = self
+      .global_matrix
+      .borrow()
+      .inverse()
+      .expect("expected a invertable global matrix");
+
+    let mut res = global_matrix_invert;
+
+    if let Some(parent) = child.get_parent() {
+      parent.update_global_matrix();
+      res = res * parent.global_matrix();
+    }
   }
 }
 

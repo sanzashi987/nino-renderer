@@ -1,5 +1,8 @@
 use super::{Vec3, Vec4};
-use std::ops::{Add, Div, Mul};
+use std::{
+  io::Seek,
+  ops::{Add, Div, Mul},
+};
 
 macro_rules! define_mat {
   ($name:ident, $dim:expr) => {
@@ -211,10 +214,10 @@ impl Mul<Vec3> for Mat3 {
 }
 
 impl Mat3 {
-  pub fn set_col(&mut self, col: usize, column: Vec3) {
-    self.set(col, 0, column.x);
-    self.set(col, 1, column.y);
-    self.set(col, 2, column.z);
+  pub fn set_col(&mut self, x: usize, column: Vec3) {
+    self.set(x, 0, column.x);
+    self.set(x, 1, column.y);
+    self.set(x, 2, column.z);
   }
 
   pub fn get_orthogonal_basis(eye: Vec3, target: Vec3, up: Vec3) -> Self {
@@ -226,6 +229,22 @@ impl Mat3 {
 }
 
 impl Mat4 {
+  pub fn set_col(&mut self, x: usize, column: Vec4) {
+    self.set(x, 0, column.x);
+    self.set(x, 1, column.y);
+    self.set(x, 2, column.z);
+    self.set(x, 3, column.w);
+  }
+
+  pub fn get_col(&self, x: usize) -> Vec4 {
+    Vec4::new(
+      self.get(x, 0),
+      self.get(x, 1),
+      self.get(x, 2),
+      self.get(x, 3),
+    )
+  }
+
   pub fn get_algebraic_cofactor(&self, x: usize, y: usize) -> Mat3 {
     let mut result = Mat3::identity();
     for x_iter in 0..4 {
@@ -295,4 +314,20 @@ pub fn apply_scale(scale: &Vec3) -> Mat4 {
     0.0, 0.0, *z  , 0.0,
     0.0, 0.0, 0.0, 1.0,
   ])
+}
+
+pub fn extract_position(mat: Mat4) -> Vec3 {
+  Vec3::new(mat.get(0, 3), mat.get(1, 3), mat.get(2, 3))
+}
+
+pub fn extract_scale(mat: Mat4) -> Vec3 {
+  let mut sx = Vec3::new(mat.get(0, 0), mat.get(0, 1), mat.get(0, 2)).length();
+  let sy = Vec3::new(mat.get(1, 0), mat.get(1, 1), mat.get(1, 2)).length();
+  let sz = Vec3::new(mat.get(2, 0), mat.get(2, 1), mat.get(2, 2)).length();
+
+  if mat.det() < 0.0 {
+    sx = -sx;
+  }
+
+  Vec3::new(sx, sy, sz)
 }

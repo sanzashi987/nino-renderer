@@ -22,7 +22,10 @@ pub trait ObjectActions {
   fn update_global_matrix(&self);
   fn update_matrix(&self);
   fn compose(&self) -> crate::math::Mat4;
+  fn decompose(&self);
   fn attach(&self, child: Box<dyn ObjectActions>);
+  fn apply_matrix(&self, matrix: crate::math::Mat4);
+  fn apply_quaternion(&self, matrix: crate::math::Quaternion);
 }
 
 macro_rules! define_support_objects {
