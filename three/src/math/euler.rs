@@ -1,17 +1,20 @@
 use super::Mat4;
 
 pub struct Euler {
-  x: f32,
-  y: f32,
-  z: f32,
+  /// angle in degrees
+  pub(super) x: f32,
+  pub(super) y: f32,
+  pub(super) z: f32,
 }
 
 impl Euler {
   pub fn make_rotate_matrix(&self) -> Mat4 {
-    Self::apply_eular_rotate_xyz(self.x, self.y, self.z)
+    let Self { x, y, z } = self;
+    Self::apply_eular_rotate_xyz(x.to_radians(), y.to_radians(), z.to_radians())
   }
 
   #[rustfmt::skip]
+  /// angle in radian
   pub fn apply_eular_rotate_y(angle: f32) -> Mat4 {
     let c = angle.cos();
     let s = angle.sin();
@@ -24,6 +27,7 @@ impl Euler {
   }
 
   #[rustfmt::skip]
+  /// angle in radian
   pub fn apply_eular_rotate_x(angle: f32) -> Mat4 {
     let c = angle.cos();
     let s = angle.sin();
@@ -36,6 +40,7 @@ impl Euler {
   }
 
   #[rustfmt::skip]
+  /// angle in radian
   pub fn apply_eular_rotate_z(angle: f32) -> Mat4 {
     let c = angle.cos();
     let s = angle.sin();
@@ -47,6 +52,7 @@ impl Euler {
     ])
   }
 
+  /// angle in radian
   pub fn apply_eular_rotate_xyz(x: f32, y: f32, z: f32) -> Mat4 {
     Self::apply_eular_rotate_z(z) * Self::apply_eular_rotate_y(y) * Self::apply_eular_rotate_x(x)
   }

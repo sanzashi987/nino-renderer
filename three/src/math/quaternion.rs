@@ -4,10 +4,10 @@ use super::{Mat4, Vec4};
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Quaternion {
   /// q = w + xi + yj + zk
-  w: f32,
-  x: f32,
-  y: f32,
-  z: f32,
+  pub(super) w: f32,
+  pub(super) x: f32,
+  pub(super) y: f32,
+  pub(super) z: f32,
 }
 
 impl Mul<f32> for Quaternion {
@@ -89,7 +89,7 @@ impl Quaternion {
     res
   }
 
-  pub fn update_from_rotate_matrix(&mut self, mat: Mat4) {
+  pub(super) fn update_from_rotate_matrix(&mut self, mat: Mat4) {
     let q: Self = mat.into();
     (self.w, self.x, self.y, self.z) = (q.w, q.x, q.y, q.z)
   }
