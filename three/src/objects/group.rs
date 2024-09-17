@@ -35,7 +35,7 @@ pub struct Group {
   matrix: std::cell::RefCell<crate::math::Mat4>,
   global_matrix: std::cell::RefCell<crate::math::Mat4>,
   position: std::cell::RefCell<crate::math::Vec3>,
-  rotation: std::cell::RefCell<crate::math::rotate::Rotation>,
+  rotation: std::cell::RefCell<crate::math::Rotation>,
   scale: std::cell::RefCell<crate::math::Vec3>,
   visible: bool,
   cast_shadow: bool,
@@ -52,6 +52,12 @@ impl ObjectActions for Group {
   }
   fn global_matrix(&self) -> crate::math::Mat4 {
     *self.global_matrix.borrow()
+  }
+
+  fn remove_parent(&self) {
+    let p = self.parent.borrow_mut();
+
+    if let Some(parent) = *p {}
   }
   fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>) {
     let mut p = self.parent.borrow_mut();
@@ -85,9 +91,27 @@ impl ObjectActions for Group {
     let orthogonal_basis =
       crate::math::Mat3::get_orthogonal_basis(eye, target, *crate::math::Vec3::y_axis());
 
-    let looking_at = target - *self.position.borrow();
+    let mut rotate_mat = crate::math::Mat4::identity();
 
-    // self.view_direction = back * -1.0;
+    for i in 0..2 {
+      let col = crate::math::Vec4::from_vec3(&orthogonal_basis.get_col(i), 0.0);
+      rotate_mat.set_col(i, col);
+    }
+
+    let mut q: crate::math::Quaternion = rotate_mat.into();
+
+    if let Some(parent) = *self.parent.borrow() {
+      let (_, r, _) = crate::math::decompose(parent.global_matrix());
+
+      let q_parent: crate::math::Quaternion = r.into();
+
+      q = q_parent.inverse() * q;
+    }
+
+    {
+      let mut rotate_ref = self.rotation.borrow_mut();
+      rotate_ref.set_quaternion(q);
+    }
   }
 
   fn update_global_matrix(&self) {
@@ -121,14 +145,7 @@ impl ObjectActions for Group {
   /// refer to http://facweb.cs.depaul.edu/andre/gam374/extractingTRS.pdf
   fn decompose(&self) {
     let mat = *self.matrix.borrow();
-    let scale = crate::math::extract_scale(mat);
-    let position = crate::math::extract_position(mat);
-
-    let mut rotate_matrix = crate::math::Mat4::zeros();
-    let scales = [scale.x, scale.y, scale.z];
-    for i in 0..2 {
-      rotate_matrix.set_col(i as usize, mat.get_col(i as usize) / scales[i]);
-    }
+    let (position, rotate_matrix, scale) = crate::math::decompose(mat);
 
     {
       self
@@ -164,19 +181,21 @@ impl ObjectActions for Group {
   fn attach(&self, child: Box<dyn ObjectActions>) {
     self.update_global_matrix();
 
-    let global_matrix_invert = self
+    let mut res = self
       .global_matrix
       .borrow()
       .inverse()
       .expect("expected a invertable global matrix");
 
-    let mut res = global_matrix_invert;
-
     if let Some(parent) = child.get_parent() {
       parent.update_global_matrix();
       res = res * parent.global_matrix();
     }
+
+    child.apply_matrix(res);
   }
+
+  fn remove(&self) {}
 }
 
 // impl Group {

@@ -11,4 +11,5 @@ pub mod euler;
 pub mod frustum;
 mod quaternion;
 pub use quaternion::*;
-pub mod rotate;
+mod rotate;
+pub use rotate::*;

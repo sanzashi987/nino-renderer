@@ -1,8 +1,5 @@
 use super::{Vec3, Vec4};
-use std::{
-  io::Seek,
-  ops::{Add, Div, Mul},
-};
+use std::ops::{Add, Div, Mul};
 
 macro_rules! define_mat {
   ($name:ident, $dim:expr) => {
@@ -214,6 +211,10 @@ impl Mul<Vec3> for Mat3 {
 }
 
 impl Mat3 {
+  pub fn get_col(&self, x: usize) -> Vec3 {
+    Vec3::new(self.get(x, 0), self.get(x, 1), self.get(x, 2))
+  }
+
   pub fn set_col(&mut self, x: usize, column: Vec3) {
     self.set(x, 0, column.x);
     self.set(x, 1, column.y);
@@ -330,4 +331,16 @@ pub fn extract_scale(mat: Mat4) -> Vec3 {
   }
 
   Vec3::new(sx, sy, sz)
+}
+
+pub fn decompose(mat: Mat4) -> (Vec3, Mat4, Vec3) {
+  let scale = extract_scale(mat);
+  let position = extract_position(mat);
+  let mut rotate_matrix = Mat4::zeros();
+  let scales = [scale.x, scale.y, scale.z];
+  for i in 0..2 {
+    rotate_matrix.set_col(i as usize, mat.get_col(i as usize) / scales[i]);
+  }
+
+  (position, rotate_matrix, scale)
 }

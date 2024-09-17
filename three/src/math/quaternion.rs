@@ -119,10 +119,25 @@ impl From<Mat4> for Quaternion {
     let (mut w, mut x, mut y, mut z) = (0.0, 0.0, 0.0, 0.0);
     if trace > 0.0 {
       let s = 0.5 / (trace + 1.0).sqrt();
+
       w = 0.25 / s;
       x = (m32 - m23) * s;
       y = (m13 - m31) * s;
       z = (m21 - m12) * s;
+    } else if m11 > m22 && m11 > m33 {
+      let s = 2.0 * (1.0 + m11 - m22 - m33).sqrt();
+
+      w = (m32 - m23) / s;
+      x = 0.25 * s;
+      y = (m12 + m21) / s;
+      z = (m13 + m31) / s;
+    } else if m22 > m33 {
+      let s = 2.0 * (1.0 + m22 - m11 - m33).sqrt();
+
+      w = (m13 - m31) / s;
+      x = (m12 + m21) / s;
+      y = 0.25 * s;
+      z = (m23 + m32) / s;
     } else {
       let s = 2.0 * (1.0 + m33 - m11 - m22).sqrt();
 
