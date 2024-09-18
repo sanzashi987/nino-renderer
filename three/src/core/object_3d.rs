@@ -18,7 +18,7 @@ pub trait ObjectActions {
   fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>);
   fn get_parent(&self) -> Option<std::rc::Rc<dyn ObjectActions>>;
   fn remove_parent(&self);
-  fn add(&self, val: Box<dyn ObjectActions>);
+  fn add(&self, val: std::rc::Rc<dyn ObjectActions>);
   fn look_at(&self, point: crate::math::Vec3);
   fn update_global_matrix(&self);
   fn update_matrix(&self);
@@ -28,6 +28,10 @@ pub trait ObjectActions {
   fn apply_matrix(&self, matrix: crate::math::Mat4);
   fn apply_quaternion(&self, matrix: crate::math::Quaternion);
   fn remove(&self);
+
+  fn global_scale(&self) -> crate::math::Vec3;
+  fn global_position(&self) -> crate::math::Vec3;
+  fn global_rotation(&self) -> crate::math::Rotation;
 }
 
 macro_rules! define_support_objects {

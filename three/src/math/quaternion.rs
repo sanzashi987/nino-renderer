@@ -1,7 +1,7 @@
 use std::ops::{Div, Mul};
 
 use super::{Mat4, Vec4};
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Default)]
 pub struct Quaternion {
   /// q = w + xi + yj + zk
   pub(super) w: f32,

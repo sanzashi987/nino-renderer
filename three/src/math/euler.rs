@@ -1,4 +1,4 @@
-use super::Mat4;
+use super::{Mat4, Vec4};
 
 pub struct Euler {
   /// angle in degrees
@@ -55,5 +55,38 @@ impl Euler {
   /// angle in radian
   pub fn apply_eular_rotate_xyz(x: f32, y: f32, z: f32) -> Mat4 {
     Self::apply_eular_rotate_z(z) * Self::apply_eular_rotate_y(y) * Self::apply_eular_rotate_x(x)
+  }
+}
+
+impl From<Mat4> for Euler {
+  fn from(rotate_matrix: Mat4) -> Self {
+    let Vec4 {
+      x: m11,
+      y: m21,
+      z: m31,
+      ..
+    } = rotate_matrix.get_col(0);
+    let Vec4 {
+      x: m12,
+      y: m22,
+      z: m32,
+      ..
+    } = rotate_matrix.get_col(1);
+    let Vec4 {
+      x: m13,
+      y: m23,
+      z: m33,
+      ..
+    } = rotate_matrix.get_col(2);
+
+    let y = m13.clamp(-1.0, 1.0).asin();
+
+    let (x, z) = if m13.abs() < 0.999999 {
+      ((-m23).atan2(m33), (-m12).atan2(m11))
+    } else {
+      (m32.atan2(m22), 0.0)
+    };
+
+    Self { x, y, z }
   }
 }

@@ -31,7 +31,7 @@ use renderer_macro_derive::object_3d;
 
 pub struct Group {
   parent: std::cell::RefCell<Option<std::rc::Rc<dyn ObjectActions>>>,
-  children: std::cell::RefCell<Vec<Box<dyn ObjectActions>>>,
+  children: std::cell::RefCell<Vec<std::rc::Rc<dyn ObjectActions>>>,
   matrix: std::cell::RefCell<crate::math::Mat4>,
   global_matrix: std::cell::RefCell<crate::math::Mat4>,
   position: std::cell::RefCell<crate::math::Vec3>,
@@ -43,6 +43,8 @@ pub struct Group {
   user_data: std::collections::HashMap<String, Box<dyn std::any::Any>>,
   is_camera: bool,
   is_light: bool,
+  _self_ref: std::rc::Weak<dyn ObjectActions>,
+  _uuid: String,
   // matrix_world_auto_update: bool,
 }
 
@@ -59,10 +61,12 @@ impl ObjectActions for Group {
 
     if let Some(parent) = *p {}
   }
+
   fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>) {
     let mut p = self.parent.borrow_mut();
     *p = Some(parent);
   }
+
   fn get_parent(&self) -> Option<std::rc::Rc<dyn ObjectActions>> {
     if let Some(p) = self.parent.borrow().as_ref() {
       Some(p.clone())
@@ -70,9 +74,15 @@ impl ObjectActions for Group {
       None
     }
   }
-  fn add(&self, val: Box<dyn ObjectActions>) {
+
+  fn add(&self, child: std::rc::Rc<dyn ObjectActions>) {
     let mut children = self.children.borrow_mut();
-    children.push(val);
+
+    if let Some(me) = self._self_ref.upgrade() {
+      child.remove_parent();
+      child.set_parent(me.clone());
+      children.push(child.clone());
+    }
   }
 
   fn look_at(&self, target: crate::math::Vec3) {
@@ -196,6 +206,28 @@ impl ObjectActions for Group {
   }
 
   fn remove(&self) {}
+
+  fn global_scale(&self) -> crate::math::Vec3 {
+    self.update_global_matrix();
+    let mat = self.global_matrix();
+    let (_, _, scale) = crate::math::decompose(mat);
+    scale
+  }
+
+  fn global_position(&self) -> crate::math::Vec3 {
+    self.update_global_matrix();
+    let mat = self.global_matrix();
+    let (position, _, _) = crate::math::decompose(mat);
+    position
+  }
+
+  fn global_rotation(&self) -> crate::math::Rotation {
+    self.update_global_matrix();
+    let mat = self.global_matrix();
+    let (_, rotation, _) = crate::math::decompose(mat);
+
+    rotation.into()
+  }
 }
 
 // impl Group {
