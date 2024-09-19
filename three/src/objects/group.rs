@@ -49,25 +49,7 @@ pub struct Group {
 }
 
 impl ObjectActions for Group {
-  fn matrix(&self) -> crate::math::Mat4 {
-    *self.matrix.borrow()
-  }
-  fn global_matrix(&self) -> crate::math::Mat4 {
-    *self.global_matrix.borrow()
-  }
-
-  fn remove_parent(&self) {
-    let p = self.parent.borrow_mut();
-
-    if let Some(parent) = *p {}
-  }
-
-  fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>) {
-    let mut p = self.parent.borrow_mut();
-    *p = Some(parent);
-  }
-
-  fn get_parent(&self) -> Option<std::rc::Rc<dyn ObjectActions>> {
+  fn parent(&self) -> Option<std::rc::Rc<dyn ObjectActions>> {
     if let Some(p) = self.parent.borrow().as_ref() {
       Some(p.clone())
     } else {
@@ -75,14 +57,64 @@ impl ObjectActions for Group {
     }
   }
 
+  fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>) {
+    let mut p = self.parent.borrow_mut();
+    *p = Some(parent);
+  }
+
+  fn remove_from_parent(&self) {
+    let mut p = self.parent.borrow_mut();
+
+    if let Some(parent) = *p {
+      parent.remove(&self._uuid);
+    }
+
+    *p = None;
+  }
+
+  fn remove(&self, uuid: &str) {
+    let mut children = self.children.borrow_mut();
+
+    if let Some(index) = children.iter().position(|x| (*x).uuid() == uuid) {
+      children.remove(index);
+    }
+  }
+
   fn add(&self, child: std::rc::Rc<dyn ObjectActions>) {
     let mut children = self.children.borrow_mut();
 
     if let Some(me) = self._self_ref.upgrade() {
-      child.remove_parent();
+      child.remove_from_parent();
       child.set_parent(me.clone());
       children.push(child.clone());
     }
+  }
+
+  fn clear(&self) {
+    let mut children = self.children.borrow_mut();
+
+    for child in *children {
+      child.remove_from_parent();
+    }
+
+    *children = vec![];
+  }
+
+  fn attach(&self, child: Box<dyn ObjectActions>) {
+    self.update_global_matrix();
+
+    let mut res = self
+      .global_matrix
+      .borrow()
+      .inverse()
+      .expect("expected a invertable global matrix");
+
+    if let Some(parent) = child.parent() {
+      parent.update_global_matrix();
+      res = res * parent.global_matrix();
+    }
+
+    child.apply_matrix(res);
   }
 
   fn look_at(&self, target: crate::math::Vec3) {
@@ -122,6 +154,14 @@ impl ObjectActions for Group {
       let mut rotate_ref = self.rotation.borrow_mut();
       rotate_ref.set_quaternion(q);
     }
+  }
+
+  fn matrix(&self) -> crate::math::Mat4 {
+    *self.matrix.borrow()
+  }
+
+  fn global_matrix(&self) -> crate::math::Mat4 {
+    *self.global_matrix.borrow()
   }
 
   fn update_global_matrix(&self) {
@@ -176,9 +216,14 @@ impl ObjectActions for Group {
 
   fn apply_matrix(&self, matrix: crate::math::Mat4) {
     self.update_matrix();
-    let next_matrix = matrix * *self.matrix.borrow();
-    let mut matrix_ref = self.matrix.borrow_mut();
-    *matrix_ref = next_matrix;
+    let mut next_matrix = crate::math::Mat4::zeros();
+    {
+      next_matrix = matrix * *self.matrix.borrow();
+    }
+    {
+      let mut matrix_ref = self.matrix.borrow_mut();
+      *matrix_ref = next_matrix;
+    }
     self.decompose();
   }
 
@@ -188,24 +233,42 @@ impl ObjectActions for Group {
     rotation_ref.set_quaternion(next_q);
   }
 
-  fn attach(&self, child: Box<dyn ObjectActions>) {
-    self.update_global_matrix();
-
-    let mut res = self
-      .global_matrix
-      .borrow()
-      .inverse()
-      .expect("expected a invertable global matrix");
-
-    if let Some(parent) = child.get_parent() {
-      parent.update_global_matrix();
-      res = res * parent.global_matrix();
-    }
-
-    child.apply_matrix(res);
+  fn rotate_on_world_axis(&self, axis: crate::math::Vec3, angle: f32) {
+    let mut rotate = self.rotation.borrow_mut();
+    // apply the rotation first(before any rotation occurs)
+    // means the rotate axis is defined in the world coordinate
+    rotate.quaternion_rotate(axis, angle, true)
   }
 
-  fn remove(&self) {}
+  fn rotate_on_axis(&self, axis: crate::math::Vec3, angle: f32) {
+    let mut rotate = self.rotation.borrow_mut();
+    rotate.quaternion_rotate(axis, angle, false)
+  }
+
+  fn rotate_x(&self, angle: f32) {
+    self.rotate_on_axis(*crate::math::Vec3::x_axis(), angle);
+  }
+
+  fn rotate_y(&self, angle: f32) {
+    self.rotate_on_axis(*crate::math::Vec3::y_axis(), angle);
+  }
+
+  fn rotate_z(&self, angle: f32) {
+    self.rotate_on_axis(*crate::math::Vec3::z_axis(), angle);
+  }
+
+  fn translate_on_axis(&self, axis: crate::math::Vec3, distance: f32) {
+    let q = self.rotation.borrow().quaternion;
+    let crate::math::Vec3 {
+      x: vx,
+      y: vy,
+      z: vz,
+    } = axis;
+  }
+
+  fn translate_x(&self, distance: f32) {}
+  fn translate_y(&self, distance: f32) {}
+  fn translate_z(&self, distance: f32) {}
 
   fn global_scale(&self) -> crate::math::Vec3 {
     self.update_global_matrix();
@@ -227,6 +290,10 @@ impl ObjectActions for Group {
     let (_, rotation, _) = crate::math::decompose(mat);
 
     rotation.into()
+  }
+
+  fn uuid(&self) -> &str {
+    &self._uuid
   }
 }
 

@@ -13,25 +13,41 @@ impl Default for ObjectType {
 }
 
 pub trait ObjectActions {
+  fn parent(&self) -> Option<std::rc::Rc<dyn ObjectActions>>;
+  fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>);
+  fn remove_from_parent(&self);
+  fn remove(&self, uuid: &str);
+  fn add(&self, val: std::rc::Rc<dyn ObjectActions>);
+  fn clear(&self);
+  fn attach(&self, child: Box<dyn ObjectActions>);
+
+  fn look_at(&self, point: crate::math::Vec3);
   fn matrix(&self) -> crate::math::Mat4;
   fn global_matrix(&self) -> crate::math::Mat4;
-  fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>);
-  fn get_parent(&self) -> Option<std::rc::Rc<dyn ObjectActions>>;
-  fn remove_parent(&self);
-  fn add(&self, val: std::rc::Rc<dyn ObjectActions>);
-  fn look_at(&self, point: crate::math::Vec3);
   fn update_global_matrix(&self);
   fn update_matrix(&self);
   fn compose(&self) -> crate::math::Mat4;
   fn decompose(&self);
-  fn attach(&self, child: Box<dyn ObjectActions>);
+
   fn apply_matrix(&self, matrix: crate::math::Mat4);
   fn apply_quaternion(&self, matrix: crate::math::Quaternion);
-  fn remove(&self);
+
+  fn rotate_on_world_axis(&self, axis: crate::math::Vec3, angle: f32);
+  fn rotate_on_axis(&self, axis: crate::math::Vec3, angle: f32);
+  fn rotate_x(&self, angle: f32);
+  fn rotate_y(&self, angle: f32);
+  fn rotate_z(&self, angle: f32);
+
+  fn translate_on_axis(&self, axis: crate::math::Vec3, distance: f32);
+  fn translate_x(&self, distance: f32);
+  fn translate_y(&self, distance: f32);
+  fn translate_z(&self, distance: f32);
 
   fn global_scale(&self) -> crate::math::Vec3;
   fn global_position(&self) -> crate::math::Vec3;
   fn global_rotation(&self) -> crate::math::Rotation;
+
+  fn uuid(&self) -> &str;
 }
 
 macro_rules! define_support_objects {
@@ -64,8 +80,14 @@ macro_rules! define_support_objects {
   };
 }
 
+// fn a() {
+//   let uid = uuid::Uuid::new_v4().to_string();
+// }
+
 macro_rules! with_default_fields {
-  ($($val:ident),*) => {
+  ($($val:ident),*) => {{
+
+    let uid = uuid::Uuid::new_v4().to_string();
     Self {
       $($val,)*
       parent: Default::default(),
@@ -81,7 +103,8 @@ macro_rules! with_default_fields {
       user_data: Default::default(),
       is_camera: Default::default(),
       is_light: Default::default(),
-    }
+      _uuid:uid,
+    }}
   };
 }
 

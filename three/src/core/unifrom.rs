@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::math::{Mat4, Vec2, Vec3, Vec4};
 
-use super::marco::{define_gl_type_enum, Extract};
+use super::marco::define_gl_type_enum;
 
 trait SetGlType<T> {
   fn set_attribute(&mut self, key: &str, val: T);
@@ -49,7 +49,7 @@ impl Uniform {
 
 macro_rules! u {
   ($store:ident, $type:ty, $key:tt,!) => {
-    crate::next::core::Extract::<$type>::extract(
+    crate::core::Extract::<$type>::extract(
       ($store
         .get($key)
         .expect(&format!("error from getting {} from uniforms", $key))),

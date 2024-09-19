@@ -1,4 +1,4 @@
-use super::{euler::Euler, quaternion::Quaternion, Mat4};
+use super::{euler::Euler, quaternion::Quaternion, Mat4, Vec3};
 
 pub struct Rotation {
   pub quaternion: Quaternion,
@@ -19,6 +19,16 @@ impl Rotation {
   pub fn set_euler(&mut self, e: Euler) {
     self.euler = e;
     self.update_to_quaternion();
+  }
+
+  pub fn quaternion_rotate(&mut self, axis: Vec3, angle: f32, premultiply: bool) {
+    let q = Quaternion::from_axis_angle(axis, angle);
+    self.quaternion = if premultiply {
+      q * self.quaternion
+    } else {
+      self.quaternion * q
+    };
+    self.update_to_euler();
   }
 
   fn update_to_euler(&mut self) {

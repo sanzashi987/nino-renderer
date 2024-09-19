@@ -1,6 +1,6 @@
 use std::ops::{Div, Mul};
 
-use super::{Mat4, Vec4};
+use super::{Mat4, Vec3, Vec4};
 #[derive(Debug, PartialEq, Clone, Copy, Default)]
 pub struct Quaternion {
   /// q = w + xi + yj + zk
@@ -41,6 +41,19 @@ impl Div<f32> for Quaternion {
 impl Quaternion {
   pub fn new(w: f32, x: f32, y: f32, z: f32) -> Self {
     Self { w, x, y, z }
+  }
+
+  // angle in radian
+  pub fn from_axis_angle(axis: Vec3, angle: f32) -> Self {
+    let axis = axis.normalize();
+    let half_angle = angle / 2.0;
+    let s = half_angle.sin();
+    Self {
+      w: half_angle.cos(),
+      x: axis.x * s,
+      y: axis.y * s,
+      z: axis.z * s,
+    }
   }
 
   pub fn length_square(&self) -> f32 {
