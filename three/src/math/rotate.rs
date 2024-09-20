@@ -1,5 +1,5 @@
 use super::{euler::Euler, quaternion::Quaternion, Mat4, Vec3};
-
+#[derive(Debug, Default)]
 pub struct Rotation {
   pub quaternion: Quaternion,
   pub euler: Euler,

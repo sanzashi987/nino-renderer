@@ -1,5 +1,5 @@
 use super::{Mat4, Vec4};
-
+#[derive(Debug, Default)]
 pub struct Euler {
   /// angle in degrees
   pub(super) x: f32,
