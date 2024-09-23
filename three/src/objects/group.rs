@@ -1,4 +1,4 @@
-use super::super::core::object_3d::ObjectActions;
+use crate::core::object_3d::ObjectActions;
 
 use renderer_macro_derive::object_3d;
 
@@ -43,7 +43,7 @@ pub struct Group {
   user_data: std::collections::HashMap<String, Box<dyn std::any::Any>>,
   is_camera: bool,
   is_light: bool,
-  _self_ref: std::rc::Weak<dyn ObjectActions>,
+  _self_ref: Option<std::rc::Weak<dyn ObjectActions>>,
   _uuid: String,
   // matrix_world_auto_update: bool,
 }
@@ -83,10 +83,12 @@ impl ObjectActions for Group {
   fn add(&self, child: std::rc::Rc<dyn ObjectActions>) {
     let mut children = self.children.borrow_mut();
 
-    if let Some(me) = self._self_ref.upgrade() {
-      child.remove_from_parent();
-      child.set_parent(me.clone());
-      children.push(child.clone());
+    if let Some(self_pointer) = self._self_ref {
+      if let Some(me) = self_pointer.upgrade() {
+        child.remove_from_parent();
+        child.set_parent(me.clone());
+        children.push(child.clone());
+      }
     }
   }
 
@@ -297,8 +299,30 @@ impl ObjectActions for Group {
   }
 }
 
-// impl Group {
-//   pub fn new() -> Self {
-//     with_default_fields![]
-//   }
-// }
+impl Group {
+  pub fn new() -> std::rc::Rc<Self> {
+    let mut this = std::rc::Rc::new(Self {
+      parent: Default::default(),
+      children: Default::default(),
+      matrix: Default::default(),
+      global_matrix: Default::default(),
+      position: Default::default(),
+      rotation: Default::default(),
+      scale: Default::default(),
+      visible: Default::default(),
+      cast_shadow: Default::default(),
+      receive_shadow: Default::default(),
+      user_data: Default::default(),
+      is_camera: Default::default(),
+      is_light: Default::default(),
+      _uuid: uuid::Uuid::new_v4().to_string(),
+      _self_ref: None,
+    });
+
+    let mut that: std::rc::Rc<dyn ObjectActions> = this.clone();
+
+    this._self_ref = Some(std::rc::Rc::downgrade(&that));
+
+    this
+  }
+}

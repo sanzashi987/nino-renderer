@@ -8,8 +8,8 @@ use super::{
 #[object_3d(ObjectActions)]
 pub struct Scene {}
 
-impl Scene {
-  pub fn new() -> Self {
-    with_default_fields![]
-  }
-}
+// impl Scene {
+//   pub fn new() -> Self {
+//     with_default_fields![]
+//   }
+// }

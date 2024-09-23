@@ -1,7 +1,12 @@
+use std::{borrow::Borrow, rc::Rc};
+
 use super::super::cameras::camera::Camera;
 use super::super::objects::scene::Scene;
 use super::viewport::Viewport;
-use crate::data_array::{ColorBuffer, DepthBuffer};
+use crate::{
+  core::object_3d::ObjectActions,
+  math::data_array::{ColorBuffer, DepthBuffer},
+};
 pub struct GlRenderer {
   viewport: Viewport,
   color: ColorBuffer,
@@ -32,9 +37,21 @@ impl GlRenderer {
     std::mem::replace(&mut self.color, ColorBuffer::new(w, h))
   }
 
-  pub fn render(&mut self, scene: Scene, camera: impl Camera) -> ColorBuffer {
+  pub fn render(&mut self, scene: Scene, camera: impl Camera + ObjectActions) -> ColorBuffer {
+    scene.update_global_matrix();
+    camera.update_global_matrix();
+
+    let project_screen_matrix = camera.projection_matrix() * camera.global_matrix_inverse();
+    // let frustum =
+
     self.take_color()
   }
 }
 
-fn recursive_render(color: &mut ColorBuffer) {}
+fn recursive_render(
+  object: Rc<dyn ObjectActions>,
+  camera: impl Camera + ObjectActions,
+  group_order: i32,
+  sort: bool,
+) {
+}

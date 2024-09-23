@@ -61,3 +61,9 @@ impl Frustum {
       || pt.z <= -self.far)
   }
 }
+
+// impl From<Mat4> for Frustum {
+//   fn from(value: Mat4) -> Self {
+//     todo!()
+//   }
+// }
