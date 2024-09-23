@@ -37,9 +37,9 @@ pub struct Group {
   position: std::cell::RefCell<crate::math::Vec3>,
   rotation: std::cell::RefCell<crate::math::Rotation>,
   scale: std::cell::RefCell<crate::math::Vec3>,
-  visible: bool,
   cast_shadow: bool,
   receive_shadow: bool,
+  visible: std::cell::RefCell<bool>,
   user_data: std::collections::HashMap<String, Box<dyn std::any::Any>>,
   is_camera: bool,
   is_light: bool,
@@ -292,6 +292,10 @@ impl ObjectActions for Group {
     let (_, rotation, _) = crate::math::decompose(mat);
 
     rotation.into()
+  }
+
+  fn visible(&self) -> bool {
+    *self.visible.borrow()
   }
 
   fn uuid(&self) -> &str {

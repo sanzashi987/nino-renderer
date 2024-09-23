@@ -54,4 +54,7 @@ fn recursive_render(
   group_order: i32,
   sort: bool,
 ) {
+  if !object.visible() {
+    return;
+  }
 }

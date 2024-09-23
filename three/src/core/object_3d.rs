@@ -47,6 +47,8 @@ pub trait ObjectActions {
   fn global_position(&self) -> crate::math::Vec3;
   fn global_rotation(&self) -> crate::math::Rotation;
 
+  fn visible(&self) -> bool;
+
   fn uuid(&self) -> &str;
 }
 
