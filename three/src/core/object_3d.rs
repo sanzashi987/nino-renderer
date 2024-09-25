@@ -20,6 +20,7 @@ pub trait ObjectActions {
   fn add(&self, val: std::rc::Rc<dyn ObjectActions>);
   fn clear(&self);
   fn attach(&self, child: Box<dyn ObjectActions>);
+  fn children(&self) -> &Vec<std::rc::Rc<dyn ObjectActions>>;
 
   fn look_at(&self, point: crate::math::Vec3);
   fn matrix(&self) -> crate::math::Mat4;
@@ -46,6 +47,9 @@ pub trait ObjectActions {
   fn global_scale(&self) -> crate::math::Vec3;
   fn global_position(&self) -> crate::math::Vec3;
   fn global_rotation(&self) -> crate::math::Rotation;
+
+  fn layers(&self) -> &crate::core::layer::Layers;
+  fn test_layers(&self, layers: &crate::core::layer::Layers) -> bool;
 
   fn visible(&self) -> bool;
 
@@ -100,6 +104,7 @@ macro_rules! with_default_fields {
       rotation: Default::default(),
       scale: Default::default(),
       visible: Default::default(),
+      layers: Default::default(),
       cast_shadow: Default::default(),
       receive_shadow: Default::default(),
       user_data: Default::default(),

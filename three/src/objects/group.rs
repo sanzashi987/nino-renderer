@@ -37,6 +37,7 @@ pub struct Group {
   position: std::cell::RefCell<crate::math::Vec3>,
   rotation: std::cell::RefCell<crate::math::Rotation>,
   scale: std::cell::RefCell<crate::math::Vec3>,
+  layers: std::cell::RefCell<crate::core::layer::Layers>,
   cast_shadow: bool,
   receive_shadow: bool,
   visible: std::cell::RefCell<bool>,
@@ -117,6 +118,10 @@ impl ObjectActions for Group {
     }
 
     child.apply_matrix(res);
+  }
+
+  fn children(&self) -> &Vec<std::rc::Rc<dyn ObjectActions>> {
+    &self.children.borrow()
   }
 
   fn look_at(&self, target: crate::math::Vec3) {
@@ -294,6 +299,14 @@ impl ObjectActions for Group {
     rotation.into()
   }
 
+  fn test_layers(&self, layers: &crate::core::layer::Layers) -> bool {
+    self.layers.borrow().test(layers)
+  }
+
+  fn layers(&self) -> &crate::core::layer::Layers {
+    &self.layers.borrow()
+  }
+
   fn visible(&self) -> bool {
     *self.visible.borrow()
   }
@@ -314,6 +327,7 @@ impl Group {
       rotation: Default::default(),
       scale: Default::default(),
       visible: Default::default(),
+      layers: Default::default(),
       cast_shadow: Default::default(),
       receive_shadow: Default::default(),
       user_data: Default::default(),

@@ -29,11 +29,11 @@ impl Layers {
     self.mask &= !(1 << channel);
   }
 
-  pub fn disableAll(&mut self) {
+  pub fn disable_all(&mut self) {
     self.mask = 0;
   }
 
-  pub fn test(&self, layers: Self) -> bool {
+  pub fn test(&self, layers: &Self) -> bool {
     self.mask & layers.mask != 0
   }
 

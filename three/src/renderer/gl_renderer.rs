@@ -48,7 +48,7 @@ impl GlRenderer {
   }
 }
 
-fn recursive_render(
+fn parse_object(
   object: Rc<dyn ObjectActions>,
   camera: impl Camera + ObjectActions,
   group_order: i32,
@@ -56,5 +56,14 @@ fn recursive_render(
 ) {
   if !object.visible() {
     return;
+  }
+
+  let visible = object.test_layers(camera.layers());
+  if visible {}
+
+  let children = object.children();
+
+  for child in children {
+    parse_object(child.clone(), camera, group_order, sort);
   }
 }

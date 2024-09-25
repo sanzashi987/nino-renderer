@@ -3,12 +3,14 @@ use std::collections::HashMap;
 
 pub struct BufferGeometry {
   attributes: Attribute,
+  uuid: String,
 }
 
 impl Default for BufferGeometry {
   fn default() -> Self {
     Self {
       attributes: Default::default(),
+      uuid: uuid::Uuid::new_v4().to_string(),
     }
   }
 }
