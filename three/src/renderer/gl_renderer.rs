@@ -67,3 +67,12 @@ fn parse_object(
     parse_object(child.clone(), camera, group_order, sort);
   }
 }
+
+fn render_objects(object: Rc<dyn ObjectActions>, camera: impl Camera + ObjectActions) {}
+
+fn render_object(
+  object: Rc<dyn ObjectActions>,
+  scene: &Scene,
+  camera: impl Camera + ObjectActions,
+) {
+}

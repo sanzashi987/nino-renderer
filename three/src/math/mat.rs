@@ -344,3 +344,7 @@ pub fn decompose(mat: Mat4) -> (Vec3, Mat4, Vec3) {
 
   (position, rotate_matrix, scale)
 }
+
+pub fn extract_normal_matrix(mv_matrix: Mat4) -> Mat3 {
+  
+}
