@@ -1,4 +1,4 @@
-use crate::core::object_3d::ObjectActions;
+use crate::core::object_3d::{with_default_fields, ObjectActions};
 
 use renderer_macro_derive::object_3d;
 
@@ -42,8 +42,7 @@ pub struct Group {
   receive_shadow: bool,
   visible: std::cell::RefCell<bool>,
   user_data: std::collections::HashMap<String, Box<dyn std::any::Any>>,
-  is_camera: bool,
-  is_light: bool,
+  object_type: crate::core::object_3d::ObjectType,
   _self_ref: Option<std::rc::Weak<dyn ObjectActions>>,
   _uuid: String,
   // matrix_world_auto_update: bool,
@@ -130,7 +129,10 @@ impl ObjectActions for Group {
 
     let position = crate::math::extract_position(*self.global_matrix.borrow());
 
-    let (eye, target) = if self.is_camera || self.is_light {
+    let is_revert_z = self.object_type == crate::core::object_3d::ObjectType::Camera
+      || self.object_type == crate::core::object_3d::ObjectType::Light;
+
+    let (eye, target) = if is_revert_z {
       // camera default looking back along -z;
       (position, target)
     } else {
@@ -311,6 +313,10 @@ impl ObjectActions for Group {
     *self.visible.borrow()
   }
 
+  fn get_type(&self) -> crate::core::object_3d::ObjectType {
+    self.object_type
+  }
+
   fn uuid(&self) -> &str {
     &self._uuid
   }
@@ -318,29 +324,6 @@ impl ObjectActions for Group {
 
 impl Group {
   pub fn new() -> std::rc::Rc<Self> {
-    let mut this = std::rc::Rc::new(Self {
-      parent: Default::default(),
-      children: Default::default(),
-      matrix: Default::default(),
-      global_matrix: Default::default(),
-      position: Default::default(),
-      rotation: Default::default(),
-      scale: Default::default(),
-      visible: Default::default(),
-      layers: Default::default(),
-      cast_shadow: Default::default(),
-      receive_shadow: Default::default(),
-      user_data: Default::default(),
-      is_camera: Default::default(),
-      is_light: Default::default(),
-      _uuid: uuid::Uuid::new_v4().to_string(),
-      _self_ref: None,
-    });
-
-    let mut that: std::rc::Rc<dyn ObjectActions> = this.clone();
-
-    this._self_ref = Some(std::rc::Rc::downgrade(&that));
-
-    this
+    with_default_fields!(Group;)
   }
 }

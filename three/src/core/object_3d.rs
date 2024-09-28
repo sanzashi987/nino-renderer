@@ -1,9 +1,11 @@
+#[derive(Debug, PartialEq)]
 pub enum ObjectType {
   Light,
   Mesh,
   Scene,
   Object3D,
   Camera,
+  Group,
 }
 
 impl Default for ObjectType {
@@ -11,7 +13,6 @@ impl Default for ObjectType {
     Self::Object3D
   }
 }
-
 pub trait ObjectActions {
   fn parent(&self) -> Option<std::rc::Rc<dyn ObjectActions>>;
   fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>);
@@ -52,6 +53,7 @@ pub trait ObjectActions {
   fn test_layers(&self, layers: &crate::core::layer::Layers) -> bool;
 
   fn visible(&self) -> bool;
+  fn get_type(&self) -> ObjectType;
 
   fn uuid(&self) -> &str;
 }
@@ -91,10 +93,10 @@ macro_rules! define_support_objects {
 // }
 
 macro_rules! with_default_fields {
-  ($($val:ident),*) => {{
+  ($type:tt;$($val:ident),*) => {{
 
     let uid = uuid::Uuid::new_v4().to_string();
-    Self {
+    let mut this = std::rc::Rc::new(Self {
       $($val,)*
       parent: Default::default(),
       children: Default::default(),
@@ -106,13 +108,19 @@ macro_rules! with_default_fields {
       visible: Default::default(),
       layers: Default::default(),
       cast_shadow: Default::default(),
+      object_type:crate::core::object_3d::ObjectType::$type,
       receive_shadow: Default::default(),
       user_data: Default::default(),
-      is_camera: Default::default(),
-      is_light: Default::default(),
-      _uuid:uid,
-    }}
-  };
+      _uuid: uuid::Uuid::new_v4().to_string(),
+      _self_ref: None,
+    });
+
+    let mut that: std::rc::Rc<dyn crate::core::object_3d::ObjectActions> = this.clone();
+
+    this._self_ref = Some(std::rc::Rc::downgrade(&that));
+
+    this
+  }};
 }
 
 pub(crate) use define_support_objects;

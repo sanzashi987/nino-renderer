@@ -1,10 +1,10 @@
 use std::{borrow::Borrow, rc::Rc};
 
-use super::super::cameras::camera::Camera;
 use super::super::objects::scene::Scene;
 use super::viewport::Viewport;
+use super::{super::cameras::camera::Camera, render_states::RenderStates};
 use crate::{
-  core::object_3d::ObjectActions,
+  core::object_3d::{ObjectActions, ObjectType},
   math::{
     data_array::{ColorBuffer, DepthBuffer},
     extract_normal_matrix,
@@ -14,6 +14,7 @@ pub struct GlRenderer {
   viewport: Viewport,
   color: ColorBuffer,
   depth: DepthBuffer,
+  render_states: RenderStates,
 }
 
 impl GlRenderer {
@@ -22,6 +23,7 @@ impl GlRenderer {
       viewport: Default::default(),
       color: Default::default(),
       depth: Default::default(),
+      render_states: Default::default(),
     }
   }
 
@@ -49,25 +51,30 @@ impl GlRenderer {
 
     self.take_color()
   }
-}
 
-fn parse_object(
-  object: Rc<dyn ObjectActions>,
-  camera: impl Camera + ObjectActions,
-  group_order: i32,
-  sort: bool,
-) {
-  if !object.visible() {
-    return;
-  }
+  fn parse_object(
+    &mut self,
+    object: Rc<dyn ObjectActions>,
+    camera: impl Camera + ObjectActions,
+    group_order: i32,
+    sort: bool,
+  ) {
+    if !object.visible() {
+      return;
+    }
 
-  let visible = object.test_layers(camera.layers());
-  if visible {}
+    let visible = object.test_layers(camera.layers());
+    if visible {
+      if object.get_type() == ObjectType::Light {
+        self.render_states.push_light(object.clone());
+      }
+    }
 
-  let children = object.children();
+    let children = object.children();
 
-  for child in children {
-    parse_object(child.clone(), camera, group_order, sort);
+    for child in children {
+      self.parse_object(child.clone(), camera, group_order, sort);
+    }
   }
 }
 
@@ -80,5 +87,4 @@ fn render_object(
 ) {
   let mv = camera.global_matrix() * object.global_matrix();
   let normal_matrix = extract_normal_matrix(mv);
-  
 }
