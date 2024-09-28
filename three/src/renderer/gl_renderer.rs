@@ -5,7 +5,10 @@ use super::super::objects::scene::Scene;
 use super::viewport::Viewport;
 use crate::{
   core::object_3d::ObjectActions,
-  math::data_array::{ColorBuffer, DepthBuffer},
+  math::{
+    data_array::{ColorBuffer, DepthBuffer},
+    extract_normal_matrix,
+  },
 };
 pub struct GlRenderer {
   viewport: Viewport,
@@ -75,4 +78,7 @@ fn render_object(
   scene: &Scene,
   camera: impl Camera + ObjectActions,
 ) {
+  let mv = camera.global_matrix() * object.global_matrix();
+  let normal_matrix = extract_normal_matrix(mv);
+  
 }
