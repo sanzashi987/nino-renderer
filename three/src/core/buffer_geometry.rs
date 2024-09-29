@@ -17,13 +17,18 @@ impl Default for BufferGeometry {
 
 pub type Attribute = HashMap<String, TypeBufferEnum>;
 
-impl BufferGeometry {
-  pub fn get_attribute(&self) -> &Attribute {
+pub trait GeometryActions {
+  fn get_attribute(&self) -> &Attribute;
+  fn set_attribute(&mut self, key: &str, val: TypeBufferEnum);
+}
+
+impl GeometryActions for BufferGeometry {
+  fn get_attribute(&self) -> &Attribute {
     // let res = self.attributes.get("").map_or(None, |v| v.extract());
     &self.attributes
   }
 
-  pub fn set_attribute(&mut self, key: &str, val: TypeBufferEnum) {
+  fn set_attribute(&mut self, key: &str, val: TypeBufferEnum) {
     self.attributes.insert(key.to_string(), val);
   }
 }

@@ -6,6 +6,8 @@ pub enum ObjectType {
   Object3D,
   Camera,
   Group,
+  Line,
+  Point,
 }
 
 impl Default for ObjectType {

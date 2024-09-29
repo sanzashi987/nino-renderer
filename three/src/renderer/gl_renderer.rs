@@ -65,8 +65,19 @@ impl GlRenderer {
 
     let visible = object.test_layers(camera.layers());
     if visible {
-      if object.get_type() == ObjectType::Light {
-        self.render_states.push_light(object.clone());
+      let object_type = object.get_type();
+
+      match object.get_type() {
+        ObjectType::Light => {
+          self.render_states.push_light(object.clone());
+        }
+        ObjectType::Scene => todo!(),
+        ObjectType::Object3D => todo!(),
+        ObjectType::Camera => todo!(),
+        ObjectType::Group => {}
+        ObjectType::Mesh | ObjectType::Line | ObjectType::Point => {
+          
+        }
       }
     }
 

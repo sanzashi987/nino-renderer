@@ -1,11 +1,11 @@
 use crate::core::unifrom::u;
 use crate::math::{Mat4, Vec3, Vec4};
 
-use super::super::core::buffer_attribute::a;
-use super::super::core::buffer_geometry::Attribute;
+use crate::core::buffer_attribute::a;
+use crate::core::buffer_geometry::Attribute;
 
-use super::super::core::unifrom::Uniform;
-use super::super::core::varying::Varying;
+use crate::core::unifrom::Uniform;
+use crate::core::varying::Varying;
 use std::fmt::Debug;
 
 macro_rules! define_gl_obj {
@@ -48,6 +48,11 @@ type FragmentShader = Box<dyn Fn(&Uniform, &Varying, &mut GlPerFragment) -> bool
 pub struct Shader {
   pub vertex: VertexShader,
   pub fragment: FragmentShader,
+}
+
+pub trait DefineShader {
+  fn vertex(&self) -> VertexShader;
+  fn fragment(&self) -> FragmentShader;
 }
 
 impl Debug for Shader {

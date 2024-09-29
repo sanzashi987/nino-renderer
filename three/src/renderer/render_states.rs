@@ -1,6 +1,9 @@
 use std::rc::Rc;
 
-use crate::core::object_3d::ObjectActions;
+use crate::{
+  core::{buffer_geometry::GeometryActions, object_3d::ObjectActions},
+  material::material::ConvertUniform,
+};
 #[derive(Default)]
 pub struct RenderStates {
   lights: Vec<Rc<dyn ObjectActions>>,
@@ -16,3 +19,7 @@ impl RenderStates {
     self.shadows.push(light)
   }
 }
+
+trait EntityList: ObjectActions + GeometryActions + ConvertUniform {}
+
+pub type RenderList = Vec<Rc<dyn EntityList>>;
