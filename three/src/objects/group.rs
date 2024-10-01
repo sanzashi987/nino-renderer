@@ -43,7 +43,7 @@ pub struct Group {
   visible: std::cell::RefCell<bool>,
   user_data: std::collections::HashMap<String, Box<dyn std::any::Any>>,
   object_type: crate::core::object_3d::ObjectType,
-  _self_ref: Option<std::rc::Weak<dyn ObjectActions>>,
+  _self_ref: std::cell::OnceCell<std::rc::Weak<dyn ObjectActions>>,
   _uuid: String,
   // matrix_world_auto_update: bool,
 }
@@ -65,7 +65,7 @@ impl ObjectActions for Group {
   fn remove_from_parent(&self) {
     let mut p = self.parent.borrow_mut();
 
-    if let Some(parent) = *p {
+    if let Some(parent) = p.as_ref() {
       parent.remove(&self._uuid);
     }
 
@@ -83,7 +83,7 @@ impl ObjectActions for Group {
   fn add(&self, child: std::rc::Rc<dyn ObjectActions>) {
     let mut children = self.children.borrow_mut();
 
-    if let Some(self_pointer) = self._self_ref {
+    if let Some(self_pointer) = self._self_ref.get() {
       if let Some(me) = self_pointer.upgrade() {
         child.remove_from_parent();
         child.set_parent(me.clone());
@@ -93,11 +93,13 @@ impl ObjectActions for Group {
   }
 
   fn clear(&self) {
-    let mut children = self.children.borrow_mut();
-
-    for child in *children {
-      child.remove_from_parent();
+    {
+      let children = self.children.borrow();
+      for child in children.iter() {
+        child.remove_from_parent();
+      }
     }
+    let mut children = self.children.borrow_mut();
 
     *children = vec![];
   }
@@ -119,8 +121,8 @@ impl ObjectActions for Group {
     child.apply_matrix(res);
   }
 
-  fn children(&self) -> &Vec<std::rc::Rc<dyn ObjectActions>> {
-    &self.children.borrow()
+  fn children(&self) -> std::cell::Ref<'_, Vec<std::rc::Rc<dyn ObjectActions>>> {
+    self.children.borrow()
   }
 
   fn look_at(&self, target: crate::math::Vec3) {
@@ -151,7 +153,7 @@ impl ObjectActions for Group {
 
     let mut q: crate::math::Quaternion = rotate_mat.into();
 
-    if let Some(parent) = *self.parent.borrow() {
+    if let Some(parent) = self.parent.borrow().as_ref() {
       let (_, r, _) = crate::math::decompose(parent.global_matrix());
 
       let q_parent: crate::math::Quaternion = r.into();
@@ -305,8 +307,8 @@ impl ObjectActions for Group {
     self.layers.borrow().test(layers)
   }
 
-  fn layers(&self) -> &crate::core::layer::Layers {
-    &self.layers.borrow()
+  fn layers(&self) -> std::cell::Ref<crate::core::layer::Layers> {
+    self.layers.borrow()
   }
 
   fn visible(&self) -> bool {
@@ -324,6 +326,30 @@ impl ObjectActions for Group {
 
 impl Group {
   pub fn new() -> std::rc::Rc<Self> {
-    with_default_fields!(Group;)
+    let this = std::rc::Rc::new(Self {
+      parent: Default::default(),
+      children: Default::default(),
+      matrix: Default::default(),
+      global_matrix: Default::default(),
+      position: Default::default(),
+      rotation: Default::default(),
+      scale: Default::default(),
+      visible: Default::default(),
+      layers: Default::default(),
+      cast_shadow: Default::default(),
+      object_type: crate::core::object_3d::ObjectType::Group,
+      receive_shadow: Default::default(),
+      user_data: Default::default(),
+      _uuid: uuid::Uuid::new_v4().to_string(),
+      _self_ref: Default::default(),
+    });
+
+    let that: std::rc::Rc<dyn crate::core::object_3d::ObjectActions> = this.clone();
+
+    this._self_ref.set(std::rc::Rc::downgrade(&that));
+
+    this
+
+    // with_default_fields!(Group;)
   }
 }

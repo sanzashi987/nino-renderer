@@ -55,7 +55,7 @@ impl GlRenderer {
   fn parse_object(
     &mut self,
     object: Rc<dyn ObjectActions>,
-    camera: impl Camera + ObjectActions,
+    camera: &(impl Camera + ObjectActions),
     group_order: i32,
     sort: bool,
   ) {
@@ -63,7 +63,7 @@ impl GlRenderer {
       return;
     }
 
-    let visible = object.test_layers(camera.layers());
+    let visible = object.test_layers(&camera.layers());
     if visible {
       let object_type = object.get_type();
 
@@ -75,15 +75,13 @@ impl GlRenderer {
         ObjectType::Object3D => todo!(),
         ObjectType::Camera => todo!(),
         ObjectType::Group => {}
-        ObjectType::Mesh | ObjectType::Line | ObjectType::Point => {
-          
-        }
+        ObjectType::Mesh | ObjectType::Line | ObjectType::Point => {}
       }
     }
 
     let children = object.children();
 
-    for child in children {
+    for child in children.iter() {
       self.parse_object(child.clone(), camera, group_order, sort);
     }
   }
