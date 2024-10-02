@@ -76,7 +76,7 @@ pub struct BasicMaterial<T: ConvertUniform, U: DefineShader> {
 
 trait RunShader {
   fn vertex(&self, a: &Attribute, u: &Uniform, v: &mut Varying, gl: &mut GlPerVertex);
-  fn fragment(&self, u: &Uniform, v: &Varying, gl: &mut GlPerFragment);
+  fn fragment(&self, u: &Uniform, v: &Varying, gl: &mut GlPerFragment) -> bool;
 }
 
 impl<T: ConvertUniform, U: DefineShader> ConvertUniform for BasicMaterial<T, U> {
@@ -87,11 +87,11 @@ impl<T: ConvertUniform, U: DefineShader> ConvertUniform for BasicMaterial<T, U> 
 
 impl<T: ConvertUniform, U: DefineShader> RunShader for BasicMaterial<T, U> {
   fn vertex(&self, a: &Attribute, u: &Uniform, v: &mut Varying, gl: &mut GlPerVertex) {
-    U::vertex(&self)(a, u, v, gl)
+    U::vertex()(a, u, v, gl)
   }
 
-  fn fragment(&self, u: &Uniform, v: &Varying, gl: &mut GlPerFragment) {
-    U::fragment(&self)(u, v, gl)
+  fn fragment(&self, u: &Uniform, v: &Varying, gl: &mut GlPerFragment) -> bool {
+    U::fragment()(u, v, gl)
   }
 }
 

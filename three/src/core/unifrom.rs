@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+  collections::HashMap,
+  ops::{Deref, DerefMut},
+};
 
 use crate::math::{Mat4, Vec2, Vec3, Vec4};
 
@@ -32,15 +35,26 @@ define_uniform_trait!(
   Vec4-Vec4,
   Mat4-Mat4
 );
-
+#[derive(Debug, Default)]
 pub struct Uniform {
   attributes: HashMap<String, UnifromTypeEnum>,
 }
 
-impl Uniform {
-  pub fn remove_attribute(&mut self, key: String) {
-    self.attributes.remove(&key);
+impl Deref for Uniform {
+  type Target = HashMap<String, UnifromTypeEnum>;
+
+  fn deref(&self) -> &Self::Target {
+    &self.attributes
   }
+}
+
+impl DerefMut for Uniform {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.attributes
+  }
+}
+
+impl Uniform {
   pub fn get(&self, key: &str) -> Option<UnifromTypeEnum> {
     let res = self.attributes.get(key);
     res.map(|x| *x)

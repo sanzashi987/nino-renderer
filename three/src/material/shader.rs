@@ -42,8 +42,8 @@ define_gl_obj!(
   gl_frag_color: Vec4
 );
 
-type VertexShader = Box<dyn Fn(&Attribute, &Uniform, &mut Varying, &mut GlPerVertex)>;
-type FragmentShader = Box<dyn Fn(&Uniform, &Varying, &mut GlPerFragment) -> bool>;
+pub type VertexShader = Box<dyn Fn(&Attribute, &Uniform, &mut Varying, &mut GlPerVertex)>;
+pub type FragmentShader = Box<dyn Fn(&Uniform, &Varying, &mut GlPerFragment) -> bool>;
 
 pub struct Shader {
   pub vertex: VertexShader,
@@ -51,8 +51,8 @@ pub struct Shader {
 }
 
 pub trait DefineShader {
-  fn vertex(&self) -> VertexShader;
-  fn fragment(&self) -> FragmentShader;
+  fn vertex() -> VertexShader;
+  fn fragment() -> FragmentShader;
 }
 
 impl Debug for Shader {
