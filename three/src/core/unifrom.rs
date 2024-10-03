@@ -3,7 +3,10 @@ use std::{
   ops::{Deref, DerefMut},
 };
 
-use crate::math::{Mat4, Vec2, Vec3, Vec4};
+use crate::{
+  math::{Mat4, Vec2, Vec3, Vec4},
+  textures::texture::Texture,
+};
 
 use super::marco::define_gl_type_enum;
 
@@ -33,7 +36,9 @@ define_uniform_trait!(
   Vec2-Vec2,
   Vec3-Vec3,
   Vec4-Vec4,
-  Mat4-Mat4
+  Mat4-Mat4,
+  Bool-bool,
+  Uv-Texture
 );
 #[derive(Debug, Default)]
 pub struct Uniform {

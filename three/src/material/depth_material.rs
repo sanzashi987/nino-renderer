@@ -1,4 +1,4 @@
-use crate::core::unifrom::Uniform;
+use crate::core::unifrom::{Uniform, UnifromTypeEnum};
 
 use super::{
   material::{BasicMaterial, ConvertUniform},
@@ -25,8 +25,8 @@ struct MeshDepthAttribute {
 
 impl ConvertUniform for MeshDepthAttribute {
   fn to_uniform(&self) -> Uniform {
-    let res = Uniform::default();
-
+    let mut res = Uniform::default();
+    res.insert(format!("wireframe"), UnifromTypeEnum::Bool(self.wireframe));
     res
   }
 }

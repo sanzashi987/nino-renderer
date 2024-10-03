@@ -12,6 +12,12 @@ pub enum ParserError {
   MaterialNotFound,
 }
 
+impl From<io::Error> for ParserError {
+  fn from(value: io::Error) -> Self {
+    Self::IoError(value)
+  }
+}
+
 pub type ParserResult = Result<(), ParserError>;
 
 macro_rules! parse_num {
@@ -66,6 +72,8 @@ macro_rules! parse_token_ok {
     parse_token!($iter; $type = $($attr: $attr_type),+).ok()
   };
 }
+
+use std::io;
 
 pub(super) use parse_num;
 pub(super) use parse_token;

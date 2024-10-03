@@ -1,18 +1,17 @@
 use std::{
   fs::File,
   io::{BufRead, BufReader, Error},
-  path::Path,
 };
 
-pub struct FileLoader<'a> {
-  filename: &'a Path,
+pub struct FileLoader {
+  filename: String,
   reader: BufReader<File>,
   done: bool,
 }
 
-impl<'a> FileLoader<'a> {
-  pub fn new(filename: &'a Path) -> Result<Self, Error> {
-    let file = File::open(filename)?;
+impl FileLoader {
+  pub fn new(filename: String) -> Result<Self, Error> {
+    let file = File::open(&filename)?;
     let reader: BufReader<File> = BufReader::new(file);
 
     Ok(Self {
@@ -23,7 +22,7 @@ impl<'a> FileLoader<'a> {
   }
 
   pub fn reset(&mut self) -> Result<(), Error> {
-    let file = File::open(self.filename)?;
+    let file = File::open(&self.filename)?;
     let reader: BufReader<File> = BufReader::new(file);
     self.reader = reader;
     Ok(())
@@ -34,7 +33,7 @@ impl<'a> FileLoader<'a> {
   }
 }
 
-impl<'a> Iterator for FileLoader<'a> {
+impl Iterator for FileLoader {
   type Item = String;
   fn next(&mut self) -> Option<Self::Item> {
     if self.done {
