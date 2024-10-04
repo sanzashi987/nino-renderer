@@ -24,13 +24,13 @@ macro_rules! parse_num {
   ($var:ident,$type:ty) => {{
     $var
       .parse::<$type>()
-      .map_err(|_| ParserError::CantConvertToNum)?
+      .map_err(|_| crate::loaders::defines::ParserError::CantConvertToNum)?
   }};
   ($exp:expr,$type:ty) => {{
     let val = $exp;
     val
       .parse::<$type>()
-      .map_err(|_| ParserError::CantConvertToNum)?
+      .map_err(|_| crate::loaders::defines::ParserError::CantConvertToNum)?
   }};
 }
 
@@ -39,9 +39,9 @@ macro_rules! parse_token {
       let result = if let Some(s) = $iter {
         s
           .parse::<$type>()
-          .map_err(|_| ParserError::CantConvertToType)
+          .map_err(|_| crate::loaders::defines::ParserError::CantConvertToType)
       } else {
-        Err(ParserError::ParseIncomplete("not a valiad string".to_string()))
+        Err(crate::loaders::defines::ParserError::ParseIncomplete("not a valiad string".to_string()))
       };
       // move to next token
       result
@@ -52,13 +52,13 @@ macro_rules! parse_token {
         let mut val = <$type>::zero();
         $(
           if let Some(s) = $iter {
-            val.$attr = parse_num!(s, $attr_type);
+            val.$attr = crate::loaders::defines::parse_num!(s, $attr_type);
           } else {
-            return Err(ParserError::UnExpectedEndOfLine)
+            return Err(crate::loaders::defines::ParserError::UnExpectedEndOfLine)
           }
         )+
 
-        Ok::<$type,ParserError>(val)
+        Ok::<$type,crate::loaders::defines::ParserError>(val)
       }
     };
 }
