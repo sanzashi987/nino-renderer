@@ -1,4 +1,6 @@
-use std::{marker::PhantomData, path::Path};
+use std::{collections::HashMap, marker::PhantomData, path::Path};
+
+use crate::utils::swap_and_move;
 
 use super::{
   defines::{ParserError, ParserResult},
@@ -63,9 +65,18 @@ where
     Ok(())
   }
 
-  pub fn parse(&mut self) -> Result<&mut Data, ParserError> {
+  pub fn parse(&mut self) -> Result<Data, ParserError> {
     self._parse()?;
-
-    Ok(&mut self.data)
+    Ok(swap_and_move(&mut self.data))
   }
+}
+#[derive(Debug, Default)]
+pub struct Loader<T: Default> {
+  pub(super) next_id: u32,
+  pub(super) loaded: HashMap<u32, T>,
+  pub(super) path_id_map: HashMap<String, u32>,
+}
+
+impl<T: Default> Loader<T> {
+  
 }

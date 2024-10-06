@@ -7,3 +7,4 @@ pub mod math;
 pub mod objects;
 pub mod renderer;
 pub mod textures;
+pub mod utils;

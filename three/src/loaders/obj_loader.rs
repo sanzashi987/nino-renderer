@@ -1,17 +1,12 @@
-use std::{
-  collections::HashMap,
-  fmt::format,
-  path::{Path, PathBuf},
-  sync::Mutex,
-};
+use std::{collections::HashMap, path::PathBuf};
 
-use lazy_static::{__Deref, lazy, lazy_static};
+use lazy_static::lazy_static;
 
 use crate::math::{Vec2, Vec3};
 
 use super::{
   defines::{parse_num, parse_token, ParserError},
-  parser::{ParseLine, Parser},
+  parser::{Loader, ParseLine, Parser},
 };
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -172,17 +167,31 @@ impl ParseLine<ObjData> for ObjParserImpl {
   }
 }
 
-pub type ObjParser = Parser<ObjData, ObjParserImpl>;
-#[derive(Default)]
-struct ObjLoader {
-  next_model_id: u32,
-  loaded_objs: HashMap<u32, ObjData>,
-  path_id_map: HashMap<String, u32>,
-}
+type ObjParser = Parser<ObjData, ObjParserImpl>;
+type ObjLoader = Loader<ObjData>;
 
 impl ObjLoader {
-  pub fn load(&mut self, filepath: &str) {
-    let parser = ObjParser::new(filepath);
+  pub fn load(&mut self, filepath: &str) -> Result<&ObjData, ParserError> {
+    if let Some(obj_uid) = self.path_id_map.get(filepath) {
+      return self
+        .loaded
+        .get(obj_uid)
+        .ok_or(ParserError::LoaderInstanceLoss);
+    }
+
+    let mut parser = ObjParser::new(filepath)?;
+
+    let mut obj_info = parser.parse()?;
+
+    obj_info.uid = self.next_id;
+    self.next_id += 1;
+
+    let uid = obj_info.uid;
+
+    self.loaded.insert(uid, obj_info);
+    self.path_id_map.insert(filepath.to_string(), uid);
+
+    Ok(self.loaded.get(&uid).unwrap())
   }
 }
 

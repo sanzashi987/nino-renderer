@@ -10,6 +10,7 @@ pub enum ParserError {
   UnExpectedEndOfLine,
   ModelNotInit,
   MaterialNotFound,
+  LoaderInstanceLoss,
 }
 
 impl From<io::Error> for ParserError {
