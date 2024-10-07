@@ -11,6 +11,8 @@ pub enum ParserError {
   ModelNotInit,
   MaterialNotFound,
   LoaderInstanceLoss,
+  TextureError(ImageError),
+  ResourceNotFound,
 }
 
 impl From<io::Error> for ParserError {
@@ -76,6 +78,7 @@ macro_rules! parse_token_ok {
 
 use std::io;
 
+use image::ImageError;
 pub(super) use parse_num;
 pub(super) use parse_token;
 pub(super) use parse_token_ok;

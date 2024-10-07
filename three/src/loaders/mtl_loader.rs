@@ -6,12 +6,13 @@ use crate::math::Vec3;
 
 use super::{
   defines::{parse_token_ok, ParserError},
-  parser::{Loader, ParseLine, Parser},
+  parser::{Loader, ParseLine},
+  texture_loader::texture_loader,
 };
 
 #[derive(Debug, Default)]
-struct MtlData {
-  id: u32,
+struct MtlInfo {
+  uid: u32,
   name: String,
   ambient: Vec3,
   diffuse: Vec3,
@@ -24,6 +25,12 @@ struct MtlData {
   receive_shadow: bool,
   illum: u8,
 }
+
+#[derive(Debug, Default)]
+struct MtlData {
+  mtls: Vec<MtlInfo>,
+}
+
 pub struct MtlParserImpl;
 
 macro_rules! parse_texture_token {
@@ -48,8 +55,14 @@ impl ParseLine<MtlData> for MtlParserImpl {
     working_dir: &str,
     token_str: &str,
   ) -> super::defines::ParserResult {
-    todo!()
+    match token_str {
+      "#" => {}
 
+      "map_Ka" => {}
+      _ => {}
+    }
+
+    Ok(())
     // let mut  path  = PathBuf::from("23");
 
     // path.push("")
@@ -58,12 +71,7 @@ impl ParseLine<MtlData> for MtlParserImpl {
   }
 }
 
-type MtlParser = Parser<MtlData, MtlParserImpl>;
-type MtlLoader = Loader<MtlData>;
-
-impl MtlLoader {
-  pub fn load(&mut self, filepath: &str) -> Result<&MtlData, ParserError> {}
-}
+type MtlLoader = Loader<MtlData, MtlParserImpl>;
 
 lazy_static! {
   pub static ref mtl_loader: MtlLoader = Default::default();

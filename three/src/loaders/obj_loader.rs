@@ -6,7 +6,7 @@ use crate::math::{Vec2, Vec3};
 
 use super::{
   defines::{parse_num, parse_token, ParserError},
-  parser::{Loader, ParseLine, Parser},
+  parser::{AssignId, Loader, ParseLine},
 };
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -46,6 +46,12 @@ struct ObjData {
   pub normals: Vec<Vec3>,
   pub uvs: Vec<Vec2>,
   pub mtl_libs: Vec<String>,
+}
+
+impl AssignId for ObjData {
+  fn assign_id(&mut self, id: u32) {
+    self.uid = id;
+  }
 }
 
 impl ObjData {
@@ -167,33 +173,7 @@ impl ParseLine<ObjData> for ObjParserImpl {
   }
 }
 
-type ObjParser = Parser<ObjData, ObjParserImpl>;
-type ObjLoader = Loader<ObjData>;
-
-impl ObjLoader {
-  pub fn load(&mut self, filepath: &str) -> Result<&ObjData, ParserError> {
-    if let Some(obj_uid) = self.path_id_map.get(filepath) {
-      return self
-        .loaded
-        .get(obj_uid)
-        .ok_or(ParserError::LoaderInstanceLoss);
-    }
-
-    let mut parser = ObjParser::new(filepath)?;
-
-    let mut obj_info = parser.parse()?;
-
-    obj_info.uid = self.next_id;
-    self.next_id += 1;
-
-    let uid = obj_info.uid;
-
-    self.loaded.insert(uid, obj_info);
-    self.path_id_map.insert(filepath.to_string(), uid);
-
-    Ok(self.loaded.get(&uid).unwrap())
-  }
-}
+type ObjLoader = Loader<ObjData, ObjParserImpl>;
 
 lazy_static! {
   pub static ref obj_loader: ObjLoader = Default::default();

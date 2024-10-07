@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::{
   core::{buffer_geometry::GeometryActions, object_3d::ObjectActions},
-  material::material::ConvertUniform,
+  material::material::MaterialActions,
 };
 #[derive(Default)]
 pub struct RenderStates {
@@ -20,6 +20,6 @@ impl RenderStates {
   }
 }
 
-trait EntityList: ObjectActions + GeometryActions + ConvertUniform {}
+trait EntityList: ObjectActions + GeometryActions + MaterialActions {}
 
 pub type RenderList = Vec<Rc<dyn EntityList>>;
