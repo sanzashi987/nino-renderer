@@ -9,14 +9,8 @@ struct VoidParser {}
 pub type TextureLoader = Loader<Texture, VoidParser>;
 
 impl TextureLoader {
-  pub fn load(&mut self, filepath: &str) -> Result<&Texture, ParserError> {
-    if let Some(data) = self.if_exist(filepath) {
-      return Ok(data);
-    }
-    let res = Texture::load(filepath, self.next_id).map_err(|e| ParserError::TextureError(e))?;
-
-    let uid = self.insert_data(res, filepath);
-    Ok(self.loaded.get(&uid).unwrap())
+  fn parse(&mut self, path: &str) -> Result<Texture, ParserError> {
+    let res = Texture::load(path, self.next_id).map_err(|e| ParserError::TextureError(e))?;
   }
 }
 

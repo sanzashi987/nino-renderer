@@ -26,6 +26,10 @@ pub struct Loader<Data: Default + AssignId, Abstracts: ParseLine<Data>> {
   _impls: PhantomData<Abstracts>,
 }
 
+trait Parse<Data: Default + AssignId, Abstracts: ParseLine<Data>> {
+  fn parse(&mut self, path: &str) -> Result<Data, ParserError> {}
+}
+
 impl<Data, Abstracts> Loader<Data, Abstracts>
 where
   Data: Default + AssignId,
@@ -41,17 +45,12 @@ where
     uid
   }
 
-  pub fn if_exist(&self, filepath: &str) -> Option<&Data> {
-    if let Some(data_uid) = self.path_id_map.get(filepath) {
-      self.loaded.get(data_uid)
-    } else {
-      None
-    }
-  }
-
   pub fn load(&mut self, filepath: &str) -> Result<&Data, ParserError> {
-    if let Some(data) = self.if_exist(filepath) {
-      return Ok(data);
+    if let Some(data_uid) = self.path_id_map.get(filepath) {
+      return self
+        .loaded
+        .get(data_uid)
+        .ok_or(ParserError::LoaderInstanceLoss);
     }
 
     let mut data = self.parse(filepath)?;
