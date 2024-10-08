@@ -6,7 +6,7 @@ use crate::math::{Vec2, Vec3};
 
 use super::{
   defines::{parse_num, parse_token, ParserError},
-  parser::{AssignId, Loader, ParseLine},
+  parser::{AssignId, Loader, Parse},
 };
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -109,7 +109,7 @@ impl ObjData {
 }
 
 struct ObjParserImpl;
-impl ParseLine<ObjData> for ObjParserImpl {
+impl Parse<ObjData> for ObjParserImpl {
   fn parse_line(
     data: &mut ObjData,
     tokens: &mut std::str::SplitWhitespace,

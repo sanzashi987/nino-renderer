@@ -6,7 +6,7 @@ use crate::math::Vec3;
 
 use super::{
   defines::{parse_token_ok, ParserError},
-  parser::{Loader, ParseLine},
+  parser::{AssignId, Loader, Parse},
   texture_loader::texture_loader,
 };
 
@@ -31,6 +31,12 @@ struct MtlData {
   mtls: Vec<MtlInfo>,
 }
 
+impl AssignId for MtlData {
+  fn assign_id(&mut self, id: u32) {
+    self.mtls.last_mut().unwrap().uid = id;
+  }
+}
+
 pub struct MtlParserImpl;
 
 macro_rules! parse_texture_token {
@@ -48,7 +54,7 @@ macro_rules! parse_texture_token {
   };
 }
 
-impl ParseLine<MtlData> for MtlParserImpl {
+impl Parse<MtlData> for MtlParserImpl {
   fn parse_line(
     data: &mut MtlData,
     tokens: &mut std::str::SplitWhitespace,
@@ -63,11 +69,6 @@ impl ParseLine<MtlData> for MtlParserImpl {
     }
 
     Ok(())
-    // let mut  path  = PathBuf::from("23");
-
-    // path.push("")
-
-    // path.to_str().ok_or(err)?.to_string();
   }
 }
 

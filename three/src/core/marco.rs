@@ -4,7 +4,7 @@ pub trait Extract<T> {
 
 macro_rules! define_gl_type_enum {
   ($enum_name:tt;$($name:tt-$type:ty),+) => {
-    #[derive(Debug, Clone, Copy)]
+    #[derive(Debug, Clone,Copy)]
     pub enum $enum_name {
       $(
         $name($type),

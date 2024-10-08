@@ -5,7 +5,36 @@ use super::{
   file_loader::FileLoader,
 };
 
-pub trait ParseLine<Data: Default> {
+pub trait AssignId {
+  fn assign_id(&mut self, id: u32) {}
+}
+
+pub trait Parse<Data: Default + AssignId> {
+  fn parse(path: &str, id: u32) -> Result<Data, ParserError> {
+    let working_dir = Path::new(path)
+      .parent()
+      .unwrap()
+      .to_str()
+      .unwrap()
+      .to_string();
+
+    let filepath = path.to_string();
+    let mut loader = FileLoader::new(filepath.clone())?;
+
+    let mut data = Data::default();
+
+    for line in &mut loader {
+      let trimmed = line.trim().to_string();
+      let mut tokens = trimmed.split_whitespace();
+
+      let token = tokens.next();
+      if let Some(token_str) = token {
+        Self::parse_line(&mut data, &mut tokens, &working_dir, token_str)?;
+      }
+    }
+
+    Ok(data)
+  }
   fn parse_line(
     data: &mut Data,
     tokens: &mut std::str::SplitWhitespace,
@@ -14,26 +43,18 @@ pub trait ParseLine<Data: Default> {
   ) -> ParserResult;
 }
 
-pub trait AssignId {
-  fn assign_id(&mut self, id: u32);
-}
-#[derive(Debug, Default)]
-pub struct Loader<Data: Default + AssignId, Abstracts: ParseLine<Data>> {
+#[derive(Debug)]
+pub struct Loader<Data: Default + AssignId, Abstracts: Parse<Data>> {
   pub(super) next_id: u32,
   pub(super) loaded: HashMap<u32, Data>,
   pub(super) path_id_map: HashMap<String, u32>,
-  // parser: Parser,
   _impls: PhantomData<Abstracts>,
-}
-
-trait Parse<Data: Default + AssignId, Abstracts: ParseLine<Data>> {
-  fn parse(&mut self, path: &str) -> Result<Data, ParserError> {}
 }
 
 impl<Data, Abstracts> Loader<Data, Abstracts>
 where
   Data: Default + AssignId,
-  Abstracts: ParseLine<Data>,
+  Abstracts: Parse<Data>,
 {
   pub fn insert_data(&mut self, mut data: Data, filepath: &str) -> u32 {
     let uid = self.next_id;
@@ -53,35 +74,24 @@ where
         .ok_or(ParserError::LoaderInstanceLoss);
     }
 
-    let mut data = self.parse(filepath)?;
+    let mut data = Abstracts::parse(filepath, self.next_id)?;
     let uid = self.insert_data(data, filepath);
 
     Ok(self.loaded.get(&uid).unwrap())
   }
+}
 
-  fn parse(&mut self, path: &str) -> Result<Data, ParserError> {
-    let working_dir = Path::new(path)
-      .parent()
-      .unwrap()
-      .to_str()
-      .unwrap()
-      .to_string();
-
-    let filepath = path.to_string();
-    let mut loader = FileLoader::new(filepath.clone())?;
-
-    let mut data = Data::default();
-
-    for line in &mut loader {
-      let trimmed = line.trim().to_string();
-      let mut tokens = trimmed.split_whitespace();
-
-      let token = tokens.next();
-      if let Some(token_str) = token {
-        Abstracts::parse_line(&mut data, &mut tokens, &working_dir, token_str)?;
-      }
+impl<Data, Abstracts> Default for Loader<Data, Abstracts>
+where
+  Data: Default + AssignId,
+  Abstracts: Parse<Data>,
+{
+  fn default() -> Self {
+    Self {
+      next_id: Default::default(),
+      loaded: Default::default(),
+      path_id_map: Default::default(),
+      _impls: Default::default(),
     }
-
-    Ok(data)
   }
 }

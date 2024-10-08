@@ -5,7 +5,7 @@ use super::{
   // group::GroupSupportChildren,
 };
 
-#[object_3d(ObjectActions)]
+// #[object_3d(ObjectActions)]
 pub struct Scene {}
 
 // impl Scene {

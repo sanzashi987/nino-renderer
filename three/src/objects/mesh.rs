@@ -14,16 +14,16 @@ use super::super::core::object_3d::{
 //   Group:Group
 // );
 
-#[object_3d(ObjectActions)]
-pub struct Mesh {
-  geometry: BufferGeometry,
-  material: BasicMaterial,
-}
+// #[object_3d(ObjectActions)]
+// pub struct Mesh {
+//   geometry: BufferGeometry,
+//   material: BasicMaterial,
+// }
 
-impl Mesh {
-  pub fn new() -> Self {
-    let geometry = Default::default();
-    let material = Default::default();
-    with_default_fields!(geometry, material)
-  }
-}
+// impl Mesh {
+//   pub fn new() -> Self {
+//     let geometry = Default::default();
+//     let material = Default::default();
+//     with_default_fields!(geometry, material)
+//   }
+// }
