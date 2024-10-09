@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::path::PathBuf;
 
 use lazy_static::lazy_static;
 
@@ -83,22 +83,24 @@ impl ObjData {
     self.uvs.push(uv)
   }
 
-  pub fn bind_material(&mut self, working_dir: &str, name: String) -> Result<(), ParserError> {
+  pub fn bind_material(&mut self, name: String) -> Result<(), ParserError> {
+    let mtllib: &String = self.mtl_libs.last().ok_or(ParserError::MtlNotFound)?;
     let model = self.models.last_mut().ok_or(ParserError::ModelNotInit)?;
-
-    let mut material_path = PathBuf::from(working_dir);
-    material_path.push(&name);
-    let material_path = material_path
-      .to_str()
-      .ok_or(ParserError::ModelNotInit)?
-      .to_string();
-    model.material = Some(material_path);
-
+    let scoped_name = format!("{}@{}", mtllib, &name);
+    model.material = Some(scoped_name);
     Ok(())
   }
 
-  pub fn add_mtllib(&mut self, mtl_path: String) {
+  pub fn add_mtllib(&mut self, working_dir: &str, name: String) -> Result<(), ParserError> {
+    let mut mtl_path = PathBuf::from(working_dir);
+    mtl_path.push(&name);
+    let mtl_path = mtl_path
+      .to_str()
+      .ok_or(ParserError::ModelNotInit)?
+      .to_string();
+
     self.mtl_libs.push(mtl_path);
+    Ok(())
   }
 
   pub fn get_material_path<F: FnMut(&str)>(&self, mut f: F) {
@@ -122,8 +124,8 @@ impl Parse<ObjData> for ObjParserImpl {
       "v" => data.add_vertex(parse_token!(tokens.next(); Vec3 = x:f32, y:f32, z:f32)?),
       "vn" => data.add_normal(parse_token!(tokens.next(); Vec3 = x:f32, y:f32, z:f32)?),
       "vt" => data.add_uv(parse_token!(tokens.next(); Vec2 = x:f32, y:f32)?),
-      "mtllib" => data.add_mtllib(parse_token!(tokens.next(); String)?),
-      "usemtl" => data.bind_material(working_dir, parse_token!(tokens.next(); String)?)?,
+      "mtllib" => data.add_mtllib(working_dir, parse_token!(tokens.next(); String)?)?,
+      "usemtl" => data.bind_material(parse_token!(tokens.next(); String)?)?,
       "f" => {
         let mut vertex_vec = vec![];
         let mut done = false;

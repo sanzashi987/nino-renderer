@@ -12,7 +12,7 @@ pub enum ParserError {
   MaterialNotFound,
   LoaderInstanceLoss,
   TextureError(ImageError),
-  ResourceNotFound,
+  MtlNotFound,
 }
 
 impl From<io::Error> for ParserError {

@@ -5,7 +5,7 @@ use lazy_static::lazy_static;
 use crate::math::Vec3;
 
 use super::{
-  defines::{parse_token_ok, ParserError},
+  defines::{parse_token, parse_token_ok, ParserError},
   parser::{AssignId, Loader, Parse},
   texture_loader::texture_loader,
 };
@@ -28,6 +28,7 @@ struct MtlInfo {
 
 #[derive(Debug, Default)]
 struct MtlData {
+  path: String,
   mtls: Vec<MtlInfo>,
 }
 
@@ -36,6 +37,8 @@ impl AssignId for MtlData {
     self.mtls.last_mut().unwrap().uid = id;
   }
 }
+
+impl MtlData {}
 
 pub struct MtlParserImpl;
 
@@ -63,7 +66,9 @@ impl Parse<MtlData> for MtlParserImpl {
   ) -> super::defines::ParserResult {
     match token_str {
       "#" => {}
-
+      "newmtl" => {
+        let name = parse_token!(tokens.next();String)?;
+      }
       "map_Ka" => {}
       _ => {}
     }

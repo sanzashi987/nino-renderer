@@ -9,16 +9,20 @@ pub trait AssignId {
   fn assign_id(&mut self, id: u32) {}
 }
 
+pub enum SingleOrList<T> {
+  Data(T),
+  List(Vec<T>),
+}
 pub trait Parse<Data: Default + AssignId> {
-  fn parse(path: &str, id: u32) -> Result<Data, ParserError> {
-    let working_dir = Path::new(path)
+  fn parse(full_path: &str, id: u32) -> Result<SingleOrList<Data>, ParserError> {
+    let working_dir = Path::new(full_path)
       .parent()
       .unwrap()
       .to_str()
       .unwrap()
       .to_string();
 
-    let filepath = path.to_string();
+    let filepath = full_path.to_string();
     let mut loader = FileLoader::new(filepath.clone())?;
 
     let mut data = Data::default();
@@ -40,14 +44,16 @@ pub trait Parse<Data: Default + AssignId> {
     tokens: &mut std::str::SplitWhitespace,
     working_dir: &str,
     token_str: &str,
-  ) -> ParserResult;
+  ) -> ParserResult {
+    Ok(())
+  }
 }
 
 #[derive(Debug)]
 pub struct Loader<Data: Default + AssignId, Abstracts: Parse<Data>> {
   pub(super) next_id: u32,
   pub(super) loaded: HashMap<u32, Data>,
-  pub(super) path_id_map: HashMap<String, u32>,
+  pub(super) name_id_map: HashMap<String, u32>,
   _impls: PhantomData<Abstracts>,
 }
 
@@ -56,28 +62,37 @@ where
   Data: Default + AssignId,
   Abstracts: Parse<Data>,
 {
-  pub fn insert_data(&mut self, mut data: Data, filepath: &str) -> u32 {
+  fn store_to_loaded(&mut self, mut data: Data, filepath: &str) -> u32 {
     let uid = self.next_id;
     data.assign_id(uid);
 
     self.loaded.insert(self.next_id, data);
-    self.path_id_map.insert(filepath.to_string(), self.next_id);
+    self.name_id_map.insert(filepath.to_string(), self.next_id);
     self.next_id += 1;
     uid
   }
 
   pub fn load(&mut self, filepath: &str) -> Result<&Data, ParserError> {
-    if let Some(data_uid) = self.path_id_map.get(filepath) {
+    if let Some(data_uid) = self.name_id_map.get(filepath) {
       return self
         .loaded
         .get(data_uid)
         .ok_or(ParserError::LoaderInstanceLoss);
     }
 
-    let mut data = Abstracts::parse(filepath, self.next_id)?;
-    let uid = self.insert_data(data, filepath);
+    let mut mixed_result = Abstracts::parse(filepath, self.next_id)?;
 
-    Ok(self.loaded.get(&uid).unwrap())
+    match mixed_result {
+      SingleOrList::Data(mut data) => {
+        let uid = self.store_to_loaded(data, filepath);
+        return Ok(self.loaded.get(&uid).unwrap());
+      }
+      SingleOrList::List(mut list) => {
+        for data in &mut list {
+          self.store_to_loaded(data, filepath);
+        }
+      }
+    }
   }
 }
 
@@ -90,7 +105,7 @@ where
     Self {
       next_id: Default::default(),
       loaded: Default::default(),
-      path_id_map: Default::default(),
+      name_id_map: Default::default(),
       _impls: Default::default(),
     }
   }

@@ -12,18 +12,9 @@ struct VoidParser {}
 impl AssignId for Texture {}
 
 impl Parse<Texture> for VoidParser {
-  fn parse(path: &str, id: u32) -> Result<Texture, ParserError> {
-    let res = Texture::load(path, id).map_err(|e| ParserError::TextureError(e))?;
+  fn parse(full_path: &str, id: u32) -> Result<Texture, ParserError> {
+    let res = Texture::load(full_path, id).map_err(|e| ParserError::TextureError(e))?;
     Ok(res)
-  }
-
-  fn parse_line(
-    data: &mut Texture,
-    tokens: &mut std::str::SplitWhitespace,
-    working_dir: &str,
-    token_str: &str,
-  ) -> super::defines::ParserResult {
-    todo!()
   }
 }
 
