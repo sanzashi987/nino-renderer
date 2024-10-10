@@ -1,20 +1,24 @@
 use lazy_static::lazy_static;
 
-use crate::textures::texture::Texture;
+use crate::{textures::texture::Texture, utils::SingleOrList};
 
 use super::{
   defines::ParserError,
-  parser::{AssignId, Loader, Parse},
+  parser::{Loader, ILoaderData, Parse},
 };
 
 struct VoidParser {}
 
-impl AssignId for Texture {}
+impl ILoaderData for Texture {
+  fn get_name(&self) -> String {
+    self.path.clone()
+  }
+}
 
 impl Parse<Texture> for VoidParser {
-  fn parse(full_path: &str, id: u32) -> Result<Texture, ParserError> {
+  fn parse(full_path: &str, id: u32) -> Result<SingleOrList<Texture>, ParserError> {
     let res = Texture::load(full_path, id).map_err(|e| ParserError::TextureError(e))?;
-    Ok(res)
+    Ok(SingleOrList::Data(res))
   }
 }
 

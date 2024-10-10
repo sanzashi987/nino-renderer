@@ -6,7 +6,7 @@ use crate::math::{Vec2, Vec4};
 pub struct Texture {
   id: u32,
   image: Option<DynamicImage>,
-  path: String,
+  pub path: String,
 }
 
 impl Texture {
@@ -16,7 +16,7 @@ impl Texture {
     Ok(Self {
       id,
       image: image_data,
-      path: path.to_str().expect("Not a valid texture path").to_string(),
+      path: path.to_string(),
     })
   }
 

@@ -1,31 +1,33 @@
 use std::{collections::HashMap, marker::PhantomData, path::Path};
 
+use crate::utils::SingleOrList;
+
 use super::{
   defines::{ParserError, ParserResult},
   file_loader::FileLoader,
 };
 
-pub trait AssignId {
+pub trait ILoaderData {
   fn assign_id(&mut self, id: u32) {}
+  fn get_name(&self) -> String;
 }
 
-pub enum SingleOrList<T> {
-  Data(T),
-  List(Vec<T>),
-}
-pub trait Parse<Data: Default + AssignId> {
-  fn parse(full_path: &str, id: u32) -> Result<SingleOrList<Data>, ParserError> {
-    let working_dir = Path::new(full_path)
+pub trait Parse<Data: Default + ILoaderData> {
+  fn init_data() -> SingleOrList<Data> {
+    SingleOrList::Data(Data::default())
+  }
+
+  fn parse(fullpath: &str, id: u32) -> Result<SingleOrList<Data>, ParserError> {
+    let working_dir = Path::new(fullpath)
       .parent()
       .unwrap()
       .to_str()
       .unwrap()
       .to_string();
 
-    let filepath = full_path.to_string();
-    let mut loader = FileLoader::new(filepath.clone())?;
+    let mut loader = FileLoader::new(fullpath.to_string())?;
 
-    let mut data = Data::default();
+    let mut data = Self::init_data();
 
     for line in &mut loader {
       let trimmed = line.trim().to_string();
@@ -40,7 +42,7 @@ pub trait Parse<Data: Default + AssignId> {
     Ok(data)
   }
   fn parse_line(
-    data: &mut Data,
+    data: &mut SingleOrList<Data>,
     tokens: &mut std::str::SplitWhitespace,
     working_dir: &str,
     token_str: &str,
@@ -50,7 +52,7 @@ pub trait Parse<Data: Default + AssignId> {
 }
 
 #[derive(Debug)]
-pub struct Loader<Data: Default + AssignId, Abstracts: Parse<Data>> {
+pub struct Loader<Data: Default + ILoaderData, Abstracts: Parse<Data>> {
   pub(super) next_id: u32,
   pub(super) loaded: HashMap<u32, Data>,
   pub(super) name_id_map: HashMap<String, u32>,
@@ -59,38 +61,43 @@ pub struct Loader<Data: Default + AssignId, Abstracts: Parse<Data>> {
 
 impl<Data, Abstracts> Loader<Data, Abstracts>
 where
-  Data: Default + AssignId,
+  Data: Default + ILoaderData,
   Abstracts: Parse<Data>,
 {
-  fn store_to_loaded(&mut self, mut data: Data, filepath: &str) -> u32 {
+  fn store_to_loaded(&mut self, mut data: Data, scoped_name: String) -> u32 {
     let uid = self.next_id;
     data.assign_id(uid);
 
     self.loaded.insert(self.next_id, data);
-    self.name_id_map.insert(filepath.to_string(), self.next_id);
+    self.name_id_map.insert(scoped_name, self.next_id);
     self.next_id += 1;
     uid
   }
 
-  pub fn load(&mut self, filepath: &str) -> Result<&Data, ParserError> {
+  pub fn load(&mut self, filepath: &str) -> Result<SingleOrList<&Data>, ParserError> {
     if let Some(data_uid) = self.name_id_map.get(filepath) {
       return self
         .loaded
         .get(data_uid)
-        .ok_or(ParserError::LoaderInstanceLoss);
+        .ok_or(ParserError::LoaderInstanceLoss)
+        .map(|r| SingleOrList::Data(r));
     }
 
     let mut mixed_result = Abstracts::parse(filepath, self.next_id)?;
 
     match mixed_result {
       SingleOrList::Data(mut data) => {
-        let uid = self.store_to_loaded(data, filepath);
-        return Ok(self.loaded.get(&uid).unwrap());
+        let uid = self.store_to_loaded(data, filepath.to_string());
+        return Ok(SingleOrList::Data(self.loaded.get(&uid).unwrap()));
       }
       SingleOrList::List(mut list) => {
-        for data in &mut list {
-          self.store_to_loaded(data, filepath);
+        let mut res = vec![];
+        for data in list {
+          let name = data.get_name();
+          let uid = self.store_to_loaded(data, name);
+          res.push(self.loaded.get(&uid).unwrap());
         }
+        return Ok(SingleOrList::List(res));
       }
     }
   }
@@ -98,7 +105,7 @@ where
 
 impl<Data, Abstracts> Default for Loader<Data, Abstracts>
 where
-  Data: Default + AssignId,
+  Data: Default + ILoaderData,
   Abstracts: Parse<Data>,
 {
   fn default() -> Self {
