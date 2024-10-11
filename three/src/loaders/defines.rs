@@ -13,6 +13,8 @@ pub enum ParserError {
   LoaderInstanceLoss,
   TextureError(ImageError),
   MtlNotFound,
+  CantChangeDirToParent,
+  CantConvertToStr
 }
 
 impl From<io::Error> for ParserError {

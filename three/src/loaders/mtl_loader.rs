@@ -1,4 +1,8 @@
-use std::path::{Path, PathBuf};
+use std::{
+  collections::HashMap,
+  iter::Map,
+  path::{Path, PathBuf},
+};
 
 use lazy_static::lazy_static;
 
@@ -24,6 +28,7 @@ struct MtlData {
   optical_density: Option<f32>,
   receive_shadow: Option<bool>,
   illum: Option<u8>,
+  textures: HashMap<String, String>,
 }
 
 impl ILoaderData for MtlData {
@@ -54,10 +59,10 @@ macro_rules! parse_texture_token {
 }
 
 macro_rules! assign_last_mtl {
-  ($data: expr; $iter: expr; $key:tt; $type:ty) => {
+  ($data: ident; $iter: ident; $key:tt; $type:ty) => {
     $data.last_mut().ok_or(ParserError::MtlNotFound)?.$key = parse_token_ok!($iter.next();$type);
   };
-  ($data: expr; $iter: expr; $key:tt; $type:ty = $($attr:ident : $attr_type:ty),+) => {
+  ($data: ident; $iter: ident; $key:tt; $type:ty = $($attr:ident : $attr_type:ty),+) => {
     $data.last_mut().ok_or(ParserError::MtlNotFound)?.$key = parse_token_ok!($iter.next();$type = $($attr: $attr_type),+);
   };
 }
@@ -70,18 +75,19 @@ impl Parse<MtlData> for MtlParserImpl {
   fn parse_line(
     data: &mut SingleOrList<MtlData>,
     tokens: &mut std::str::SplitWhitespace,
-    working_dir: &str,
+    fullpath: &str,
     token_str: &str,
   ) -> super::defines::ParserResult {
     if let SingleOrList::List(data) = data {
-      {
-        // let val =
-      }
+      let working_dir = Self::get_working_dir(fullpath)?;
 
       match token_str {
         "#" => {}
         "newmtl" => {
           let name = parse_token!(tokens.next();String)?;
+          let mut mtl = MtlData::default();
+          mtl.name = format!("{}@{}", fullpath, &name);
+          data.push(mtl);
         }
         "Ns" => assign_last_mtl!(data;tokens;specular_exponent;f32),
         "Ka" => assign_last_mtl!(data;tokens;ambient;Vec3=x:f32,y:f32,z:f32),
@@ -103,6 +109,6 @@ impl Parse<MtlData> for MtlParserImpl {
 
 type MtlLoader = Loader<MtlData, MtlParserImpl>;
 
-// lazy_static! {
-//   pub static ref mtl_loader: MtlLoader = Default::default();
-// }
+lazy_static! {
+  pub static ref mtl_loader: MtlLoader = Default::default();
+}

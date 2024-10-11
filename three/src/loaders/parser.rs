@@ -13,18 +13,21 @@ pub trait ILoaderData {
 }
 
 pub trait Parse<Data: Default + ILoaderData> {
+  fn get_working_dir(fullpath: &str) -> Result<&str, ParserError> {
+    let working_dir = Path::new(fullpath)
+      .parent()
+      .ok_or(ParserError::CantChangeDirToParent)?
+      .to_str()
+      .ok_or(ParserError::CantConvertToStr)?
+      .to_string();
+    Ok(&working_dir)
+  }
+
   fn init_data() -> SingleOrList<Data> {
     SingleOrList::Data(Data::default())
   }
 
   fn parse(fullpath: &str, id: u32) -> Result<SingleOrList<Data>, ParserError> {
-    let working_dir = Path::new(fullpath)
-      .parent()
-      .unwrap()
-      .to_str()
-      .unwrap()
-      .to_string();
-
     let mut loader = FileLoader::new(fullpath.to_string())?;
 
     let mut data = Self::init_data();
@@ -35,7 +38,7 @@ pub trait Parse<Data: Default + ILoaderData> {
 
       let token = tokens.next();
       if let Some(token_str) = token {
-        Self::parse_line(&mut data, &mut tokens, &working_dir, token_str)?;
+        Self::parse_line(&mut data, &mut tokens, &fullpath, token_str)?;
       }
     }
 
@@ -44,7 +47,7 @@ pub trait Parse<Data: Default + ILoaderData> {
   fn parse_line(
     data: &mut SingleOrList<Data>,
     tokens: &mut std::str::SplitWhitespace,
-    working_dir: &str,
+    fullpath: &str,
     token_str: &str,
   ) -> ParserResult {
     Ok(())

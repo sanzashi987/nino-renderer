@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use lazy_static::lazy_static;
 
@@ -122,10 +122,12 @@ impl Parse<ObjData> for ObjParserImpl {
   fn parse_line(
     data: &mut SingleOrList<ObjData>,
     tokens: &mut std::str::SplitWhitespace,
-    working_dir: &str,
+    fullpath: &str,
     token_str: &str,
   ) -> super::defines::ParserResult {
     if let SingleOrList::Data(data) = data {
+      let working_dir = Self::get_working_dir(fullpath)?;
+
       match token_str {
         "#" => {}
         "g" | "o" => data.new_model(parse_token!(tokens.next(); String)?),
