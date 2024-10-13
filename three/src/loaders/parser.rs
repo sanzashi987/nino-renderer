@@ -1,4 +1,8 @@
-use std::{collections::HashMap, marker::PhantomData, path::Path};
+use std::{
+  collections::HashMap,
+  marker::PhantomData,
+  path::{Path, PathBuf},
+};
 
 use crate::utils::SingleOrList;
 
@@ -13,14 +17,22 @@ pub trait ILoaderData {
 }
 
 pub trait Parse<Data: Default + ILoaderData> {
+  fn append_to_working_dir(fullpath: &str, subpath: &str) -> Result<String, ParserError> {
+    let mut path_buf = PathBuf::from(fullpath);
+    path_buf.push(subpath);
+    path_buf
+      .as_os_str()
+      .to_str()
+      .ok_or(ParserError::CantConvertToStr)
+      .map(|e| e.to_string())
+  }
+
   fn get_working_dir(fullpath: &str) -> Result<&str, ParserError> {
-    let working_dir = Path::new(fullpath)
+    Path::new(fullpath)
       .parent()
       .ok_or(ParserError::CantChangeDirToParent)?
       .to_str()
-      .ok_or(ParserError::CantConvertToStr)?
-      .to_string();
-    Ok(&working_dir)
+      .ok_or(ParserError::CantConvertToStr)
   }
 
   fn init_data() -> SingleOrList<Data> {
@@ -52,6 +64,8 @@ pub trait Parse<Data: Default + ILoaderData> {
   ) -> ParserResult {
     Ok(())
   }
+
+  fn on_loaded(data: &Data) {}
 }
 
 #[derive(Debug)]
@@ -88,21 +102,34 @@ where
 
     let mut mixed_result = Abstracts::parse(filepath, self.next_id)?;
 
-    match mixed_result {
+    let id_snap = self.next_id;
+
+    let res = match mixed_result {
       SingleOrList::Data(mut data) => {
         let uid = self.store_to_loaded(data, filepath.to_string());
-        return Ok(SingleOrList::Data(self.loaded.get(&uid).unwrap()));
+        Ok(SingleOrList::Data(self.loaded.get(&uid).unwrap()))
       }
       SingleOrList::List(mut list) => {
         let mut res = vec![];
         for data in list {
           let name = data.get_name();
           let uid = self.store_to_loaded(data, name);
-          res.push(self.loaded.get(&uid).unwrap());
+
+          res.push(uid);
         }
-        return Ok(SingleOrList::List(res));
+
+        let res = res.iter().map(|id| self.loaded.get(&id).unwrap()).collect();
+
+        Ok(SingleOrList::List(res))
       }
+    };
+
+    for i in id_snap..self.next_id {
+      let data_ref = self.loaded.get(&i).ok_or(ParserError::LoaderInstanceLoss)?;
+      Abstracts::on_loaded(data_ref);
     }
+
+    return res;
   }
 }
 

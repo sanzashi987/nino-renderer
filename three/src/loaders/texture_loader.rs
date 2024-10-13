@@ -7,7 +7,7 @@ use super::{
   parser::{Loader, ILoaderData, Parse},
 };
 
-struct VoidParser {}
+pub struct VoidParser {}
 
 impl ILoaderData for Texture {
   fn get_name(&self) -> String {

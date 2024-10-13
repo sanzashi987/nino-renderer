@@ -1,8 +1,4 @@
-use std::{
-  collections::HashMap,
-  iter::Map,
-  path::{Path, PathBuf},
-};
+use std::collections::HashMap;
 
 use lazy_static::lazy_static;
 
@@ -11,11 +7,10 @@ use crate::{math::Vec3, utils::SingleOrList};
 use super::{
   defines::{parse_token, parse_token_ok, ParserError},
   parser::{ILoaderData, Loader, Parse},
-  texture_loader::texture_loader,
 };
 
 #[derive(Debug, Default)]
-struct MtlData {
+pub struct MtlData {
   uid: u32,
   name: String,
   ambient: Option<Vec3>,
@@ -43,27 +38,22 @@ impl ILoaderData for MtlData {
 
 pub struct MtlParserImpl;
 
-macro_rules! parse_texture_token {
-  ($expr:expr; $textures:ident; $dir:ident) => {
-    {
-      let name = parse_token_ok!($expr;String);
-      if let Some(n) = &name {
-        let mut filepath = $dir.to_string();
-        filepath.push_str(&n);
-
-        let _ = $textures.load(&filepath, n);
-      }
-      name
-    }
-  };
-}
-
 macro_rules! assign_last_mtl {
   ($data: ident; $iter: ident; $key:tt; $type:ty) => {
     $data.last_mut().ok_or(ParserError::MtlNotFound)?.$key = parse_token_ok!($iter.next();$type);
   };
   ($data: ident; $iter: ident; $key:tt; $type:ty = $($attr:ident : $attr_type:ty),+) => {
     $data.last_mut().ok_or(ParserError::MtlNotFound)?.$key = parse_token_ok!($iter.next();$type = $($attr: $attr_type),+);
+  };
+}
+
+macro_rules! assign_last_mtl_texture {
+  ($data: ident; $iter: ident;$dir: ident; $str: tt) => {
+    {
+      let texture  =parse_token!($iter.next();String)?;
+      let texture = Self::append_to_working_dir($dir,&texture)?;
+      $data.last_mut().ok_or(ParserError::MtlNotFound)?.textures.insert($str.to_string(),texture);
+    }
   };
 }
 
@@ -99,7 +89,14 @@ impl Parse<MtlData> for MtlParserImpl {
         "d" => assign_last_mtl!(data;tokens;dissolve;f32),
         "Tr" => assign_last_mtl!(data;tokens;dissolve;f32),
         "illum" => assign_last_mtl!(data;tokens;illum;u8),
-        "map_Ka" => {}
+        "map_Ka" => assign_last_mtl_texture!(data;tokens;working_dir;"map_Ka"),
+        "map_Kd" => assign_last_mtl_texture!(data;tokens;working_dir;"map_Kd"),
+        "map_Ks" => assign_last_mtl_texture!(data;tokens;working_dir;"map_Ks"),
+        "map_Ns =>" => assign_last_mtl_texture!(data;tokens;working_dir;"map_Ns"),
+        "map_d" => assign_last_mtl_texture!(data;tokens;working_dir;"map_d"),
+        "map_refl" => assign_last_mtl_texture!(data;tokens;working_dir;"map_refl"),
+        "map_Bump" => assign_last_mtl_texture!(data;tokens;working_dir;"map_Bump"),
+        "norm" => assign_last_mtl_texture!(data;tokens;working_dir;"norm"),
         _ => {}
       }
     }

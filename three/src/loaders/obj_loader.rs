@@ -41,7 +41,7 @@ pub struct Model {
   pub material: Option<String>,
 }
 #[derive(Debug, Default)]
-struct ObjData {
+pub struct ObjData {
   pub uid: u32,
   pub path: String,
   pub models: Vec<Model>,
@@ -117,7 +117,7 @@ impl ObjData {
   }
 }
 
-struct ObjParserImpl;
+pub struct ObjParserImpl;
 impl Parse<ObjData> for ObjParserImpl {
   fn parse_line(
     data: &mut SingleOrList<ObjData>,

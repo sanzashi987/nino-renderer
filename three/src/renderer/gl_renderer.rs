@@ -43,7 +43,7 @@ impl GlRenderer {
   }
 
   pub fn render(&mut self, scene: Scene, camera: impl Camera + ObjectActions) -> ColorBuffer {
-    scene.update_global_matrix();
+    // scene.update_global_matrix();
     camera.update_global_matrix();
 
     let project_screen_matrix = camera.projection_matrix() * camera.global_matrix_inverse();
