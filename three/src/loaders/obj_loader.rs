@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::{
+  path::{Path, PathBuf},
+  sync::Mutex,
+};
 
 use lazy_static::lazy_static;
 
@@ -9,6 +12,7 @@ use crate::{
 
 use super::{
   defines::{parse_num, parse_token, ParserError},
+  mtl_loader::mtl_loader,
   parser::{ILoaderData, Loader, Parse},
 };
 
@@ -184,10 +188,18 @@ impl Parse<ObjData> for ObjParserImpl {
     }
     Ok(())
   }
+
+  fn on_loaded(data: &ObjData) -> super::defines::ParserResult {
+    let mut mtl_mut_loader = mtl_loader.lock().unwrap();
+    for mtl_libs in &data.mtl_libs {
+      mtl_mut_loader.load(mtl_libs)?;
+    }
+    Ok(())
+  }
 }
 
 type ObjLoader = Loader<ObjData, ObjParserImpl>;
 
 lazy_static! {
-  pub static ref obj_loader: ObjLoader = Default::default();
+  pub static ref obj_loader: Mutex<ObjLoader> = Mutex::new(Default::default());
 }

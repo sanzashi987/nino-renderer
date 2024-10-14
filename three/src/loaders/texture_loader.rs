@@ -1,10 +1,12 @@
+use std::sync::Mutex;
+
 use lazy_static::lazy_static;
 
 use crate::{textures::texture::Texture, utils::SingleOrList};
 
 use super::{
   defines::ParserError,
-  parser::{Loader, ILoaderData, Parse},
+  parser::{ILoaderData, Loader, Parse},
 };
 
 pub struct VoidParser {}
@@ -25,5 +27,5 @@ impl Parse<Texture> for VoidParser {
 pub type TextureLoader = Loader<Texture, VoidParser>;
 
 lazy_static! {
-  pub static ref texture_loader: TextureLoader = Default::default();
+  pub static ref texture_loader: Mutex<TextureLoader> = Mutex::new(Default::default());
 }

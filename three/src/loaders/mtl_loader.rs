@@ -1,12 +1,13 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Mutex};
 
 use lazy_static::lazy_static;
 
-use crate::{math::Vec3, utils::SingleOrList};
+use crate::{math::Vec3, textures::texture, utils::SingleOrList};
 
 use super::{
   defines::{parse_token, parse_token_ok, ParserError},
   parser::{ILoaderData, Loader, Parse},
+  texture_loader::texture_loader,
 };
 
 #[derive(Debug, Default)]
@@ -21,7 +22,6 @@ pub struct MtlData {
   dissolve: Option<f32>,
   transmission_filter: Option<Vec3>,
   optical_density: Option<f32>,
-  receive_shadow: Option<bool>,
   illum: Option<u8>,
   textures: HashMap<String, String>,
 }
@@ -102,10 +102,18 @@ impl Parse<MtlData> for MtlParserImpl {
     }
     Ok(())
   }
+  fn on_loaded(data: &MtlData) -> super::defines::ParserResult {
+    let mut texture_mut_loader = texture_loader.lock().unwrap();
+
+    for (_, path) in &data.textures {
+      texture_mut_loader.load(path)?;
+    }
+    Ok(())
+  }
 }
 
 type MtlLoader = Loader<MtlData, MtlParserImpl>;
 
 lazy_static! {
-  pub static ref mtl_loader: MtlLoader = Default::default();
+  pub static ref mtl_loader: Mutex<MtlLoader> = Mutex::new(Default::default());
 }

@@ -65,7 +65,9 @@ pub trait Parse<Data: Default + ILoaderData> {
     Ok(())
   }
 
-  fn on_loaded(data: &Data) {}
+  fn on_loaded(data: &Data) -> ParserResult {
+    Ok(())
+  }
 }
 
 #[derive(Debug)]
