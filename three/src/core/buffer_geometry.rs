@@ -1,4 +1,4 @@
-use super::{buffer_attribute::TypeBufferEnum, marco::Extract};
+use super::buffer_attribute::TypeBufferEnum;
 use std::collections::HashMap;
 
 pub struct BufferGeometry {
@@ -17,12 +17,13 @@ impl Default for BufferGeometry {
 
 pub type Attribute = HashMap<String, TypeBufferEnum>;
 
-pub trait GeometryActions {
+pub trait IGeometry {
+  fn get_uuid(&self) -> &str;
   fn get_attribute(&self) -> &Attribute;
   fn set_attribute(&mut self, key: &str, val: TypeBufferEnum);
 }
 
-impl GeometryActions for BufferGeometry {
+impl IGeometry for BufferGeometry {
   fn get_attribute(&self) -> &Attribute {
     // let res = self.attributes.get("").map_or(None, |v| v.extract());
     &self.attributes
@@ -30,6 +31,10 @@ impl GeometryActions for BufferGeometry {
 
   fn set_attribute(&mut self, key: &str, val: TypeBufferEnum) {
     self.attributes.insert(key.to_string(), val);
+  }
+
+  fn get_uuid(&self) -> &str {
+    &self.uuid
   }
 }
 

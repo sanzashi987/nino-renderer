@@ -128,7 +128,7 @@ where
 
     for i in id_snap..self.next_id {
       let data_ref = self.loaded.get(&i).ok_or(ParserError::LoaderInstanceLoss)?;
-      Abstracts::on_loaded(data_ref);
+      Abstracts::on_loaded(data_ref)?;
     }
 
     return res;

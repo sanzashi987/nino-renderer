@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use crate::{
-  core::{buffer_geometry::GeometryActions, object_3d::ObjectActions},
+  core::{buffer_geometry::IGeometry, object_3d::ObjectActions},
   material::material::MaterialActions,
 };
 #[derive(Default)]
@@ -20,6 +20,6 @@ impl RenderStates {
   }
 }
 
-trait EntityList: ObjectActions + GeometryActions + MaterialActions {}
+trait EntityList: ObjectActions + IGeometry + MaterialActions {}
 
 pub type RenderList = Vec<Rc<dyn EntityList>>;

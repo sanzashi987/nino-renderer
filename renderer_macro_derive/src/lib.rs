@@ -47,18 +47,18 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
       position: std::cell::RefCell<crate::math::Vec3>,
       rotation: std::cell::RefCell<crate::math::Rotation>,
       scale: std::cell::RefCell<crate::math::Vec3>,
-      visible: bool,
+      layers: std::cell::RefCell<crate::core::layer::Layers>,
       cast_shadow: bool,
       receive_shadow: bool,
+      visible: std::cell::RefCell<bool>,
       user_data: std::collections::HashMap<String, Box<dyn std::any::Any>>,
-      is_camera: bool,
-      is_light: bool,
-      _self_ref: std::rc::Weak<dyn #obj_trait>,
+      object_type: crate::core::object_3d::ObjectType,
+      _self_ref: std::cell::OnceCell<std::rc::Weak<dyn #obj_trait>>,
       _uuid: String,
     }
 
     impl #obj_trait for #struct_name {
-     fn parent(&self) -> Option<std::rc::Rc<dyn #obj_trait>> {
+      fn parent(&self) -> Option<std::rc::Rc<dyn #obj_trait>> {
         if let Some(p) = self.parent.borrow().as_ref() {
           Some(p.clone())
         } else {
@@ -74,7 +74,7 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
       fn remove_from_parent(&self) {
         let mut p = self.parent.borrow_mut();
 
-        if let Some(parent) = *p {
+        if let Some(parent) = p.as_ref() {
           parent.remove(&self._uuid);
         }
 
@@ -92,19 +92,23 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
       fn add(&self, child: std::rc::Rc<dyn #obj_trait>) {
         let mut children = self.children.borrow_mut();
 
-        if let Some(me) = self._self_ref.upgrade() {
-          child.remove_from_parent();
-          child.set_parent(me.clone());
-          children.push(child.clone());
+        if let Some(self_pointer) = self._self_ref.get() {
+          if let Some(me) = self_pointer.upgrade() {
+            child.remove_from_parent();
+            child.set_parent(me.clone());
+            children.push(child.clone());
+          }
         }
       }
 
       fn clear(&self) {
-        let mut children = self.children.borrow_mut();
-
-        for child in *children {
-          child.remove_from_parent();
+        {
+          let children = self.children.borrow();
+          for child in children.iter() {
+            child.remove_from_parent();
+          }
         }
+        let mut children = self.children.borrow_mut();
 
         *children = vec![];
       }
@@ -126,13 +130,20 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
         child.apply_matrix(res);
       }
 
+      fn children(&self) -> std::cell::Ref<'_, Vec<std::rc::Rc<dyn #obj_trait>>> {
+        self.children.borrow()
+      }
+
       fn look_at(&self, target: crate::math::Vec3) {
         // let back = (self.position - target).normalize();
         self.update_global_matrix();
 
         let position = crate::math::extract_position(*self.global_matrix.borrow());
 
-        let (eye, target) = if self.is_camera || self.is_light {
+        let is_revert_z = self.object_type == crate::core::object_3d::ObjectType::Camera
+          || self.object_type == crate::core::object_3d::ObjectType::Light;
+
+        let (eye, target) = if is_revert_z {
           // camera default looking back along -z;
           (position, target)
         } else {
@@ -151,7 +162,7 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
 
         let mut q: crate::math::Quaternion = rotate_mat.into();
 
-        if let Some(parent) = *self.parent.borrow() {
+        if let Some(parent) = self.parent.borrow().as_ref() {
           let (_, r, _) = crate::math::decompose(parent.global_matrix());
 
           let q_parent: crate::math::Quaternion = r.into();
@@ -299,6 +310,22 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
         let (_, rotation, _) = crate::math::decompose(mat);
 
         rotation.into()
+      }
+
+      fn test_layers(&self, layers: &crate::core::layer::Layers) -> bool {
+        self.layers.borrow().test(layers)
+      }
+
+      fn layers(&self) -> std::cell::Ref<crate::core::layer::Layers> {
+        self.layers.borrow()
+      }
+
+      fn visible(&self) -> bool {
+        *self.visible.borrow()
+      }
+
+      fn get_type(&self) -> crate::core::object_3d::ObjectType {
+        self.object_type
       }
 
       fn uuid(&self) -> &str {

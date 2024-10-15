@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Mutex};
 
 use lazy_static::lazy_static;
 
-use crate::{math::Vec3, textures::texture, utils::SingleOrList};
+use crate::{math::Vec3, utils::SingleOrList};
 
 use super::{
   defines::{parse_token, parse_token_ok, ParserError},

@@ -5,7 +5,7 @@ use crate::core::{buffer_geometry::Attribute, unifrom::Uniform, varying::Varying
 use super::shader::{DefineShader, GlPerFragment, GlPerVertex, Shader};
 
 #[derive(Debug)]
-enum DepthFunc {
+pub enum DepthFunc {
   NeverDepth,
   AlwaysDepth,
   LessDepth,
@@ -17,7 +17,7 @@ enum DepthFunc {
 }
 
 #[derive(Debug)]
-enum Blending {
+pub enum Blending {
   NoBlending,
   NormalBlending,
   AdditiveBlending,
@@ -27,7 +27,7 @@ enum Blending {
 }
 
 #[derive(Debug)]
-enum Side {
+pub enum Side {
   FrontSide,
   BackSide,
   DoubleSide,
@@ -55,8 +55,8 @@ pub trait ConvertUniform {
   fn to_uniform(&self) -> Uniform;
 }
 
-#[derive(Debug, Default)]
-pub struct BasicMaterial<T: ConvertUniform, U: DefineShader> {
+#[derive(Debug)]
+pub struct BasicMaterial<T: ConvertUniform + Default, U: DefineShader> {
   pub user_data: HashMap<String, Rc<dyn Any>>,
 
   pub blending: Blending,
@@ -79,13 +79,13 @@ trait RunShader {
   fn fragment(&self, u: &Uniform, v: &Varying, gl: &mut GlPerFragment) -> bool;
 }
 
-impl<T: ConvertUniform, U: DefineShader> ConvertUniform for BasicMaterial<T, U> {
+impl<T: ConvertUniform + Default, U: DefineShader> ConvertUniform for BasicMaterial<T, U> {
   fn to_uniform(&self) -> Uniform {
     self.attributes.borrow().to_uniform()
   }
 }
 
-impl<T: ConvertUniform, U: DefineShader> RunShader for BasicMaterial<T, U> {
+impl<T: ConvertUniform + Default, U: DefineShader> RunShader for BasicMaterial<T, U> {
   fn vertex(&self, a: &Attribute, u: &Uniform, v: &mut Varying, gl: &mut GlPerVertex) {
     U::vertex()(a, u, v, gl)
   }
@@ -96,3 +96,34 @@ impl<T: ConvertUniform, U: DefineShader> RunShader for BasicMaterial<T, U> {
 }
 
 pub trait MaterialActions: ConvertUniform + RunShader {}
+
+impl<T: ConvertUniform + Default, U: DefineShader> Default for BasicMaterial<T, U> {
+  fn default() -> Self {
+    Self {
+      user_data: Default::default(),
+      blending: Default::default(),
+      side: Default::default(),
+      opacity: Default::default(),
+      transparent: Default::default(),
+      depth_test: Default::default(),
+      depth_func: Default::default(),
+      depth_write: Default::default(),
+      attributes: Default::default(),
+      abstract_shader: Default::default(),
+    }
+  }
+}
+
+macro_rules! define_uniform_attr {
+  ($uniform:ident;$($field:tt,)*) => {
+    $(
+      let Some(val) = self.$field {
+        let e : crate::core::uniform::UnifromTypeEnum = val.into();
+        uniform.attributes.insert(stringify!($field).to_string(), e);
+      };
+    )*
+
+  };
+}
+
+pub(crate) use define_uniform_attr;
