@@ -1,10 +1,10 @@
-use crate::core::unifrom::u;
+use crate::core::uniform::u;
 use crate::math::{Mat4, Vec3, Vec4};
 
 use crate::core::buffer_attribute::a;
 use crate::core::buffer_geometry::Attribute;
 
-use crate::core::unifrom::Uniform;
+use crate::core::uniform::Uniform;
 use crate::core::varying::Varying;
 use std::fmt::Debug;
 
@@ -58,8 +58,8 @@ pub trait DefineShader {
 impl Debug for Shader {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("Shader")
-      .field("vertex", &"/** vertex clousure */".to_string())
-      .field("fragment", &"/** fragment clousure */".to_string())
+      .field("vertex", &"/** vertex clousure */")
+      .field("fragment", &"/** fragment clousure */")
       .finish()
   }
 }

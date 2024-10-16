@@ -1,6 +1,6 @@
 use std::{any::Any, cell::RefCell, collections::HashMap, marker::PhantomData, rc::Rc};
 
-use crate::core::{buffer_geometry::Attribute, unifrom::Uniform, varying::Varying};
+use crate::core::{buffer_geometry::Attribute, uniform::Uniform, varying::Varying};
 
 use super::shader::{DefineShader, GlPerFragment, GlPerVertex, Shader};
 
@@ -115,15 +115,19 @@ impl<T: ConvertUniform + Default, U: DefineShader> Default for BasicMaterial<T, 
 }
 
 macro_rules! define_uniform_attr {
-  ($uniform:ident;$($field:tt,)*) => {
+  ($uniform:ident;$this:tt;$($field:tt),*) => {
     $(
-      let Some(val) = self.$field {
-        let e : crate::core::uniform::UnifromTypeEnum = val.into();
-        uniform.attributes.insert(stringify!($field).to_string(), e);
+      if let Some(val) = $this.$field {
+        let e : crate::core::uniform::UniformTypeEnum = val.into();
+        $uniform.insert(stringify!($field).to_string(), e);
       };
     )*
 
   };
 }
+
+// macro_rules! define_material_attr {
+//   ($($field:tt:$type:ty),*) => {};
+// }
 
 pub(crate) use define_uniform_attr;

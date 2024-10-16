@@ -22,7 +22,7 @@ pub struct MtlData {
   dissolve: Option<f32>,
   transmission_filter: Option<Vec3>,
   optical_density: Option<f32>,
-  illum: Option<u8>,
+  illum: Option<u32>,
   textures: HashMap<String, String>,
 }
 
@@ -88,7 +88,7 @@ impl Parse<MtlData> for MtlParserImpl {
         "Ni" => assign_last_mtl!(data;tokens;optical_density;f32),
         "d" => assign_last_mtl!(data;tokens;dissolve;f32),
         "Tr" => assign_last_mtl!(data;tokens;dissolve;f32),
-        "illum" => assign_last_mtl!(data;tokens;illum;u8),
+        "illum" => assign_last_mtl!(data;tokens;illum;u32),
         "map_Ka" => assign_last_mtl_texture!(data;tokens;working_dir;"map_Ka"),
         "map_Kd" => assign_last_mtl_texture!(data;tokens;working_dir;"map_Kd"),
         "map_Ks" => assign_last_mtl_texture!(data;tokens;working_dir;"map_Ks"),

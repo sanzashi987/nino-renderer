@@ -27,7 +27,7 @@ macro_rules! define_uniform_trait {
 
 define_uniform_trait!(
   Uniform;
-  UnifromTypeEnum;
+  UniformTypeEnum;
   Int-i32,
   Float-f32,
   Vec2-Vec2,
@@ -39,11 +39,11 @@ define_uniform_trait!(
 );
 #[derive(Debug, Default)]
 pub struct Uniform {
-  attributes: HashMap<String, UnifromTypeEnum>,
+  attributes: HashMap<String, UniformTypeEnum>,
 }
 
 impl Deref for Uniform {
-  type Target = HashMap<String, UnifromTypeEnum>;
+  type Target = HashMap<String, UniformTypeEnum>;
 
   fn deref(&self) -> &Self::Target {
     &self.attributes
@@ -57,7 +57,7 @@ impl DerefMut for Uniform {
 }
 
 impl Uniform {
-  pub fn get(&self, key: &str) -> Option<UnifromTypeEnum> {
+  pub fn get(&self, key: &str) -> Option<UniformTypeEnum> {
     let res = self.attributes.get(key);
     res.map(|x| *x)
   }
