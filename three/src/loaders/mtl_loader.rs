@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::{any::Any, collections::HashMap, sync::Mutex};
 
 use lazy_static::lazy_static;
 
@@ -14,16 +14,14 @@ use super::{
 pub struct MtlData {
   uid: u32,
   name: String,
-  ambient: Option<Vec3>,
-  diffuse: Option<Vec3>,
-  specular: Option<Vec3>,
-  emissive_coeficient: Option<Vec3>,
-  specular_exponent: Option<f32>,
-  dissolve: Option<f32>,
-  transmission_filter: Option<Vec3>,
-  optical_density: Option<f32>,
-  illum: Option<u32>,
+  attributes: HashMap<String, Box<dyn Any + Send>>,
   textures: HashMap<String, String>,
+}
+
+impl MtlData {
+  pub fn get_attr(&self, key: &str) -> Option<&Box<dyn Any + Send>> {
+    self.attributes.get(key)
+  }
 }
 
 impl ILoaderData for MtlData {
@@ -40,19 +38,37 @@ pub struct MtlParserImpl;
 
 macro_rules! assign_last_mtl {
   ($data: ident; $iter: ident; $key:tt; $type:ty) => {
-    $data.last_mut().ok_or(ParserError::MtlNotFound)?.$key = parse_token_ok!($iter.next();$type);
+    {
+      let val = parse_token!($iter.next();$type)?;
+      let to_insert: Box<dyn Any + Send> = Box::new(val);
+      $data
+        .last_mut()
+        .ok_or(ParserError::MtlNotFound)?
+        .attributes
+        .insert($key.to_string(), to_insert);
+    }
+    // $data.last_mut().ok_or(ParserError::MtlNotFound)?.$key = parse_token_ok!($iter.next();$type);
   };
   ($data: ident; $iter: ident; $key:tt; $type:ty = $($attr:ident : $attr_type:ty),+) => {
-    $data.last_mut().ok_or(ParserError::MtlNotFound)?.$key = parse_token_ok!($iter.next();$type = $($attr: $attr_type),+);
+     {
+      let val = parse_token!($iter.next();$type = $($attr: $attr_type),+)?;
+      let to_insert: Box<dyn Any + Send> = Box::new(val);
+      $data
+        .last_mut()
+        .ok_or(ParserError::MtlNotFound)?
+        .attributes
+        .insert($key.to_string(), to_insert);
+    }
+    // $data.last_mut().ok_or(ParserError::MtlNotFound)?.$key = parse_token_ok!($iter.next();$type = $($attr: $attr_type),+);
   };
 }
 
 macro_rules! assign_last_mtl_texture {
-  ($data: ident; $iter: ident;$dir: ident; $str: tt) => {
+  ($data: ident; $iter: ident; $key: tt;$dir: ident) => {
     {
       let texture  =parse_token!($iter.next();String)?;
       let texture = Self::append_to_working_dir($dir,&texture)?;
-      $data.last_mut().ok_or(ParserError::MtlNotFound)?.textures.insert($str.to_string(),texture);
+      $data.last_mut().ok_or(ParserError::MtlNotFound)?.textures.insert($key.to_string(),texture);
     }
   };
 }
@@ -79,24 +95,25 @@ impl Parse<MtlData> for MtlParserImpl {
           mtl.name = format!("{}@{}", fullpath, &name);
           data.push(mtl);
         }
-        "Ns" => assign_last_mtl!(data;tokens;specular_exponent;f32),
-        "Ka" => assign_last_mtl!(data;tokens;ambient;Vec3=x:f32,y:f32,z:f32),
-        "Kd" => assign_last_mtl!(data;tokens;diffuse;Vec3=x:f32,y:f32,z:f32),
-        "Ks" => assign_last_mtl!(data;tokens;specular;Vec3=x:f32,y:f32,z:f32),
-        "Ke" => assign_last_mtl!(data;tokens;emissive_coeficient;Vec3=x:f32,y:f32,z:f32),
-        "Tf" => assign_last_mtl!(data;tokens;transmission_filter;Vec3=x:f32,y:f32,z:f32),
-        "Ni" => assign_last_mtl!(data;tokens;optical_density;f32),
-        "d" => assign_last_mtl!(data;tokens;dissolve;f32),
-        "Tr" => assign_last_mtl!(data;tokens;dissolve;f32),
-        "illum" => assign_last_mtl!(data;tokens;illum;u32),
-        "map_Ka" => assign_last_mtl_texture!(data;tokens;working_dir;"map_Ka"),
-        "map_Kd" => assign_last_mtl_texture!(data;tokens;working_dir;"map_Kd"),
-        "map_Ks" => assign_last_mtl_texture!(data;tokens;working_dir;"map_Ks"),
-        "map_Ns =>" => assign_last_mtl_texture!(data;tokens;working_dir;"map_Ns"),
-        "map_d" => assign_last_mtl_texture!(data;tokens;working_dir;"map_d"),
-        "map_refl" => assign_last_mtl_texture!(data;tokens;working_dir;"map_refl"),
-        "map_Bump" => assign_last_mtl_texture!(data;tokens;working_dir;"map_Bump"),
-        "norm" => assign_last_mtl_texture!(data;tokens;working_dir;"norm"),
+        "Ns" => assign_last_mtl!(data;tokens;"Ns";f32),
+        "Ka" => assign_last_mtl!(data;tokens;"Ka";Vec3=x:f32,y:f32,z:f32),
+        "Kd" => assign_last_mtl!(data;tokens;"Kd";Vec3=x:f32,y:f32,z:f32),
+        "Ks" => assign_last_mtl!(data;tokens;"Ks";Vec3=x:f32,y:f32,z:f32),
+        "Ke" => assign_last_mtl!(data;tokens;"Ke";Vec3=x:f32,y:f32,z:f32),
+        "Tf" => assign_last_mtl!(data;tokens;"Tf";Vec3=x:f32,y:f32,z:f32),
+        "Ni" => assign_last_mtl!(data;tokens;"Ni";f32),
+        "d" => assign_last_mtl!(data;tokens;"d";f32),
+        "Tr" => assign_last_mtl!(data;tokens;"Tr";f32),
+        "illum" => assign_last_mtl!(data;tokens;"illum";u32),
+        "map_Ka" => assign_last_mtl_texture!(data;tokens;"map_Ka";working_dir),
+        "map_Kd" => assign_last_mtl_texture!(data;tokens;"map_Kd";working_dir),
+        "map_Ks" => assign_last_mtl_texture!(data;tokens;"map_Ks";working_dir),
+        "map_Ns =>" => assign_last_mtl_texture!(data;tokens;"map_Ns";working_dir),
+        "map_d" => assign_last_mtl_texture!(data;tokens;"map_d";working_dir),
+        "map_refl" => assign_last_mtl_texture!(data;tokens;"map_refl";working_dir),
+        "map_Bump" => assign_last_mtl_texture!(data;tokens;"map_Bump";working_dir),
+
+        "norm" => assign_last_mtl_texture!(data;tokens;"norm";working_dir),
         _ => {}
       }
     }

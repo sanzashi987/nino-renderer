@@ -114,20 +114,42 @@ impl<T: ConvertUniform + Default, U: DefineShader> Default for BasicMaterial<T, 
   }
 }
 
-macro_rules! define_uniform_attr {
-  ($uniform:ident;$this:tt;$($field:tt),*) => {
+macro_rules! define_material_attribute {
+  ($name:tt; $($key:tt->$field:tt:$type:ty),+) => {
+#[derive(Debug,Default)]
+pub struct $name {
+  $(pub $field: Option<$type>,)+
+}
+
+impl crate::material::material::ConvertUniform for $name {
+  fn to_uniform(&self) -> crate::core::uniform::Uniform {
+    let mut uniform: crate::core::uniform::Uniform = Default::default();
     $(
-      if let Some(val) = $this.$field {
+      if let Some(val) = self.$field {
         let e : crate::core::uniform::UniformTypeEnum = val.into();
-        $uniform.insert(stringify!($field).to_string(), e);
+        uniform.insert(stringify!($field).to_string(), e);
       };
-    )*
+    )+
+    uniform
+  }
+}
+
+impl From<&MtlData> for $name {
+  fn from(value: &MtlData) -> Self {
+    let mut res = Self::default();
+    $(
+      if let Some(v) = value.get_attr(stringify!($key)) {
+        if let Some(matched) = v.downcast_ref::<$type>() {
+          res.$field = Some(*matched);
+        }
+      }
+    )+
+    res
+  }
+}
 
   };
 }
 
-// macro_rules! define_material_attr {
-//   ($($field:tt:$type:ty),*) => {};
-// }
+pub(crate) use define_material_attribute;
 
-pub(crate) use define_uniform_attr;

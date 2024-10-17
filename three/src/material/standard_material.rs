@@ -1,42 +1,27 @@
 use crate::{
   core::{buffer_geometry::Attribute, uniform::Uniform, varying::Varying},
+  loaders::mtl_loader::MtlData,
   math::Vec3,
 };
 
 use super::{
-  material::{define_uniform_attr, BasicMaterial, ConvertUniform},
+  material::{define_material_attribute, BasicMaterial},
   shader::{DefineShader, GlPerFragment, GlPerVertex},
 };
-#[derive(Debug, Default)]
-pub struct StandardMeshAttribute {
-  pub ambient: Option<Vec3>,
-  pub diffuse: Option<Vec3>,
-  pub specular: Option<Vec3>,
-  pub emissive_coeficient: Option<Vec3>,
-  pub specular_exponent: Option<f32>,
-  pub dissolve: Option<f32>,
-  pub transmission_filter: Option<Vec3>,
-  pub optical_density: Option<f32>,
-  pub illum: Option<u32>,
-}
 
-impl ConvertUniform for StandardMeshAttribute {
-  fn to_uniform(&self) -> crate::core::uniform::Uniform {
-    let mut uniform: crate::core::uniform::Uniform = Default::default();
-    define_uniform_attr!(uniform;self;
-      ambient,
-      diffuse,
-      specular,
-      emissive_coeficient,
-      specular_exponent,
-      dissolve,
-      transmission_filter,
-      optical_density,
-      illum
-    );
-    uniform
-  }
-}
+define_material_attribute!(
+  StandardMeshAttribute;
+  Ns->specular_exponent: f32,
+  Ka->ambient:Vec3,
+  Kd->diffuse:Vec3,
+  Ks->specular:Vec3,
+  Ke->emissive_coeficient:Vec3,
+  Tf->transmission_filter:Vec3,
+  Ni->optical_density:f32,
+  d->dissolve:f32,
+  // Tr->dissolve:f32,
+  illum->illum:u32
+);
 
 fn standard_vertex_shader(
   attribute: &Attribute,
