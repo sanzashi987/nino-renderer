@@ -1,7 +1,7 @@
 use std::{
   collections::HashMap,
   marker::PhantomData,
-  path::{Path, PathBuf},
+  path::{self, Path, PathBuf},
 };
 
 use crate::utils::SingleOrList;
@@ -132,6 +132,16 @@ where
     }
 
     return res;
+  }
+
+  pub fn get_by_fullpath(&self, path: &str) -> Option<&Data> {
+    if let Some(id) = self.name_id_map.get(path) {
+      return self.loaded.get(id);
+    }
+    None
+  }
+  pub fn get_by_id(&self, id: u32) -> Option<&Data> {
+    self.loaded.get(&id)
   }
 }
 

@@ -4,7 +4,7 @@ use crate::math::{Vec2, Vec4};
 
 #[derive(Debug, Default)]
 pub struct Texture {
-  id: u32,
+  pub id: u32,
   image: Option<DynamicImage>,
   pub path: String,
 }

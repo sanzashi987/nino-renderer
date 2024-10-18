@@ -12,10 +12,10 @@ use super::{
 
 #[derive(Debug, Default)]
 pub struct MtlData {
-  uid: u32,
-  name: String,
-  attributes: HashMap<String, Box<dyn Any + Send>>,
-  textures: HashMap<String, String>,
+  pub uid: u32,
+  pub name: String,
+  pub attributes: HashMap<String, Box<dyn Any + Send>>,
+  pub textures: HashMap<String, String>,
 }
 
 impl MtlData {
