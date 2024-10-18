@@ -39,3 +39,7 @@ gpu = []
 [[example]]
 name = "tinyrenderer"
 path = "demo/tiny_renderer.rs"
+
+[[example]]
+name = "threerenderer"
+path = "demo/three_renderer.rs"

@@ -152,4 +152,3 @@ impl From<&MtlData> for $name {
 }
 
 pub(crate) use define_material_attribute;
-
