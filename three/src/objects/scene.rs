@@ -5,11 +5,12 @@ use super::{
   // group::GroupSupportChildren,
 };
 
-// #[object_3d(ObjectActions)]
+#[object_3d(ObjectActions)]
 pub struct Scene {}
 
-// impl Scene {
-//   pub fn new() -> Self {
-//     with_default_fields![]
-//   }
-// }
+impl Scene {
+  pub fn new() -> std::rc::Rc<Self> {
+    let this = with_default_fields!(Scene;);
+    this
+  }
+}

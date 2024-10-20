@@ -10,10 +10,12 @@ use crate::{
     extract_normal_matrix,
   },
 };
+#[derive(Default)]
 pub struct GlRenderer {
   viewport: Viewport,
   color: ColorBuffer,
   depth: DepthBuffer,
+  shadow_map: bool,
   render_states: RenderStates,
 }
 
@@ -23,6 +25,7 @@ impl GlRenderer {
       viewport: Default::default(),
       color: Default::default(),
       depth: Default::default(),
+      shadow_map: Default::default(),
       render_states: Default::default(),
     }
   }

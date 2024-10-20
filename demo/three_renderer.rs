@@ -1,5 +1,5 @@
 use three::{
-  loaders::{self, mtl_loader::mtl_loader, obj_loader::obj_loader, texture_loader::texture_loader},
+  loaders::{mtl_loader::mtl_loader, obj_loader::obj_loader, texture_loader::texture_loader},
   utils::SingleOrList,
 };
 
