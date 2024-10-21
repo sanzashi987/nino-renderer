@@ -7,7 +7,7 @@ pub struct Group {}
 
 impl Group {
   pub fn new() -> std::rc::Rc<Self> {
-    let this = with_default_fields!(Group;);
+    let this = with_default_fields!(Group);
     this
   }
 }

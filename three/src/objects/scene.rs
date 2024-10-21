@@ -10,7 +10,7 @@ pub struct Scene {}
 
 impl Scene {
   pub fn new() -> std::rc::Rc<Self> {
-    let this = with_default_fields!(Scene;);
+    let this = with_default_fields!(Scene);
     this
   }
 }

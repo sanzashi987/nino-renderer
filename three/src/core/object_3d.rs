@@ -97,7 +97,7 @@ macro_rules! define_support_objects {
 macro_rules! with_default_fields {
   ($type:tt;$($val:ident),*) => {{
 
-    let mut this = std::rc::Rc::new(Self {
+    let this = std::rc::Rc::new(Self {
       $($val,)*
       parent: Default::default(),
       children: Default::default(),
@@ -116,13 +116,16 @@ macro_rules! with_default_fields {
       _self_ref: Default::default(),
     });
 
-    let mut that: std::rc::Rc<dyn crate::core::object_3d::ObjectActions> = this.clone();
+    let that: std::rc::Rc<dyn crate::core::object_3d::ObjectActions> = this.clone();
 
     let _ = this._self_ref.set(std::rc::Rc::downgrade(&that));
 
 
     this
   }};
+  ($type:tt)=>{{
+    with_default_fields!($type;)
+  }}
 }
 
 pub(crate) use define_support_objects;

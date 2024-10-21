@@ -2,8 +2,6 @@ use renderer_macro_derive::object_3d;
 
 use crate::material::standard_material::StandardMeshMaterial;
 
-use super::super::material::material::BasicMaterial;
-
 use super::super::core::buffer_geometry::BufferGeometry;
 use super::super::core::object_3d::{
   /* define_support_objects, */ with_default_fields, ObjectActions,
