@@ -2,7 +2,7 @@ use std::{borrow::Borrow, rc::Rc};
 
 use super::super::objects::scene::Scene;
 use super::viewport::Viewport;
-use super::{super::cameras::camera::Camera, render_states::RenderStates};
+use super::{super::cameras::camera::Camera, render_states::RenderState};
 use crate::{
   core::object_3d::{ObjectActions, ObjectType},
   math::{
@@ -16,7 +16,7 @@ pub struct GlRenderer {
   color: ColorBuffer,
   depth: DepthBuffer,
   shadow_map: bool,
-  render_states: RenderStates,
+  render_states: RenderState,
 }
 
 impl GlRenderer {
@@ -46,7 +46,7 @@ impl GlRenderer {
   }
 
   pub fn render(&mut self, scene: Scene, camera: impl Camera + ObjectActions) -> ColorBuffer {
-    // scene.update_global_matrix();
+    scene.update_global_matrix();
     camera.update_global_matrix();
 
     let project_screen_matrix = camera.projection_matrix() * camera.global_matrix_inverse();
