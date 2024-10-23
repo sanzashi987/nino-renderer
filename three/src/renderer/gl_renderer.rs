@@ -1,6 +1,7 @@
 use std::{borrow::Borrow, rc::Rc};
 
 use super::super::objects::scene::Scene;
+use super::render_states::RenderStates;
 use super::viewport::Viewport;
 use super::{super::cameras::camera::Camera, render_states::RenderState};
 use crate::{
@@ -16,7 +17,7 @@ pub struct GlRenderer {
   color: ColorBuffer,
   depth: DepthBuffer,
   shadow_map: bool,
-  render_states: RenderState,
+  render_states: RenderStates,
 }
 
 impl GlRenderer {
