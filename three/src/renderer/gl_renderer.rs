@@ -1,9 +1,9 @@
-use std::{borrow::Borrow, rc::Rc};
+use std::rc::Rc;
 
+use super::super::cameras::camera::ICamera;
 use super::super::objects::scene::Scene;
-use super::render_states::RenderStates;
+use super::render_states::{RenderList, RenderStates};
 use super::viewport::Viewport;
-use super::{super::cameras::camera::Camera, render_states::RenderState};
 use crate::{
   core::object_3d::{ObjectActions, ObjectType},
   math::{
@@ -18,17 +18,13 @@ pub struct GlRenderer {
   depth: DepthBuffer,
   shadow_map: bool,
   render_states: RenderStates,
+  render_lists: RenderList,
+  // render_target:
 }
 
 impl GlRenderer {
   pub fn new() -> Self {
-    Self {
-      viewport: Default::default(),
-      color: Default::default(),
-      depth: Default::default(),
-      shadow_map: Default::default(),
-      render_states: Default::default(),
-    }
+    Default::default()
   }
 
   pub fn set_size(&mut self, w: f32, h: f32) {
@@ -46,11 +42,17 @@ impl GlRenderer {
     std::mem::replace(&mut self.color, ColorBuffer::new(w, h))
   }
 
-  pub fn render(&mut self, scene: Scene, camera: impl Camera + ObjectActions) -> ColorBuffer {
+  pub fn render(&mut self, scene: Scene, camera: impl ICamera + ObjectActions) -> ColorBuffer {
     scene.update_global_matrix();
     camera.update_global_matrix();
 
-    let project_screen_matrix = camera.projection_matrix() * camera.global_matrix_inverse();
+    let project_matrix = camera.projection_matrix();
+    let view_matrix = camera.global_matrix_inverse();
+
+    let vp_matrix = project_matrix * view_matrix;
+
+    let current_render_state = self.render_states.get(&scene.uuid());
+
     // let frustum =
 
     self.take_color()
@@ -59,13 +61,15 @@ impl GlRenderer {
   fn parse_object(
     &mut self,
     object: Rc<dyn ObjectActions>,
-    camera: &(impl Camera + ObjectActions),
+    camera: &(impl ICamera),
     group_order: i32,
     sort: bool,
   ) {
     if !object.visible() {
       return;
     }
+
+    // let
 
     let visible = object.test_layers(&camera.layers());
     if visible {
@@ -89,14 +93,16 @@ impl GlRenderer {
       self.parse_object(child.clone(), camera, group_order, sort);
     }
   }
+
+  fn render_pixel(&mut self) {}
 }
 
-fn render_objects(object: Rc<dyn ObjectActions>, camera: impl Camera + ObjectActions) {}
+fn render_objects(object: Rc<dyn ObjectActions>, camera: impl ICamera + ObjectActions) {}
 
 fn render_object(
   object: Rc<dyn ObjectActions>,
   scene: &Scene,
-  camera: impl Camera + ObjectActions,
+  camera: impl ICamera + ObjectActions,
 ) {
   let mv = camera.global_matrix() * object.global_matrix();
   let normal_matrix = extract_normal_matrix(mv);

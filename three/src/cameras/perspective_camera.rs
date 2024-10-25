@@ -7,7 +7,7 @@ use crate::{
   math::Mat4,
 };
 
-use super::camera::Camera;
+use super::camera::ICamera;
 
 #[object_3d(ObjectActions)]
 pub struct PerspectiveCamera {
@@ -56,7 +56,7 @@ impl PerspectiveCamera {
   }
 }
 
-impl Camera for PerspectiveCamera {
+impl ICamera for PerspectiveCamera {
   fn view_matrix(&self) -> crate::math::Mat4 {
     self.global_matrix_inverse()
   }

@@ -1,6 +1,6 @@
 use crate::{core::object_3d::ObjectActions, math::Mat4};
 
-pub trait Camera: ObjectActions {
+pub trait ICamera: ObjectActions {
   fn view_matrix(&self) -> Mat4;
   fn projection_matrix(&self) -> Mat4;
 
