@@ -51,6 +51,8 @@ pub trait ObjectActions {
   fn global_position(&self) -> crate::math::Vec3;
   fn global_rotation(&self) -> crate::math::Rotation;
 
+  fn cast_shadow(&self) -> bool;
+
   fn layers(&self) -> std::cell::Ref<crate::core::layer::Layers>;
   fn test_layers(&self, layers: &crate::core::layer::Layers) -> bool;
 
@@ -60,39 +62,9 @@ pub trait ObjectActions {
   fn uuid(&self) -> &str;
 }
 
-macro_rules! define_support_objects {
-  ($enum_name:tt;$($name:tt:$ty:ty),+) => {
-    pub enum $enum_name {
-      $(
-        $name($ty),
-      )+
-    }
-    impl $enum_name {
-      #[allow(unused)]
-      pub fn convert<T:'static + Sized>(val :T) ->Option<Self>{
-        let val_any: Box<dyn std::any::Any> = Box::new(val);
-        $(
-          let val_any = match val_any.downcast::<$ty>() {
-            Ok(matched) =>{
-              return Some(Self::$name(*matched));
-            },
-            Err(instance) =>{
-              instance
-            }
-          };
-        )+
-
-        return None;
-
-      }
-    }
-
-  };
+fn a() {
+  let uid = uuid::Uuid::new_v4();
 }
-
-// fn a() {
-//   let uid = uuid::Uuid::new_v4().to_string();
-// }
 
 macro_rules! with_default_fields {
   ($type:tt;$($val:ident),*) => {{
@@ -128,5 +100,4 @@ macro_rules! with_default_fields {
   }}
 }
 
-pub(crate) use define_support_objects;
 pub(crate) use with_default_fields;

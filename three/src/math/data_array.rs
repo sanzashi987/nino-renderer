@@ -1,6 +1,6 @@
 // struct PureElemImage<T> {}
 use super::vec;
-
+#[derive(Debug)]
 pub struct DataArray<T> {
   data: Vec<T>,
   w: u32,

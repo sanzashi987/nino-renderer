@@ -312,6 +312,11 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
         rotation.into()
       }
 
+      fn cast_shadow(&self) -> bool {
+        self.cast_shadow
+      }
+
+
       fn test_layers(&self, layers: &crate::core::layer::Layers) -> bool {
         self.layers.borrow().test(layers)
       }
