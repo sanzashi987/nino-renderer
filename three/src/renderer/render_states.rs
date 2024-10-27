@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc, vec};
 
 use crate::{
   cameras::camera::{self, ICamera},
@@ -39,7 +39,7 @@ struct RenderItem {
   object: Option<Rc<dyn ObjectActions>>,
   geometry: Option<Rc<dyn IGeometry>>,
   material: Option<Rc<dyn IMaterial>>,
-  group: Option<Rc<dyn ObjectActions>>,
+  parent: Option<Rc<dyn ObjectActions>>,
 }
 
 #[derive(Default)]
@@ -48,10 +48,35 @@ pub struct RenderList {
   opaque: Vec<RenderItem>,
   transparent: Vec<RenderItem>,
   transmissive: Vec<RenderItem>,
+  render_items: Vec<RenderItem>,
 }
 
 impl RenderList {
   pub fn init(&mut self) {}
+
+  fn make_render_item(
+    &mut self,
+    object: Rc<dyn ObjectActions>,
+    geometry: Rc<dyn IGeometry>,
+    material: Rc<dyn IMaterial>,
+    order: f32,
+    z: f32,
+    parent: Rc<dyn ObjectActions>,
+  ) {
+  }
+  pub fn push(
+    object: Rc<dyn ObjectActions>,
+    geometry: Rc<dyn IGeometry>,
+    material: Rc<dyn IMaterial>,
+    order: f32,
+    z: f32,
+    parent: Rc<dyn ObjectActions>,
+  ) {
+  }
+
+  pub fn finish(&mut self) {
+    self.render_items = vec![];
+  }
 }
 
 pub struct RenderTypes<T: Default> {

@@ -21,6 +21,7 @@ pub trait IGeometry {
   fn get_uuid(&self) -> &str;
   fn get_attribute(&self) -> &Attribute;
   fn set_attribute(&mut self, key: &str, val: TypeBufferEnum);
+  // fn compute_bounding_sphere(&mut self);
 }
 
 impl IGeometry for BufferGeometry {

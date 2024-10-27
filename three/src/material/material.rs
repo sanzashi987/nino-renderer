@@ -65,6 +65,7 @@ pub struct BasicMaterial<T: ConvertUniform + Default, U: DefineShader> {
   pub opacity: u8,
   transparent: bool,
   transmission: Option<u32>,
+  visible: bool,
 
   pub depth_test: bool,
   pub depth_func: DepthFunc,
@@ -78,6 +79,7 @@ pub struct BasicMaterial<T: ConvertUniform + Default, U: DefineShader> {
 pub trait IMaterial {
   fn transparent(&self) -> bool;
   fn transmission(&self) -> Option<u32>;
+  fn visible(&self) -> bool;
 }
 
 impl<T: ConvertUniform + Default, U: DefineShader> IMaterial for BasicMaterial<T, U> {
@@ -86,6 +88,9 @@ impl<T: ConvertUniform + Default, U: DefineShader> IMaterial for BasicMaterial<T
   }
   fn transmission(&self) -> Option<u32> {
     self.transmission
+  }
+  fn visible(&self) -> bool {
+    self.visible
   }
 }
 
@@ -119,6 +124,7 @@ impl<T: ConvertUniform + Default, U: DefineShader> Default for BasicMaterial<T, 
       opacity: Default::default(),
       transparent: Default::default(),
       transmission: Default::default(),
+      visible: Default::default(),
       depth_test: Default::default(),
       depth_func: Default::default(),
       depth_write: Default::default(),

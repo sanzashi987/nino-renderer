@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use super::super::cameras::camera::ICamera;
 use super::super::objects::scene::Scene;
-use super::render_states::{RenderList, RenderState, RenderStates};
+use super::render_states::{RenderList, RenderLists, RenderState, RenderStates};
 use super::render_target::RenderTarget;
 use crate::{
   core::object_3d::{ObjectActions, ObjectType},
@@ -17,9 +17,10 @@ pub struct GlRenderer {
   depth: DepthBuffer,
   shadow_map: bool,
   render_states: RenderStates,
-  render_lists: RenderList,
+  render_lists: RenderLists,
   render_target: Option<RenderTarget>,
   current_render_state: Option<RenderState>,
+  current_render_list: Option<RenderList>,
 }
 
 impl GlRenderer {
@@ -56,9 +57,13 @@ impl GlRenderer {
 
     let vp_matrix = project_matrix * view_matrix;
 
-    let current_render_state = self.render_states.get(&scene.uuid());
+    let current_render_state = { self.render_states.get(&scene.uuid()) };
 
     // let frustum =
+    {
+      self.project_object(current_render_state, scene, camera, 0, true);
+    }
+
     self.result.take_color()
   }
 
@@ -86,9 +91,7 @@ impl GlRenderer {
             current_render_state.push_shadow(object.clone());
           }
         }
-        ObjectType::Mesh | ObjectType::Line | ObjectType::Point => {
-          
-        }
+        ObjectType::Mesh | ObjectType::Line | ObjectType::Point => {}
         _ => {}
       }
     }
