@@ -1,3 +1,5 @@
+use std::any::Any;
+
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum ObjectType {
   Light,
@@ -15,7 +17,7 @@ impl Default for ObjectType {
     Self::Object3D
   }
 }
-pub trait ObjectActions {
+pub trait ObjectActions: Any {
   fn parent(&self) -> Option<std::rc::Rc<dyn ObjectActions>>;
   fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>);
   fn remove_from_parent(&self);
@@ -62,9 +64,9 @@ pub trait ObjectActions {
   fn uuid(&self) -> &str;
 }
 
-fn a() {
-  let uid = uuid::Uuid::new_v4();
-}
+// fn a() {
+//   let uid = uuid::Uuid::new_v4();
+// }
 
 macro_rules! with_default_fields {
   ($type:tt;$($val:ident),*) => {{

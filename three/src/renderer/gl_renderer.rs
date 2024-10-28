@@ -1,9 +1,11 @@
+use std::any::Any;
 use std::rc::Rc;
 
 use super::super::cameras::camera::ICamera;
 use super::super::objects::scene::Scene;
 use super::render_states::{RenderList, RenderLists, RenderState, RenderStates};
 use super::render_target::RenderTarget;
+use crate::objects::mesh::Mesh;
 use crate::{
   core::object_3d::{ObjectActions, ObjectType},
   math::{
@@ -91,7 +93,12 @@ impl GlRenderer {
             current_render_state.push_shadow(object.clone());
           }
         }
-        ObjectType::Mesh | ObjectType::Line | ObjectType::Point => {}
+        ObjectType::Mesh => {
+          let obj = object.clone();
+          // Rc::downcast::<Mesh>(obj);
+        }
+        ObjectType::Line => {}
+        ObjectType::Point => {}
         _ => {}
       }
     }

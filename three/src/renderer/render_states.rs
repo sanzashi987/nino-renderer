@@ -33,45 +33,54 @@ impl RenderState {
   }
 }
 
-#[derive(Default)]
 struct RenderItem {
   id: String,
-  object: Option<Rc<dyn ObjectActions>>,
-  geometry: Option<Rc<dyn IGeometry>>,
-  material: Option<Rc<dyn IMaterial>>,
+  object: Rc<dyn ObjectActions>,
+  geometry: Rc<dyn IGeometry>,
+  material: Rc<dyn IMaterial>,
+  group_order: f32,
+  z: f32,
   parent: Option<Rc<dyn ObjectActions>>,
 }
 
 #[derive(Default)]
 pub struct RenderList {
   index: u32,
-  opaque: Vec<RenderItem>,
-  transparent: Vec<RenderItem>,
-  transmissive: Vec<RenderItem>,
-  render_items: Vec<RenderItem>,
+  opaque: Vec<Rc<RenderItem>>,
+  transparent: Vec<Rc<RenderItem>>,
+  transmissive: Vec<Rc<RenderItem>>,
+  render_items: Vec<Rc<RenderItem>>,
 }
 
 impl RenderList {
-  pub fn init(&mut self) {}
-
-  fn make_render_item(
+  pub fn push(
     &mut self,
     object: Rc<dyn ObjectActions>,
     geometry: Rc<dyn IGeometry>,
     material: Rc<dyn IMaterial>,
-    order: f32,
+    group_order: f32,
     z: f32,
-    parent: Rc<dyn ObjectActions>,
+    parent: Option<Rc<dyn ObjectActions>>,
   ) {
-  }
-  pub fn push(
-    object: Rc<dyn ObjectActions>,
-    geometry: Rc<dyn IGeometry>,
-    material: Rc<dyn IMaterial>,
-    order: f32,
-    z: f32,
-    parent: Rc<dyn ObjectActions>,
-  ) {
+    let render_item = RenderItem {
+      id: object.uuid().to_string(),
+      object,
+      geometry,
+      material,
+      group_order,
+      z,
+      parent,
+    };
+
+    let render_item = Rc::new(render_item);
+
+    if let Some(_) = render_item.material.transmission() {
+      self.transmissive.push(render_item.clone());
+    } else if render_item.material.transparent() {
+      self.transparent.push(render_item.clone());
+    } else {
+      self.opaque.push(render_item.clone());
+    }
   }
 
   pub fn finish(&mut self) {
