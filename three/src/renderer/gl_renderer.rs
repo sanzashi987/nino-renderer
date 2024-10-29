@@ -59,61 +59,22 @@ impl GlRenderer {
 
     let vp_matrix = project_matrix * view_matrix;
 
-    let current_render_state = { self.render_states.get(&scene.uuid()) };
+    let scene_id = scene.uuid();
+    let current_render_state = { self.render_states.get(scene_id) };
+    let current_render_list = self.render_lists.get(scene_id);
 
     // let frustum =
-    {
-      self.project_object(current_render_state, scene, camera, 0, true);
-    }
+
+    project_object(
+      current_render_state,
+      current_render_list,
+      scene,
+      camera,
+      0,
+      true,
+    );
 
     self.result.take_color()
-  }
-
-  fn project_object(
-    &mut self,
-    current_render_state: &RenderState,
-    object: Rc<dyn ObjectActions>,
-    camera: Rc<dyn ICamera>,
-    group_order: i32,
-    sort: bool,
-  ) {
-    if !object.visible() {
-      return;
-    }
-
-    // let
-
-    let visible = object.test_layers(&camera.layers());
-    if visible {
-      match object.get_type() {
-        ObjectType::Light => {
-          current_render_state.push_light(object.clone());
-
-          if object.cast_shadow() {
-            current_render_state.push_shadow(object.clone());
-          }
-        }
-        ObjectType::Mesh => {
-          let obj = object.clone();
-          // Rc::downcast::<Mesh>(obj);
-        }
-        ObjectType::Line => {}
-        ObjectType::Point => {}
-        _ => {}
-      }
-    }
-
-    let children = object.children();
-
-    for child in children.iter() {
-      self.project_object(
-        current_render_state,
-        child.clone(),
-        camera.clone(),
-        group_order,
-        sort,
-      );
-    }
   }
 
   fn render_pixel(&mut self) {}
@@ -124,4 +85,55 @@ fn render_objects(object: Rc<dyn ObjectActions>, camera: Rc<dyn ICamera>) {}
 fn render_object(object: Rc<dyn ObjectActions>, scene: &Scene, camera: Rc<dyn ICamera>) {
   let mv = camera.global_matrix() * object.global_matrix();
   let normal_matrix = extract_normal_matrix(mv);
+}
+
+fn project_object(
+  current_render_state: &RenderState,
+  current_render_list: &RenderList,
+  object: Rc<dyn ObjectActions>,
+  camera: Rc<dyn ICamera>,
+  group_order: i32,
+  sort: bool,
+) {
+  if !object.visible() {
+    return;
+  }
+
+  // let
+
+  let visible = object.test_layers(&camera.layers());
+  if visible {
+    match object.get_type() {
+      ObjectType::Light => {
+        current_render_state.push_light(object.clone());
+
+        if object.cast_shadow() {
+          current_render_state.push_shadow(object.clone());
+        }
+      }
+      ObjectType::Mesh => {
+        let obj = object.clone();
+        if let Ok(res) = Rc::downcast::<Mesh>(obj.clone()) {
+          let g = res.geometry();
+          let m = res.material();
+        }
+      }
+      ObjectType::Line => {}
+      ObjectType::Point => {}
+      _ => {}
+    }
+  }
+
+  let children = object.children();
+
+  for child in children.iter() {
+    project_object(
+      current_render_state,
+      current_render_list,
+      child.clone(),
+      camera.clone(),
+      group_order,
+      sort,
+    );
+  }
 }
