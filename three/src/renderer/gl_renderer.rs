@@ -5,6 +5,8 @@ use super::super::cameras::camera::ICamera;
 use super::super::objects::scene::Scene;
 use super::render_states::{RenderList, RenderLists, RenderState, RenderStates};
 use super::render_target::RenderTarget;
+use crate::math::{Mat4, Vec4};
+use crate::objects::group::Group;
 use crate::objects::mesh::Mesh;
 use crate::{
   core::object_3d::{ObjectActions, ObjectType},
@@ -70,6 +72,7 @@ impl GlRenderer {
       current_render_list,
       scene,
       camera,
+      vp_matrix,
       0,
       true,
     );
@@ -92,6 +95,7 @@ fn project_object(
   current_render_list: &RenderList,
   object: Rc<dyn ObjectActions>,
   camera: Rc<dyn ICamera>,
+  vp: Mat4,
   group_order: i32,
   sort: bool,
 ) {
@@ -102,8 +106,15 @@ fn project_object(
   // let
 
   let visible = object.test_layers(&camera.layers());
+  let mut next_group_order = group_order;
   if visible {
     match object.get_type() {
+      ObjectType::Group => {
+        if let Ok(res) = Rc::downcast::<Group>(object.clone()) {
+          next_group_order = res.group_order;
+        }
+      }
+
       ObjectType::Light => {
         current_render_state.push_light(object.clone());
 
@@ -113,9 +124,21 @@ fn project_object(
       }
       ObjectType::Mesh => {
         let obj = object.clone();
+        let global_model = obj.global_matrix();
+
         if let Ok(res) = Rc::downcast::<Mesh>(obj.clone()) {
-          let g = res.geometry();
-          let m = res.material();
+          let geometry = res.geometry();
+          let material = res.material();
+
+          let vec4 = vp
+            * Vec4::new(
+              global_model.get(0, 3),
+              global_model.get(1, 3),
+              global_model.get(2, 3),
+              global_model.get(3, 3),
+            );
+
+          current_render_list.push(obj, geometry, material, group_order, vec4.z, None);
         }
       }
       ObjectType::Line => {}
@@ -132,6 +155,7 @@ fn project_object(
       current_render_list,
       child.clone(),
       camera.clone(),
+      vp,
       group_order,
       sort,
     );

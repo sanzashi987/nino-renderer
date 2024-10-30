@@ -3,11 +3,14 @@ use crate::core::object_3d::{with_default_fields, ObjectActions};
 use renderer_macro_derive::object_3d;
 
 #[object_3d(ObjectActions)]
-pub struct Group {}
+pub struct Group {
+  pub group_order: i32,
+}
 
 impl Group {
   pub fn new() -> std::rc::Rc<Self> {
-    let this = with_default_fields!(Group);
+    let group_order = 0i32;
+    let this = with_default_fields!(Group;group_order);
     this
   }
 }

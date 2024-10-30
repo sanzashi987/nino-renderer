@@ -1,5 +1,7 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
+use super::Mat4;
+
 macro_rules! define_vec_op {
   ($name:ident,$trait_name:ident,  $func_name:ident, $op:tt, $($p:ident),+) => {
     impl $trait_name for $name {
@@ -168,6 +170,7 @@ impl Vec4 {
     Self::new(v3.x, v3.y, v3.z, w)
   }
 }
+
 pub fn lerp<T>(a: T, b: T, t: f32) -> T
 where
   T: Sub<Output = T> + Add<Output = T> + Mul<f32, Output = T> + Copy + Clone,
