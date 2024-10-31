@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Layers {
   pub mask: u32,
 }

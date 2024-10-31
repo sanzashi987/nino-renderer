@@ -5,6 +5,8 @@ use super::super::cameras::camera::ICamera;
 use super::super::objects::scene::Scene;
 use super::render_states::{RenderList, RenderLists, RenderState, RenderStates};
 use super::render_target::RenderTarget;
+use super::shadow_map::ShadowMap;
+use crate::lights::light::ILight;
 use crate::math::{Mat4, Vec4};
 use crate::objects::base::Renderable;
 use crate::objects::group::Group;
@@ -22,7 +24,7 @@ use crate::{
 pub struct GlRenderer {
   result: RenderTarget,
   depth: DepthBuffer,
-  shadow_map: bool,
+  shadow_map: ShadowMap,
   render_states: RenderStates,
   render_lists: RenderLists,
   render_target: Option<RenderTarget>,
@@ -95,6 +97,18 @@ fn render_object(object: Rc<dyn ObjectActions>, scene: &Scene, camera: Rc<dyn IC
   let normal_matrix = extract_normal_matrix(mv);
 }
 
+macro_rules! rc_convert {
+  ($source:tt;$($type:tt),+;$msg:tt) => {
+    $(
+      if let Ok(res) = Rc::downcast::<$type>($source.clone()) {
+        res
+      } else
+    )+ {
+      panic!($msg)
+    }
+  };
+}
+
 fn project_object(
   current_render_state: &RenderState,
   current_render_list: &RenderList,
@@ -121,26 +135,25 @@ fn project_object(
       }
 
       ObjectType::Light => {
-        current_render_state.push_light(object.clone());
+        // let light: Rc<dyn ILight> = if let Ok(light) = Rc::downcast(object.clone()) {
+        //   light
+        // } else {
+        //   panic!("Unexpected Light Type");
+        // };
 
-        if object.cast_shadow() {
-          current_render_state.push_shadow(object.clone());
-        }
+        // current_render_state.push_light(light.clone());
+
+        // if object.cast_shadow() {
+        //   current_render_state.push_shadow(light.clone());
+        // }
       }
 
       ObjectType::Mesh | ObjectType::Line | ObjectType::Point => {
         let obj = object.clone();
         let global_model = obj.global_matrix();
 
-        let renderable: Rc<dyn Renderable> = if let Ok(res) = Rc::downcast::<Mesh>(obj.clone()) {
-          res
-        } else if let Ok(res) = Rc::downcast::<Line>(obj.clone()) {
-          res
-        } else if let Ok(res) = Rc::downcast::<Point>(obj.clone()) {
-          res
-        } else {
-          panic!("Unexpected Type");
-        };
+        let renderable: Rc<dyn Renderable> =
+          rc_convert!(obj;Mesh,Line,Point;"Unexpected Renderable Type");
 
         let geometry = renderable.geometry();
         let material = renderable.material();

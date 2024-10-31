@@ -24,6 +24,8 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
   let ast: DeriveInput = syn::parse(input).unwrap();
   let struct_name = ast.ident;
   let mut attributes = vec![];
+  let expr = quote! {#struct_name};
+  let struct_name_str = expr.to_string();
 
   if let syn::Data::Struct(data_struct) = ast.data {
     for field in data_struct.fields.iter() {
@@ -337,6 +339,27 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
         &self._uuid
       }
 
+    }
+
+
+    impl std::fmt::Debug for #struct_name {
+      fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct(#struct_name_str)
+          .field("matrix", &self.matrix)
+          .field("global_matrix", &self.global_matrix)
+          .field("position", &self.position)
+          .field("rotation", &self.rotation)
+          .field("scale", &self.scale)
+          .field("layers", &self.layers)
+          .field("cast_shadow", &self.cast_shadow)
+          .field("receive_shadow", &self.receive_shadow)
+          .field("visible", &self.visible)
+          .field("user_data", &self.user_data)
+          .field("object_type", &self.object_type)
+          .field("_self_ref", &self._self_ref)
+          .field("_uuid", &self._uuid)
+          .finish()
+      }
     }
 
   }

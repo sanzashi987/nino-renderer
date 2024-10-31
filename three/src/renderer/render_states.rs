@@ -3,21 +3,22 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc, vec};
 use crate::{
   cameras::camera::{self, ICamera},
   core::{buffer_geometry::IGeometry, object_3d::ObjectActions},
+  lights::light::ILight,
   material::material::IMaterial,
 };
 #[derive(Default)]
 pub struct RenderState {
-  lights: RefCell<Vec<Rc<dyn ObjectActions>>>,
-  shadows: RefCell<Vec<Rc<dyn ObjectActions>>>,
+  lights: RefCell<Vec<Rc<dyn ILight>>>,
+  shadows: RefCell<Vec<Rc<dyn ILight>>>,
   camera: RefCell<Option<Rc<dyn ICamera>>>,
 }
 
 impl RenderState {
-  pub fn push_light(&self, light: Rc<dyn ObjectActions>) {
+  pub fn push_light(&self, light: Rc<dyn ILight>) {
     self.lights.borrow_mut().push(light);
   }
 
-  pub fn push_shadow(&self, light: Rc<dyn ObjectActions>) {
+  pub fn push_shadow(&self, light: Rc<dyn ILight>) {
     self.shadows.borrow_mut().push(light);
   }
 
