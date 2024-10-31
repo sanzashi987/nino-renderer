@@ -38,7 +38,7 @@ struct RenderItem {
   object: Rc<dyn ObjectActions>,
   geometry: Rc<dyn IGeometry>,
   material: Rc<dyn IMaterial>,
-  group_order: f32,
+  group_order: i32,
   z: f32,
   parent: Option<Rc<dyn ObjectActions>>,
 }
@@ -46,19 +46,19 @@ struct RenderItem {
 #[derive(Default)]
 pub struct RenderList {
   index: u32,
-  opaque: Vec<Rc<RenderItem>>,
-  transparent: Vec<Rc<RenderItem>>,
-  transmissive: Vec<Rc<RenderItem>>,
-  render_items: Vec<Rc<RenderItem>>,
+  opaque: RefCell<Vec<Rc<RenderItem>>>,
+  transparent: RefCell<Vec<Rc<RenderItem>>>,
+  transmissive: RefCell<Vec<Rc<RenderItem>>>,
+  render_items: RefCell<Vec<Rc<RenderItem>>>,
 }
 
 impl RenderList {
   pub fn push(
-    &mut self,
+    &self,
     object: Rc<dyn ObjectActions>,
     geometry: Rc<dyn IGeometry>,
     material: Rc<dyn IMaterial>,
-    group_order: f32,
+    group_order: i32,
     z: f32,
     parent: Option<Rc<dyn ObjectActions>>,
   ) {
@@ -75,16 +75,23 @@ impl RenderList {
     let render_item = Rc::new(render_item);
 
     if let Some(_) = render_item.material.transmission() {
-      self.transmissive.push(render_item.clone());
+      let mut transmissive = self.transmissive.borrow_mut();
+      transmissive.push(render_item.clone());
     } else if render_item.material.transparent() {
-      self.transparent.push(render_item.clone());
+      let mut transparent = self.transparent.borrow_mut();
+      transparent.push(render_item.clone());
     } else {
-      self.opaque.push(render_item.clone());
+      let mut opaque = self.opaque.borrow_mut();
+      opaque.push(render_item.clone());
     }
+
+    let mut render_items = self.render_items.borrow_mut();
+    render_items.push(render_item.clone());
   }
 
-  pub fn finish(&mut self) {
-    self.render_items = vec![];
+  pub fn finish(&self) {
+    let mut render_items = self.render_items.borrow_mut();
+    *render_items = vec![];
   }
 }
 

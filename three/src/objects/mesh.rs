@@ -2,10 +2,13 @@ use std::rc::Rc;
 
 use renderer_macro_derive::object_3d;
 
+use crate::core::buffer_geometry::IGeometry;
+use crate::material::material::IMaterial;
 use crate::material::standard_material::StandardMeshMaterial;
 
 use super::super::core::buffer_geometry::BufferGeometry;
 use super::super::core::object_3d::{with_default_fields, ObjectActions};
+use super::base::Renderable;
 
 #[object_3d(ObjectActions)]
 pub struct Mesh {
@@ -19,12 +22,14 @@ impl Mesh {
     let material = Rc::new(Default::default());
     with_default_fields!(Mesh; geometry, material)
   }
+}
 
-  pub fn geometry(&self) -> Rc<BufferGeometry> {
+impl Renderable for Mesh {
+  fn geometry(&self) -> Rc<dyn IGeometry> {
     self.geometry.clone()
   }
 
-  pub fn material(&self) -> Rc<StandardMeshMaterial> {
+  fn material(&self) -> Rc<dyn IMaterial> {
     self.material.clone()
   }
 }

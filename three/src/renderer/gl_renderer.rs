@@ -6,8 +6,11 @@ use super::super::objects::scene::Scene;
 use super::render_states::{RenderList, RenderLists, RenderState, RenderStates};
 use super::render_target::RenderTarget;
 use crate::math::{Mat4, Vec4};
+use crate::objects::base::Renderable;
 use crate::objects::group::Group;
+use crate::objects::line::Line;
 use crate::objects::mesh::Mesh;
+use crate::objects::point::Point;
 use crate::{
   core::object_3d::{ObjectActions, ObjectType},
   math::{
@@ -77,6 +80,8 @@ impl GlRenderer {
       true,
     );
 
+    current_render_list.finish();
+
     self.result.take_color()
   }
 
@@ -122,27 +127,29 @@ fn project_object(
           current_render_state.push_shadow(object.clone());
         }
       }
-      ObjectType::Mesh => {
+
+      ObjectType::Mesh | ObjectType::Line | ObjectType::Point => {
         let obj = object.clone();
         let global_model = obj.global_matrix();
 
-        if let Ok(res) = Rc::downcast::<Mesh>(obj.clone()) {
-          let geometry = res.geometry();
-          let material = res.material();
+        let renderable: Rc<dyn Renderable> = if let Ok(res) = Rc::downcast::<Mesh>(obj.clone()) {
+          res
+        } else if let Ok(res) = Rc::downcast::<Line>(obj.clone()) {
+          res
+        } else if let Ok(res) = Rc::downcast::<Point>(obj.clone()) {
+          res
+        } else {
+          panic!("Unexpected Type");
+        };
 
-          let vec4 = vp
-            * Vec4::new(
-              global_model.get(0, 3),
-              global_model.get(1, 3),
-              global_model.get(2, 3),
-              global_model.get(3, 3),
-            );
+        let geometry = renderable.geometry();
+        let material = renderable.material();
 
-          current_render_list.push(obj, geometry, material, group_order, vec4.z, None);
-        }
+        let vec4 = vp * global_model.get_col(3);
+
+        current_render_list.push(obj, geometry, material, next_group_order, vec4.z, None);
       }
-      ObjectType::Line => {}
-      ObjectType::Point => {}
+
       _ => {}
     }
   }
@@ -156,7 +163,7 @@ fn project_object(
       child.clone(),
       camera.clone(),
       vp,
-      group_order,
+      next_group_order,
       sort,
     );
   }
