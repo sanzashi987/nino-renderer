@@ -1,11 +1,11 @@
 use renderer_macro_derive::object_3d;
 
 use super::{
-  super::core::object_3d::{with_default_fields, ObjectActions},
+  super::core::object_3d::{with_default_fields, IObject3D},
   // group::GroupSupportChildren,
 };
 
-#[object_3d(ObjectActions)]
+#[object_3d(IObject3D)]
 pub struct Scene {}
 
 impl Scene {

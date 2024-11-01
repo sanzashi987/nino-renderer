@@ -1,12 +1,12 @@
 use renderer_macro_derive::object_3d;
 
 use crate::{
-  core::object_3d::{with_default_fields, ObjectActions},
+  core::object_3d::{with_default_fields, IObject3D},
   math::Vec4,
   objects::base::Object3D,
 };
 
-#[object_3d(ObjectActions)]
+#[object_3d(IObject3D)]
 pub struct DirectionalLight {
   pub color: Vec4,
   pub intensity: f32,

@@ -7,10 +7,10 @@ use crate::material::material::IMaterial;
 use crate::material::standard_material::StandardMeshMaterial;
 
 use super::super::core::buffer_geometry::BufferGeometry;
-use super::super::core::object_3d::{with_default_fields, ObjectActions};
+use super::super::core::object_3d::{with_default_fields, IObject3D};
 use super::base::Renderable;
 
-#[object_3d(ObjectActions)]
+#[object_3d(IObject3D)]
 pub struct Mesh {
   geometry: Rc<BufferGeometry>,
   material: Rc<StandardMeshMaterial>,

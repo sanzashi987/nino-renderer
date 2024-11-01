@@ -14,7 +14,7 @@ use crate::objects::line::Line;
 use crate::objects::mesh::Mesh;
 use crate::objects::point::Point;
 use crate::{
-  core::object_3d::{ObjectActions, ObjectType},
+  core::object_3d::{IObject3D, ObjectType},
   math::{
     data_array::{ColorBuffer, DepthBuffer},
     extract_normal_matrix,
@@ -90,9 +90,9 @@ impl GlRenderer {
   fn render_pixel(&mut self) {}
 }
 
-fn render_objects(object: Rc<dyn ObjectActions>, camera: Rc<dyn ICamera>) {}
+fn render_objects(object: Rc<dyn IObject3D>, camera: Rc<dyn ICamera>) {}
 
-fn render_object(object: Rc<dyn ObjectActions>, scene: &Scene, camera: Rc<dyn ICamera>) {
+fn render_object(object: Rc<dyn IObject3D>, scene: &Scene, camera: Rc<dyn ICamera>) {
   let mv = camera.global_matrix() * object.global_matrix();
   let normal_matrix = extract_normal_matrix(mv);
 }
@@ -112,7 +112,7 @@ macro_rules! rc_convert {
 fn project_object(
   current_render_state: &RenderState,
   current_render_list: &RenderList,
-  object: Rc<dyn ObjectActions>,
+  object: Rc<dyn IObject3D>,
   camera: Rc<dyn ICamera>,
   vp: Mat4,
   group_order: i32,

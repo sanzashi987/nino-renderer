@@ -2,7 +2,7 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc, vec};
 
 use crate::{
   cameras::camera::{self, ICamera},
-  core::{buffer_geometry::IGeometry, object_3d::ObjectActions},
+  core::{buffer_geometry::IGeometry, object_3d::IObject3D},
   lights::light::ILight,
   material::material::IMaterial,
 };
@@ -36,12 +36,12 @@ impl RenderState {
 
 struct RenderItem {
   id: String,
-  object: Rc<dyn ObjectActions>,
+  object: Rc<dyn IObject3D>,
   geometry: Rc<dyn IGeometry>,
   material: Rc<dyn IMaterial>,
   group_order: i32,
   z: f32,
-  parent: Option<Rc<dyn ObjectActions>>,
+  parent: Option<Rc<dyn IObject3D>>,
 }
 
 #[derive(Default)]
@@ -56,12 +56,12 @@ pub struct RenderList {
 impl RenderList {
   pub fn push(
     &self,
-    object: Rc<dyn ObjectActions>,
+    object: Rc<dyn IObject3D>,
     geometry: Rc<dyn IGeometry>,
     material: Rc<dyn IMaterial>,
     group_order: i32,
     z: f32,
-    parent: Option<Rc<dyn ObjectActions>>,
+    parent: Option<Rc<dyn IObject3D>>,
   ) {
     let render_item = RenderItem {
       id: object.uuid().to_string(),

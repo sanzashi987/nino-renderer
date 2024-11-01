@@ -17,15 +17,15 @@ impl Default for ObjectType {
     Self::Object3D
   }
 }
-pub trait ObjectActions: Any {
-  fn parent(&self) -> Option<std::rc::Rc<dyn ObjectActions>>;
-  fn set_parent(&self, parent: std::rc::Rc<dyn ObjectActions>);
+pub trait IObject3D: Any {
+  fn parent(&self) -> Option<std::rc::Rc<dyn IObject3D>>;
+  fn set_parent(&self, parent: std::rc::Rc<dyn IObject3D>);
   fn remove_from_parent(&self);
   fn remove(&self, uuid: &str);
-  fn add(&self, val: std::rc::Rc<dyn ObjectActions>);
+  fn add(&self, val: std::rc::Rc<dyn IObject3D>);
   fn clear(&self);
-  fn attach(&self, child: Box<dyn ObjectActions>);
-  fn children(&self) -> std::cell::Ref<'_, Vec<std::rc::Rc<dyn ObjectActions>>>;
+  fn attach(&self, child: Box<dyn IObject3D>);
+  fn children(&self) -> std::cell::Ref<'_, Vec<std::rc::Rc<dyn IObject3D>>>;
 
   fn look_at(&self, point: crate::math::Vec3);
   fn matrix(&self) -> crate::math::Mat4;
@@ -64,10 +64,6 @@ pub trait ObjectActions: Any {
   fn uuid(&self) -> &str;
 }
 
-// fn a() {
-//   let uid = uuid::Uuid::new_v4();
-// }
-
 macro_rules! with_default_fields {
   ($type:tt;$($val:ident),*) => {{
 
@@ -90,7 +86,7 @@ macro_rules! with_default_fields {
       _self_ref: Default::default(),
     });
 
-    let that: std::rc::Rc<dyn crate::core::object_3d::ObjectActions> = this.clone();
+    let that: std::rc::Rc<dyn crate::core::object_3d::IObject3D> = this.clone();
 
     let _ = this._self_ref.set(std::rc::Rc::downgrade(&that));
 

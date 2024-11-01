@@ -5,14 +5,14 @@ use renderer_macro_derive::object_3d;
 use crate::{
   core::{
     buffer_geometry::{BufferGeometry, IGeometry},
-    object_3d::{with_default_fields, ObjectActions},
+    object_3d::{with_default_fields, IObject3D},
   },
   material::{material::IMaterial, standard_material::StandardMeshMaterial},
 };
 
 use super::base::Renderable;
 
-#[object_3d(ObjectActions)]
+#[object_3d(IObject3D)]
 pub struct Point {
   geometry: Rc<BufferGeometry>,
   material: Rc<StandardMeshMaterial>,

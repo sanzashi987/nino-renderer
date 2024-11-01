@@ -3,13 +3,13 @@ use std::rc::Rc;
 use renderer_macro_derive::object_3d;
 
 use crate::{
-  core::object_3d::{with_default_fields, ObjectActions},
+  core::object_3d::{with_default_fields, IObject3D},
   math::Mat4,
 };
 
 use super::camera::ICamera;
 
-#[object_3d(ObjectActions)]
+#[object_3d(IObject3D)]
 pub struct PerspectiveCamera {
   // in degree, stands for angle from top to bottom
   pub fov: f32,

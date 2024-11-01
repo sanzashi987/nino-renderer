@@ -5,7 +5,7 @@ use renderer_macro_derive::object_3d;
 use crate::{
   core::{
     buffer_geometry::IGeometry,
-    object_3d::{with_default_fields, ObjectActions},
+    object_3d::{with_default_fields, IObject3D},
   },
   material::material::IMaterial,
 };
@@ -16,7 +16,7 @@ pub trait Renderable {
   fn material(&self) -> Rc<dyn IMaterial>;
 }
 
-#[object_3d(ObjectActions)]
+#[object_3d(IObject3D)]
 pub struct Object3D {}
 
 impl Object3D {

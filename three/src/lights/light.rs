@@ -1,6 +1,6 @@
-use crate::core::{object_3d::ObjectActions, uniform::Uniform};
+use crate::core::{object_3d::IObject3D, uniform::Uniform};
 
-pub trait ILight: ObjectActions {
+pub trait ILight: IObject3D {
   fn to_uniform(&self) -> Uniform;
 
   fn to_shadow_uniform(&self) -> Uniform;
