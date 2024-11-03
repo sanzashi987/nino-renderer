@@ -6,6 +6,7 @@ use super::super::objects::scene::Scene;
 use super::render_states::{RenderList, RenderLists, RenderState, RenderStates};
 use super::render_target::RenderTarget;
 use super::shadow_map::ShadowMap;
+use crate::lights::directional_light::DirectionalLight;
 use crate::lights::light::ILight;
 use crate::math::{Mat4, Vec4};
 use crate::objects::base::Renderable;
@@ -135,17 +136,13 @@ fn project_object(
       }
 
       ObjectType::Light => {
-        // let light: Rc<dyn ILight> = if let Ok(light) = Rc::downcast(object.clone()) {
-        //   light
-        // } else {
-        //   panic!("Unexpected Light Type");
-        // };
+        let obj = object.clone();
+        let light: Rc<dyn ILight> = rc_convert!(obj;DirectionalLight;"Unexpected Light Type");
+        current_render_state.push_light(light.clone());
 
-        // current_render_state.push_light(light.clone());
-
-        // if object.cast_shadow() {
-        //   current_render_state.push_shadow(light.clone());
-        // }
+        if object.cast_shadow() {
+          current_render_state.push_shadow(light.clone());
+        }
       }
 
       ObjectType::Mesh | ObjectType::Line | ObjectType::Point => {

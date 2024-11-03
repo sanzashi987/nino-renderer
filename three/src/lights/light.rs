@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::core::{object_3d::IObject3D, uniform::Uniform};
 
 pub trait ILight: IObject3D {
@@ -5,7 +7,7 @@ pub trait ILight: IObject3D {
 
   fn to_shadow_uniform(&self) -> Uniform;
 
-  fn shadow(&self) -> dyn ILightShadow;
+  fn shadow(&self) -> Rc<dyn ILightShadow>;
 }
 
 pub trait ILightShadow {}
