@@ -33,24 +33,23 @@ impl RenderState {
     *shadows = vec![];
   }
 }
-
-struct RenderItem {
+pub struct RenderItem {
   id: String,
-  object: Rc<dyn IObject3D>,
-  geometry: Rc<dyn IGeometry>,
-  material: Rc<dyn IMaterial>,
-  group_order: i32,
+  pub object: Rc<dyn IObject3D>,
+  pub geometry: Rc<dyn IGeometry>,
+  pub material: Rc<dyn IMaterial>,
+  pub group_order: i32,
   z: f32,
-  parent: Option<Rc<dyn IObject3D>>,
+  pub parent: Option<Rc<dyn IObject3D>>,
 }
 
 #[derive(Default)]
 pub struct RenderList {
   index: u32,
-  opaque: RefCell<Vec<Rc<RenderItem>>>,
-  transparent: RefCell<Vec<Rc<RenderItem>>>,
-  transmissive: RefCell<Vec<Rc<RenderItem>>>,
-  render_items: RefCell<Vec<Rc<RenderItem>>>,
+  pub opaque: RefCell<Vec<Rc<RenderItem>>>,
+  pub transparent: RefCell<Vec<Rc<RenderItem>>>,
+  pub transmissive: RefCell<Vec<Rc<RenderItem>>>,
+  pub render_items: RefCell<Vec<Rc<RenderItem>>>,
 }
 
 impl RenderList {

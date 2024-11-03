@@ -1,14 +1,15 @@
-use std::any::Any;
 use std::rc::Rc;
 
 use super::super::cameras::camera::ICamera;
 use super::super::objects::scene::Scene;
-use super::render_states::{RenderList, RenderLists, RenderState, RenderStates};
+use super::render_states::{RenderItem, RenderList, RenderLists, RenderState, RenderStates};
 use super::render_target::RenderTarget;
 use super::shadow_map::ShadowMap;
+use crate::core::buffer_geometry::IGeometry;
 use crate::lights::directional_light::DirectionalLight;
 use crate::lights::light::ILight;
-use crate::math::{Mat4, Vec4};
+use crate::material::material::IMaterial;
+use crate::math::Mat4;
 use crate::objects::base::Renderable;
 use crate::objects::group::Group;
 use crate::objects::line::Line;
@@ -21,6 +22,19 @@ use crate::{
     extract_normal_matrix,
   },
 };
+
+macro_rules! rc_convert {
+  ($source:tt;$($type:tt),+;$msg:tt) => {
+    $(
+      if let Ok(res) = Rc::downcast::<$type>($source.clone()) {
+        res
+      } else
+    )+ {
+      panic!($msg)
+    }
+  };
+}
+
 #[derive(Default)]
 pub struct GlRenderer {
   result: RenderTarget,
@@ -76,8 +90,8 @@ impl GlRenderer {
     project_object(
       current_render_state,
       current_render_list,
-      scene,
-      camera,
+      scene.clone(),
+      camera.clone(),
       vp_matrix,
       0,
       true,
@@ -85,29 +99,51 @@ impl GlRenderer {
 
     current_render_list.finish();
 
+    render_scene(current_render_list, scene.clone(), camera.clone());
+
     self.result.take_color()
   }
-
-  fn render_pixel(&mut self) {}
 }
 
-fn render_objects(object: Rc<dyn IObject3D>, camera: Rc<dyn ICamera>) {}
+fn render_scene(render_list: &RenderList, scene: Rc<Scene>, camera: Rc<dyn ICamera>) {
+  let opaque = render_list.opaque.borrow();
+  if opaque.len() > 0 {
+    render_objects(&opaque, scene.clone(), camera.clone());
+  }
+  let transmissive = render_list.transmissive.borrow();
+  if transmissive.len() > 0 {
+    render_objects(&transmissive, scene.clone(), camera.clone());
+  }
+  let transparent = render_list.transparent.borrow();
+  if transparent.len() > 0 {
+    render_objects(&transparent, scene.clone(), camera.clone());
+  }
+}
 
-fn render_object(object: Rc<dyn IObject3D>, scene: &Scene, camera: Rc<dyn ICamera>) {
+fn render_objects(render_items: &Vec<Rc<RenderItem>>, scene: Rc<Scene>, camera: Rc<dyn ICamera>) {
+  for render_item in render_items {
+    let object = render_item.object.clone();
+    let geometry = render_item.geometry.clone();
+    let material = render_item.material.clone();
+    let parent = render_item.parent.clone();
+    if object.layers().test(&camera.layers()) {
+      let scene = scene.clone();
+      let camera = camera.clone();
+      render_object(object, scene, camera, geometry, material, parent);
+    }
+  }
+}
+
+fn render_object(
+  object: Rc<dyn IObject3D>,
+  scene: Rc<Scene>,
+  camera: Rc<dyn ICamera>,
+  geometry: Rc<dyn IGeometry>,
+  material: Rc<dyn IMaterial>,
+  parent: Option<Rc<dyn IObject3D>>,
+) {
   let mv = camera.global_matrix() * object.global_matrix();
   let normal_matrix = extract_normal_matrix(mv);
-}
-
-macro_rules! rc_convert {
-  ($source:tt;$($type:tt),+;$msg:tt) => {
-    $(
-      if let Ok(res) = Rc::downcast::<$type>($source.clone()) {
-        res
-      } else
-    )+ {
-      panic!($msg)
-    }
-  };
 }
 
 fn project_object(
