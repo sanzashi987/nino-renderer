@@ -3,7 +3,7 @@ use std::{
   ops::{Deref, DerefMut},
 };
 
-use crate::math::{Mat4, Vec2, Vec3, Vec4};
+use crate::math::{Mat3, Mat4, Vec2, Vec3, Vec4};
 
 use super::marco::define_gl_type_enum;
 
@@ -21,7 +21,6 @@ macro_rules! define_uniform_trait {
         }
       }
     )+
-
   };
 }
 
@@ -33,6 +32,7 @@ define_uniform_trait!(
   Vec2-Vec2,
   Vec3-Vec3,
   Vec4-Vec4,
+  Mat3-Mat3,
   Mat4-Mat4,
   Bool-bool,
   Uv-u32 // uv's uid
@@ -50,16 +50,21 @@ impl Deref for Uniform {
   }
 }
 
-impl DerefMut for Uniform {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.attributes
-  }
-}
+// impl DerefMut for Uniform {
+//   fn deref_mut(&mut self) -> &mut Self::Target {
+//     &mut self.attributes
+//   }
+// }
 
 impl Uniform {
   pub fn get(&self, key: &str) -> Option<UniformTypeEnum> {
     let res = self.attributes.get(key);
     res.map(|x| *x)
+  }
+
+  pub fn insert<T: Into<UniformTypeEnum>>(&mut self, key: &str, val: T) {
+    let typed_enum: UniformTypeEnum = val.into();
+    self.attributes.insert(key.to_string(), typed_enum);
   }
 }
 

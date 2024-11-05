@@ -7,6 +7,7 @@ use super::render_states::{RenderItem, RenderList, RenderLists, RenderState, Ren
 use super::render_target::RenderTarget;
 use super::shadow_map::ShadowMap;
 use crate::core::buffer_geometry::IGeometry;
+use crate::core::uniform::Uniform;
 use crate::lights::directional_light::DirectionalLight;
 use crate::lights::light::ILight;
 use crate::material::material::IMaterial;
@@ -213,10 +214,17 @@ impl GlRenderer {
     material: Rc<dyn IMaterial>,
     parent: Option<Rc<dyn IObject3D>>,
   ) {
-    let model = object.global_matrix();
-    let view = camera.view_matrix();
-    let project = camera.projection_matrix();
-    let mv = view * model;
-    let normal_matrix = extract_normal_matrix(mv);
+    let mut uniform = Uniform::default();
+    let model_matrix = object.global_matrix();
+    let view_matrix = camera.view_matrix();
+    let project_matrix = camera.projection_matrix();
+    let model_view_matrix = view_matrix * model_matrix;
+    let normal_matrix = extract_normal_matrix(model_view_matrix);
+
+    uniform.insert("model_matrix", model_matrix);
+    uniform.insert("view_matrix", view_matrix);
+    uniform.insert("project_matrix", project_matrix);
+    uniform.insert("model_view_matrix", model_view_matrix);
+    // uniform.insert("model_matrix", model_matrix);
   }
 }
