@@ -346,5 +346,13 @@ pub fn decompose(mat: Mat4) -> (Vec3, Mat4, Vec3) {
 }
 
 pub fn extract_normal_matrix(mv_matrix: Mat4) -> Mat3 {
-  todo!()
+  let col_0 = mv_matrix.get_col(0);
+  let col_1 = mv_matrix.get_col(1);
+  let col_2 = mv_matrix.get_col(2);
+
+  let mut mat = Mat3::zeros();
+  mat.set_col(0, col_0.truncated_to_vec3());
+  mat.set_col(1, col_1.truncated_to_vec3());
+  mat.set_col(2, col_2.truncated_to_vec3());
+  mat.inverse().unwrap().transpose()
 }

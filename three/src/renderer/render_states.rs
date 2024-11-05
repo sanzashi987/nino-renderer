@@ -96,16 +96,18 @@ impl RenderList {
 }
 
 pub struct RenderTypes<T: Default> {
-  map: HashMap<String, T>,
+  map: HashMap<String, Rc<T>>,
 }
 
 impl<T: Default> RenderTypes<T> {
-  pub fn get(&mut self, uuid: &str) -> &T {
+  pub fn get(&mut self, uuid: &str) -> Rc<T> {
     if !self.map.contains_key(uuid) {
-      self.map.insert(uuid.to_string(), Default::default());
+      self
+        .map
+        .insert(uuid.to_string(), Rc::new(Default::default()));
     }
 
-    self.map.get(uuid).unwrap()
+    self.map.get(uuid).unwrap().clone()
   }
 }
 
