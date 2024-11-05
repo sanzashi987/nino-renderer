@@ -142,7 +142,10 @@ fn render_object(
   material: Rc<dyn IMaterial>,
   parent: Option<Rc<dyn IObject3D>>,
 ) {
-  let mv = camera.global_matrix() * object.global_matrix();
+  let model = object.global_matrix();
+  let view = camera.view_matrix();
+  let project = camera.projection_matrix();
+  let mv = view * model;
   let normal_matrix = extract_normal_matrix(mv);
 }
 
