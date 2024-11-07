@@ -226,5 +226,8 @@ impl GlRenderer {
     uniform.insert("project_matrix", project_matrix);
     uniform.insert("model_view_matrix", model_view_matrix);
     // uniform.insert("model_matrix", model_matrix);
+
+    
+
   }
 }
