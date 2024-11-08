@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -214,20 +215,22 @@ impl GlRenderer {
     material: Rc<dyn IMaterial>,
     parent: Option<Rc<dyn IObject3D>>,
   ) {
-    let mut uniform = Uniform::default();
+    let mut p_uniform = Uniform::default();
     let model_matrix = object.global_matrix();
     let view_matrix = camera.view_matrix();
     let project_matrix = camera.projection_matrix();
     let model_view_matrix = view_matrix * model_matrix;
     let normal_matrix = extract_normal_matrix(model_view_matrix);
 
-    uniform.insert("model_matrix", model_matrix);
-    uniform.insert("view_matrix", view_matrix);
-    uniform.insert("project_matrix", project_matrix);
-    uniform.insert("model_view_matrix", model_view_matrix);
+    p_uniform.insert("model_matrix", model_matrix);
+    p_uniform.insert("view_matrix", view_matrix);
+    p_uniform.insert("project_matrix", project_matrix);
+    p_uniform.insert("model_view_matrix", model_view_matrix);
+    p_uniform.insert("normal_matrix", normal_matrix);
+
+    let mut m_uniform = material.to_uniform();
     // uniform.insert("model_matrix", model_matrix);
 
-    
-
+    let 
   }
 }

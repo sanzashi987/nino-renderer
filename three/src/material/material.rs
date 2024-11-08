@@ -80,6 +80,7 @@ pub trait IMaterial {
   fn transparent(&self) -> bool;
   fn transmission(&self) -> Option<u32>;
   fn visible(&self) -> bool;
+  fn to_uniform(&self) -> Uniform;
 }
 
 impl<T: ConvertUniform + Default, U: DefineShader> IMaterial for BasicMaterial<T, U> {
@@ -92,17 +93,15 @@ impl<T: ConvertUniform + Default, U: DefineShader> IMaterial for BasicMaterial<T
   fn visible(&self) -> bool {
     self.visible
   }
+
+  fn to_uniform(&self) -> Uniform {
+    self.attributes.borrow().to_uniform()
+  }
 }
 
 trait RunShader {
   fn vertex(&self, a: &Attribute, u: &Uniform, v: &mut Varying, gl: &mut GlPerVertex);
   fn fragment(&self, u: &Uniform, v: &Varying, gl: &mut GlPerFragment) -> bool;
-}
-
-impl<T: ConvertUniform + Default, U: DefineShader> ConvertUniform for BasicMaterial<T, U> {
-  fn to_uniform(&self) -> Uniform {
-    self.attributes.borrow().to_uniform()
-  }
 }
 
 impl<T: ConvertUniform + Default, U: DefineShader> RunShader for BasicMaterial<T, U> {
