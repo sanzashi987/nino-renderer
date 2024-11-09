@@ -66,6 +66,15 @@ impl Uniform {
     let typed_enum: UniformTypeEnum = val.into();
     self.attributes.insert(key.to_string(), typed_enum);
   }
+
+  pub fn merge(&self, another: Self) -> Self {
+    let mut a = another;
+    self.attributes.iter().for_each(|(k, v)| {
+      a.insert(k, *v);
+    });
+
+    a
+  }
 }
 
 macro_rules! u {

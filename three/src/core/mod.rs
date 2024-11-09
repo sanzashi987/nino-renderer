@@ -8,3 +8,4 @@ pub use buffer_attribute::ExtractRef;
 pub use marco::Extract;
 pub mod layer;
 pub mod frustum;
+pub mod event_emitter;

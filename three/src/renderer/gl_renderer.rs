@@ -147,8 +147,12 @@ impl GlRenderer {
 
     let project_matrix = camera.projection_matrix();
     let view_matrix = camera.global_matrix_inverse();
+    let view_projection_matrix = project_matrix * view_matrix;
 
-    let vp_matrix = project_matrix * view_matrix;
+    let mut global_uniform = Uniform::default();
+    global_uniform.insert("view_matrix", view_matrix);
+    global_uniform.insert("project_matrix", project_matrix);
+    global_uniform.insert("view_projection_matrix", view_projection_matrix);
 
     let scene_id = scene.uuid();
     let current_render_state = self.render_states.get(scene_id);
@@ -160,30 +164,41 @@ impl GlRenderer {
       current_render_state.clone(),
       scene.clone(),
       camera.clone(),
-      vp_matrix,
+      view_projection_matrix,
       0,
       true,
     );
 
     current_render_list.finish();
-
-    self.render_scene(current_render_list.clone(), scene.clone(), camera.clone());
+    current_render_state.setup_lights();
+    self.render_scene(
+      current_render_list.clone(),
+      scene.clone(),
+      camera.clone(),
+      &mut global_uniform,
+    );
 
     self.result.take_color()
   }
 
-  fn render_scene(&self, render_list: Rc<RenderList>, scene: Rc<Scene>, camera: Rc<dyn ICamera>) {
+  fn render_scene(
+    &self,
+    render_list: Rc<RenderList>,
+    scene: Rc<Scene>,
+    camera: Rc<dyn ICamera>,
+    global_uniform: &mut Uniform,
+  ) {
     let opaque = render_list.opaque.borrow();
     if opaque.len() > 0 {
-      self.render_objects(&opaque, scene.clone(), camera.clone());
+      self.render_objects(&opaque, scene.clone(), camera.clone(), global_uniform);
     }
     let transmissive = render_list.transmissive.borrow();
     if transmissive.len() > 0 {
-      self.render_objects(&transmissive, scene.clone(), camera.clone());
+      self.render_objects(&transmissive, scene.clone(), camera.clone(), global_uniform);
     }
     let transparent = render_list.transparent.borrow();
     if transparent.len() > 0 {
-      self.render_objects(&transparent, scene.clone(), camera.clone());
+      self.render_objects(&transparent, scene.clone(), camera.clone(), global_uniform);
     }
   }
 
@@ -192,6 +207,7 @@ impl GlRenderer {
     render_items: &Vec<Rc<RenderItem>>,
     scene: Rc<Scene>,
     camera: Rc<dyn ICamera>,
+    global_uniform: &mut Uniform,
   ) {
     for render_item in render_items {
       let object = render_item.object.clone();
@@ -201,7 +217,15 @@ impl GlRenderer {
       if object.layers().test(&camera.layers()) {
         let scene = scene.clone();
         let camera = camera.clone();
-        self.render_object(object, scene, camera, geometry, material, parent);
+        self.render_object(
+          object,
+          scene,
+          camera,
+          geometry,
+          material,
+          parent,
+          global_uniform,
+        );
       }
     }
   }
@@ -214,23 +238,21 @@ impl GlRenderer {
     geometry: Rc<dyn IGeometry>,
     material: Rc<dyn IMaterial>,
     parent: Option<Rc<dyn IObject3D>>,
+    global_uniform: &mut Uniform,
   ) {
-    let mut p_uniform = Uniform::default();
+    let mut m_uniform = material.to_uniform();
     let model_matrix = object.global_matrix();
     let view_matrix = camera.view_matrix();
-    let project_matrix = camera.projection_matrix();
     let model_view_matrix = view_matrix * model_matrix;
     let normal_matrix = extract_normal_matrix(model_view_matrix);
 
-    p_uniform.insert("model_matrix", model_matrix);
-    p_uniform.insert("view_matrix", view_matrix);
-    p_uniform.insert("project_matrix", project_matrix);
-    p_uniform.insert("model_view_matrix", model_view_matrix);
-    p_uniform.insert("normal_matrix", normal_matrix);
+    m_uniform.insert("model_matrix", model_matrix);
+    m_uniform.insert("normal_matrix", normal_matrix);
 
-    let mut m_uniform = material.to_uniform();
+    let mut uniform = global_uniform.merge(m_uniform);
+
     // uniform.insert("model_matrix", model_matrix);
 
-    let 
+    // let
   }
 }

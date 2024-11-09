@@ -51,12 +51,12 @@ impl Default for DepthFunc {
   }
 }
 
-pub trait ConvertUniform {
+pub trait ToUniform {
   fn to_uniform(&self) -> Uniform;
 }
 
 #[derive(Debug)]
-pub struct BasicMaterial<T: ConvertUniform + Default, U: DefineShader> {
+pub struct BasicMaterial<T: ToUniform + Default, U: DefineShader> {
   pub user_data: HashMap<String, Rc<dyn Any>>,
 
   pub blending: Blending,
@@ -83,7 +83,7 @@ pub trait IMaterial {
   fn to_uniform(&self) -> Uniform;
 }
 
-impl<T: ConvertUniform + Default, U: DefineShader> IMaterial for BasicMaterial<T, U> {
+impl<T: ToUniform + Default, U: DefineShader> IMaterial for BasicMaterial<T, U> {
   fn transparent(&self) -> bool {
     self.transparent
   }
@@ -104,7 +104,7 @@ trait RunShader {
   fn fragment(&self, u: &Uniform, v: &Varying, gl: &mut GlPerFragment) -> bool;
 }
 
-impl<T: ConvertUniform + Default, U: DefineShader> RunShader for BasicMaterial<T, U> {
+impl<T: ToUniform + Default, U: DefineShader> RunShader for BasicMaterial<T, U> {
   fn vertex(&self, a: &Attribute, u: &Uniform, v: &mut Varying, gl: &mut GlPerVertex) {
     U::vertex()(a, u, v, gl)
   }
@@ -114,7 +114,7 @@ impl<T: ConvertUniform + Default, U: DefineShader> RunShader for BasicMaterial<T
   }
 }
 
-impl<T: ConvertUniform + Default, U: DefineShader> Default for BasicMaterial<T, U> {
+impl<T: ToUniform + Default, U: DefineShader> Default for BasicMaterial<T, U> {
   fn default() -> Self {
     Self {
       user_data: Default::default(),

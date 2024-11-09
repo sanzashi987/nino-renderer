@@ -1,7 +1,7 @@
 use crate::core::uniform::{Uniform, UniformTypeEnum};
 
 use super::{
-  material::{BasicMaterial, ConvertUniform},
+  material::{BasicMaterial, ToUniform},
   shader::DefineShader,
 };
 pub enum DepthPacking {
@@ -23,7 +23,7 @@ struct MeshDepthAttribute {
   wirefame_linewidth: u8,
 }
 
-impl ConvertUniform for MeshDepthAttribute {
+impl ToUniform for MeshDepthAttribute {
   fn to_uniform(&self) -> Uniform {
     let mut res = Uniform::default();
     res.insert(format!("wireframe"), UniformTypeEnum::Bool(self.wireframe));

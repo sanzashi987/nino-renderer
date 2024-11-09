@@ -32,6 +32,10 @@ impl RenderState {
     *lights = vec![];
     *shadows = vec![];
   }
+
+  pub fn setup_lights(&self) {
+    
+  }
 }
 pub struct RenderItem {
   id: String,
