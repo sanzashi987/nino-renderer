@@ -69,6 +69,7 @@ macro_rules! with_default_fields {
 
     let this = std::rc::Rc::new(Self {
       $($val,)*
+      event_emitter: Default::default(),
       parent: Default::default(),
       children: Default::default(),
       matrix: Default::default(),

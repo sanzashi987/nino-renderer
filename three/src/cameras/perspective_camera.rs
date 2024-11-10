@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 use renderer_macro_derive::object_3d;
 
@@ -18,14 +18,38 @@ pub struct PerspectiveCamera {
   pub far: f32,
   pub focus: f32,
   pub zoom: f32,
+
+  pub view_matrix: RefCell<Mat4>,
+  pub projection_matrix: RefCell<Mat4>,
 }
 
 impl PerspectiveCamera {
   pub fn new(fov: f32, aspect: f32, near: f32, far: f32) -> Rc<Self> {
     let (focus, zoom) = (10.0, 1.0);
+    let (view_matrix, projection_matrix) =
+      (RefCell::new(Mat4::zeros()), RefCell::new(Mat4::zeros()));
 
-    with_default_fields!(Camera;fov,aspect,near ,far,focus,zoom)
+    let instance =
+      with_default_fields!(Camera;fov,aspect,near,far,focus,zoom,view_matrix, projection_matrix);
+
+    instance.make_perspective_mat();
+    let that = instance.clone();
+
+    instance.event_emitter.on(
+      "update:global_matrix",
+      Box::new(move |x| {
+        if let Some(global_matrix) = x.downcast::<Mat4>() {
+          let mut mutator = instance.view_matrix.borrow_mut();
+          *mutator = global_matrix.inverse().unwrap();
+          // global_matrix
+        }
+      }),
+    );
+
+    instance
   }
+
+  fn update_perspective() {}
 
 
   #[rustfmt::skip]
@@ -47,12 +71,17 @@ impl PerspectiveCamera {
     let c = (self.far + self.near) / base;
     let d = 2.0 * self.far * self.near / base;
 
-    Mat4::from_row(&[
+    let projection_matrix = Mat4::from_row(&[
         x,  0.0,    a,  0.0,
       0.0,    y,    b,  0.0,
       0.0,  0.0,    c,    d,
       0.0,  0.0, -1.0,  0.0,
-    ])
+    ]);
+
+    let mut mutator = self.projection_matrix.borrow_mut();
+
+    *mutator = projection_matrix;
+
   }
 }
 
@@ -62,6 +91,10 @@ impl ICamera for PerspectiveCamera {
   }
 
   fn projection_matrix(&self) -> crate::math::Mat4 {
-    self.make_perspective_mat()
+    *&self.projection_matrix;
+  }
+
+  fn global_matrix_inverse(&self) -> Mat4 {
+    *&self.view_matrix
   }
 }
