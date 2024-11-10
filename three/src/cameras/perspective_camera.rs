@@ -41,7 +41,6 @@ impl PerspectiveCamera {
         if let Some(global_matrix) = x.downcast::<Mat4>() {
           let mut mutator = instance.view_matrix.borrow_mut();
           *mutator = global_matrix.inverse().unwrap();
-          // global_matrix
         }
       }),
     );

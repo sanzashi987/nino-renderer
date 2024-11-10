@@ -3,7 +3,7 @@ use std::rc::Rc;
 use renderer_macro_derive::object_3d;
 
 use crate::{
-  cameras::camera::{self, ICamera},
+  cameras::camera::ICamera,
   core::{
     object_3d::{with_default_fields, IObject3D},
     uniform::Uniform,
@@ -12,7 +12,7 @@ use crate::{
   objects::base::Object3D,
 };
 
-use super::light::{ILight, LightToUniform};
+use super::light::{compute_direction, ILight, LightToUniform};
 
 #[object_3d(IObject3D)]
 pub struct DirectionalLight {
@@ -35,11 +35,16 @@ impl DirectionalLight {
 impl LightToUniform for DirectionalLight {
   fn to_uniform(&self, camera: Rc<dyn ICamera>) -> Uniform {
     let mut res = Uniform::default();
-    let color = self.color * self.intensity;
+    let rgb = self.color.truncated_to_vec3() * self.intensity;
+    let color = Vec4::from_vec3(&rgb, self.color.w);
 
     let position = self.global_matrix().get_col(3).truncated_to_vec3();
-    let target_pos = self.target.global_matrix().get_col(3).truncated_to_vec3();
+    let target = self.target.global_matrix().get_col(3).truncated_to_vec3();
+    let view_matrix = camera.view_matrix();
 
+    let mut direction = compute_direction(position, target, view_matrix);
+
+    let direction = self.compute_direction();
     res.insert("color", color);
     res.insert("direction", direction);
 
