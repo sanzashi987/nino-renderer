@@ -42,6 +42,7 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
   quote! {
     pub struct #struct_name{
       #(#attributes)*
+      name:std::cell::RefCell<String>,
       event_emitter:crate::core::event_emitter::EventEmitter,
       parent: std::cell::RefCell<Option<std::rc::Rc<dyn #obj_trait>>>,
       children: std::cell::RefCell<Vec<std::rc::Rc<dyn #obj_trait>>>,
@@ -61,6 +62,16 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
     }
 
     impl #obj_trait for #struct_name {
+      fn name(&self) -> &str {
+        &self.name
+      }
+
+      fn set_name(&self, name: &str) {
+        let mut mutator = self.name.borrow_mut();
+        *mutator = name.to_string();
+      }
+
+
       fn parent(&self) -> Option<std::rc::Rc<dyn #obj_trait>> {
         if let Some(p) = self.parent.borrow().as_ref() {
           Some(p.clone())

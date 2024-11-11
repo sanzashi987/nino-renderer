@@ -3,7 +3,7 @@ use std::rc::Rc;
 use crate::{
   cameras::camera::ICamera,
   core::{object_3d::IObject3D, uniform::Uniform},
-  math::{Mat4, Vec3},
+  math::{Mat4, Vec2, Vec3, Vec4},
 };
 
 pub enum LightType {
@@ -28,7 +28,13 @@ pub trait ILight: IObject3D + LightToUniform {
   fn shadow(&self) -> Option<Rc<dyn ILightShadow>>;
 }
 
-pub trait ILightShadow {}
+pub trait ILightShadow {
+  fn map_size(&self) -> Vec2;
+
+  fn viewports(&self) -> &Vec<Vec4>;
+
+  fn update_matrices(&self);
+}
 
 pub fn compute_direction(position: Vec3, target: Vec3, view_matrix: Mat4) -> Vec3 {
   let Vec3 { x, y, z } = position - target;

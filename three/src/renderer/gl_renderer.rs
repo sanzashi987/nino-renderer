@@ -170,6 +170,11 @@ impl GlRenderer {
     );
 
     current_render_list.finish();
+
+    self
+      .shadow_map
+      .render(&current_render_state.shadows, scene, camera);
+
     current_render_state.setup_lights();
     self.render_scene(
       current_render_list.clone(),

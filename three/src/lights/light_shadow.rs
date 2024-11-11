@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::{
   cameras::camera::ICamera,
-  math::{Mat4, Vec2},
+  math::{Mat4, Vec2, Vec4},
 };
 
 pub struct LightShadow {
@@ -14,4 +14,6 @@ pub struct LightShadow {
   // shadow texture width & height
   map_size: Vec2,
   mat: Mat4,
+  // vec4 -> offsetx, offsety, width, height
+  viewports: Vec<Vec4>,
 }

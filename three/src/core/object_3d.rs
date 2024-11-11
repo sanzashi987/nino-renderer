@@ -18,6 +18,9 @@ impl Default for ObjectType {
   }
 }
 pub trait IObject3D: Any {
+  fn name(&self) -> &str;
+  fn set_name(&self, name: &str);
+
   fn parent(&self) -> Option<std::rc::Rc<dyn IObject3D>>;
   fn set_parent(&self, parent: std::rc::Rc<dyn IObject3D>);
   fn remove_from_parent(&self);
@@ -69,6 +72,7 @@ macro_rules! with_default_fields {
 
     let this = std::rc::Rc::new(Self {
       $($val,)*
+      name: Default::default(),
       event_emitter: Default::default(),
       parent: Default::default(),
       children: Default::default(),

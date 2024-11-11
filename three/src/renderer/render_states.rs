@@ -8,9 +8,9 @@ use crate::{
 };
 #[derive(Default)]
 pub struct RenderState {
-  lights: RefCell<Vec<Rc<dyn ILight>>>,
-  shadows: RefCell<Vec<Rc<dyn ILight>>>,
-  camera: RefCell<Option<Rc<dyn ICamera>>>,
+  pub lights: RefCell<Vec<Rc<dyn ILight>>>,
+  pub shadows: RefCell<Vec<Rc<dyn ILight>>>,
+  pub camera: RefCell<Option<Rc<dyn ICamera>>>,
 }
 
 impl RenderState {
@@ -33,9 +33,7 @@ impl RenderState {
     *shadows = vec![];
   }
 
-  pub fn setup_lights(&self) {
-    
-  }
+  pub fn setup_lights(&self) {}
 }
 pub struct RenderItem {
   id: String,
