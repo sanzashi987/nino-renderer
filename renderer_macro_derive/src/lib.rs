@@ -43,7 +43,7 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
     pub struct #struct_name{
       #(#attributes)*
       name:std::cell::RefCell<String>,
-      event_emitter:crate::core::event_emitter::EventEmitter,
+      event_emitter: std::cell::RefCell<crate::core::event_emitter::EventEmitter>,
       parent: std::cell::RefCell<Option<std::rc::Rc<dyn #obj_trait>>>,
       children: std::cell::RefCell<Vec<std::rc::Rc<dyn #obj_trait>>>,
       matrix: std::cell::RefCell<crate::math::Mat4>,
@@ -62,8 +62,8 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
     }
 
     impl #obj_trait for #struct_name {
-      fn name(&self) -> &str {
-        &self.name
+      fn name(&self) -> String {
+        self.name.borrow().to_string()
       }
 
       fn set_name(&self, name: &str) {
@@ -206,18 +206,20 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
           let parent_global = parent.global_matrix();
           let mut global_matrix = self.global_matrix.borrow_mut();
           let local_matrix = self.matrix();
-          *global_matrix = parent_global * *local_matrix;
+          *global_matrix = parent_global * local_matrix;
         }
 
         for child in std::ops::Deref::deref(&self.children.borrow()) {
           child.update_global_matrix();
         }
 
-        let mat = *self.global_matrix();
+        let mat = self.global_matrix();
 
         let global_matrix:Box<dyn std::any::Any> = Box::new(mat);
-
-        self.event_emitter.emit("update:global_matrix",global_matrix);
+        {
+          let mut event_emitter = self.event_emitter.borrow_mut();
+          event_emitter.emit("update:global_matrix",global_matrix);
+        }
 
       }
 

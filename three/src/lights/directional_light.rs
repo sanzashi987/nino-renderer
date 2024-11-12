@@ -44,7 +44,6 @@ impl LightToUniform for DirectionalLight {
 
     let mut direction = compute_direction(position, target, view_matrix);
 
-    let direction = self.compute_direction();
     res.insert("color", color);
     res.insert("direction", direction);
 

@@ -26,7 +26,7 @@ struct MeshDepthAttribute {
 impl ToUniform for MeshDepthAttribute {
   fn to_uniform(&self) -> Uniform {
     let mut res = Uniform::default();
-    res.insert(format!("wireframe"), UniformTypeEnum::Bool(self.wireframe));
+    res.insert("wireframe", UniformTypeEnum::Bool(self.wireframe));
     res
   }
 }

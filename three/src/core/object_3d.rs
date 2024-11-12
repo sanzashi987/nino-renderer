@@ -18,7 +18,7 @@ impl Default for ObjectType {
   }
 }
 pub trait IObject3D: Any {
-  fn name(&self) -> &str;
+  fn name(&self) -> String;
   fn set_name(&self, name: &str);
 
   fn parent(&self) -> Option<std::rc::Rc<dyn IObject3D>>;

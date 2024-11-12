@@ -6,7 +6,7 @@ use super::super::cameras::camera::ICamera;
 use super::super::objects::scene::Scene;
 use super::render_states::{RenderItem, RenderList, RenderLists, RenderState, RenderStates};
 use super::render_target::RenderTarget;
-use super::shadow_map::ShadowMap;
+use super::shadow_map::{rc_convert, ShadowMap};
 use crate::core::buffer_geometry::IGeometry;
 use crate::core::uniform::Uniform;
 use crate::lights::directional_light::DirectionalLight;
@@ -25,18 +25,6 @@ use crate::{
     extract_normal_matrix,
   },
 };
-
-macro_rules! rc_convert {
-  ($source:tt;$($type:tt),+;$msg:tt) => {
-    $(
-      if let Ok(res) = Rc::downcast::<$type>($source.clone()) {
-        res
-      } else
-    )+ {
-      panic!($msg)
-    }
-  };
-}
 
 #[derive(Default)]
 pub struct GlRenderer {

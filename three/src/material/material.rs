@@ -140,13 +140,13 @@ pub struct $name {
   $(pub $field: Option<$type>,)+
 }
 
-impl crate::material::material::ConvertUniform for $name {
+impl crate::material::material::ToUniform for $name {
   fn to_uniform(&self) -> crate::core::uniform::Uniform {
     let mut uniform: crate::core::uniform::Uniform = Default::default();
     $(
       if let Some(val) = self.$field {
         let e : crate::core::uniform::UniformTypeEnum = val.into();
-        uniform.insert(stringify!($field).to_string(), e);
+        uniform.insert(stringify!($field), e);
       };
     )+
     uniform
