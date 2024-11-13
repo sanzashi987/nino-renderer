@@ -4,6 +4,7 @@ use crate::{
   cameras::camera::ICamera,
   core::{object_3d::IObject3D, uniform::Uniform},
   math::{Mat4, Vec2, Vec3, Vec4},
+  core::render_target::RenderTarget,
 };
 
 pub enum LightType {
@@ -34,6 +35,8 @@ pub trait ILightShadow {
   fn viewports(&self) -> &Vec<Vec4>;
 
   fn update_matrices(&self);
+
+  fn map(&self) -> &RenderTarget;
 }
 
 pub fn compute_direction(position: Vec3, target: Vec3, view_matrix: Mat4) -> Vec3 {

@@ -1,13 +1,11 @@
-use std::borrow::Borrow;
-use std::cell::RefCell;
 use std::rc::Rc;
 
 use super::super::cameras::camera::ICamera;
 use super::super::objects::scene::Scene;
 use super::render_states::{RenderItem, RenderList, RenderLists, RenderState, RenderStates};
-use super::render_target::RenderTarget;
 use super::shadow_map::{rc_convert, ShadowMap};
 use crate::core::buffer_geometry::IGeometry;
+use crate::core::render_target::RenderTarget;
 use crate::core::uniform::Uniform;
 use crate::lights::directional_light::DirectionalLight;
 use crate::lights::light::ILight;
@@ -18,6 +16,7 @@ use crate::objects::group::Group;
 use crate::objects::line::Line;
 use crate::objects::mesh::Mesh;
 use crate::objects::point::Point;
+
 use crate::{
   core::object_3d::{IObject3D, ObjectType},
   math::{
@@ -159,9 +158,11 @@ impl GlRenderer {
 
     current_render_list.finish();
 
-    self
-      .shadow_map
-      .render(&current_render_state.shadows, scene, camera);
+    self.shadow_map.render(
+      &current_render_state.shadows.borrow(),
+      scene.clone(),
+      camera.clone(),
+    );
 
     current_render_state.setup_lights();
     self.render_scene(

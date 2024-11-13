@@ -1,7 +1,7 @@
 use std::{
   collections::HashMap,
   marker::PhantomData,
-  path::{self, Path, PathBuf},
+  path::{Path, PathBuf},
 };
 
 use crate::utils::SingleOrList;
@@ -102,16 +102,16 @@ where
         .map(|r| SingleOrList::Data(r));
     }
 
-    let mut mixed_result = Abstracts::parse(filepath, self.next_id)?;
+    let mixed_result = Abstracts::parse(filepath, self.next_id)?;
 
     let id_snap = self.next_id;
 
     let res = match mixed_result {
-      SingleOrList::Data(mut data) => {
+      SingleOrList::Data(data) => {
         let uid = self.store_to_loaded(data, filepath.to_string());
         Ok(SingleOrList::Data(self.loaded.get(&uid).unwrap()))
       }
-      SingleOrList::List(mut list) => {
+      SingleOrList::List(list) => {
         let mut res = vec![];
         for data in list {
           let name = data.get_name();

@@ -1,17 +1,12 @@
-use std::rc::Rc;
+use std::{borrow::Borrow, rc::Rc};
 
+use crate::core::render_target::RenderTarget;
 use crate::{
   cameras::camera::ICamera,
   core::object_3d::{IObject3D, ObjectType},
   lights::light::ILight,
   math::Vec2,
-  objects::{
-    base::{Object3D, Renderable},
-    line::Line,
-    mesh::Mesh,
-    point::Point,
-    scene::Scene,
-  },
+  objects::{base::Renderable, line::Line, mesh::Mesh, point::Point, scene::Scene},
 };
 
 macro_rules! rc_convert {
@@ -25,10 +20,25 @@ macro_rules! rc_convert {
     }
   };
 }
+#[derive(Debug)]
+enum ShadowMapType {
+  BasicShadowMap,
+  PCFShadowMap,
+  PCFSoftShadowMap,
+  VSMShadowMap,
+}
+
+impl Default for ShadowMapType {
+  fn default() -> Self {
+    Self::PCFShadowMap
+  }
+}
 
 #[derive(Debug, Default)]
 pub struct ShadowMap {
   enable: bool,
+  shadow_type: ShadowMapType,
+  target: RenderTarget,
 }
 
 impl ShadowMap {
@@ -60,6 +70,7 @@ impl ShadowMap {
     object: Rc<dyn IObject3D>,
     camera: Rc<dyn ICamera>,
     shadow_camera: Rc<dyn ICamera>,
+    light: Rc<dyn ILight>,
   ) {
     let visible = object.layers().test(&camera.layers());
 
@@ -75,7 +86,14 @@ impl ShadowMap {
       _ => {
         let children = object.children();
 
-        for child in children {}
+        for child in children.iter() {
+          self.render_object(
+            child.clone(),
+            camera.clone(),
+            shadow_camera.clone(),
+            light.clone(),
+          );
+        }
       }
     }
   }

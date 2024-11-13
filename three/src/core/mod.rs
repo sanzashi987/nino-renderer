@@ -9,3 +9,5 @@ pub use marco::Extract;
 pub mod layer;
 pub mod frustum;
 pub mod event_emitter;
+pub mod render_target;
+pub mod viewport;

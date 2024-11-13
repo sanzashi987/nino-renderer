@@ -1,12 +1,16 @@
 use std::cell::RefCell;
 
-use crate::math::data_array::ColorBuffer;
+use crate::{
+  math::data_array::ColorBuffer,
+  textures::texture::{self, Texture},
+};
 
 use super::viewport::Viewport;
 #[derive(Debug, Default)]
 pub struct RenderTarget {
   viewport: RefCell<Viewport>,
   color: RefCell<ColorBuffer>,
+  pub texture: RefCell<Texture>,
 }
 
 impl RenderTarget {
@@ -23,5 +27,10 @@ impl RenderTarget {
     let mut color = self.color.borrow_mut();
 
     std::mem::replace(&mut color, ColorBuffer::new(w, h))
+  }
+
+  pub fn update_texture(&self, texture: Texture) {
+    let mut t = self.texture.borrow_mut();
+    *t = texture;
   }
 }

@@ -65,18 +65,6 @@ macro_rules! f {
   };
 }
 
-enum ShadowMapType {
-  BasicShadowMap,
-  PCFShadowMap,
-  PCFSoftShadowMap,
-  VSMShadowMap,
-}
-
-struct ShadowMap {
-  enabled: bool,
-  map_type: ShadowMapType,
-}
-
 pub struct Renderer {
   viewport: Viewport,
   pub camera: Camera,

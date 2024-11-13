@@ -47,7 +47,6 @@ macro_rules! assign_last_mtl {
         .attributes
         .insert($key.to_string(), to_insert);
     }
-    // $data.last_mut().ok_or(ParserError::MtlNotFound)?.$key = parse_token_ok!($iter.next();$type);
   };
   ($data: ident; $iter: ident; $key:tt; $type:ty = $($attr:ident : $attr_type:ty),+) => {
      {
@@ -59,7 +58,6 @@ macro_rules! assign_last_mtl {
         .attributes
         .insert($key.to_string(), to_insert);
     }
-    // $data.last_mut().ok_or(ParserError::MtlNotFound)?.$key = parse_token_ok!($iter.next();$type = $($attr: $attr_type),+);
   };
 }
 

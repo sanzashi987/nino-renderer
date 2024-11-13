@@ -34,12 +34,13 @@ impl PerspectiveCamera {
 
     instance.make_perspective_mat();
     let that = instance.clone();
-
-    instance.event_emitter.on(
+    let mut event_emitter = that.event_emitter.borrow_mut();
+    let that_2 = instance.clone();
+    event_emitter.on(
       "update:global_matrix",
       Box::new(move |x| {
-        if let Some(global_matrix) = x.downcast::<Mat4>() {
-          let mut mutator = instance.view_matrix.borrow_mut();
+        if let Ok(global_matrix) = x.downcast::<Mat4>() {
+          let mut mutator = that_2.view_matrix.borrow_mut();
           *mutator = global_matrix.inverse().unwrap();
         }
       }),
@@ -52,7 +53,7 @@ impl PerspectiveCamera {
 
 
   #[rustfmt::skip]
-  pub fn make_perspective_mat(&self) -> Mat4 {
+  pub fn make_perspective_mat(&self) {
     let top = self.near * (self.fov.to_radians() / 2.0).tan() / self.zoom;
     let height = top * 2.0;
     let width = self.aspect * height;
@@ -90,10 +91,10 @@ impl ICamera for PerspectiveCamera {
   }
 
   fn projection_matrix(&self) -> crate::math::Mat4 {
-    *&self.projection_matrix;
+    *self.projection_matrix.borrow()
   }
 
   fn global_matrix_inverse(&self) -> Mat4 {
-    *&self.view_matrix
+    *self.view_matrix.borrow()
   }
 }
