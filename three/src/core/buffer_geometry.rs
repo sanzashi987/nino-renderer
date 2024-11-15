@@ -1,4 +1,4 @@
-use super::buffer_attribute::TypeBufferEnum;
+use super::{buffer_attribute::TypeBufferEnum, geometries::Sphere};
 use std::collections::HashMap;
 
 pub struct BufferGeometry {
@@ -21,7 +21,7 @@ pub trait IGeometry {
   fn get_uuid(&self) -> &str;
   fn get_attribute(&self) -> &Attribute;
   fn set_attribute(&mut self, key: &str, val: TypeBufferEnum);
-  // fn compute_bounding_sphere(&mut self);
+  fn compute_bounding_sphere(&mut self) -> Sphere;
 }
 
 impl IGeometry for BufferGeometry {
@@ -36,6 +36,10 @@ impl IGeometry for BufferGeometry {
 
   fn get_uuid(&self) -> &str {
     &self.uuid
+  }
+
+  fn compute_bounding_sphere(&mut self) -> Sphere {
+    todo!()
   }
 }
 

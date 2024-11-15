@@ -77,6 +77,18 @@ macro_rules! define_vec {
         }
       }
 
+      pub fn min(&mut self, rhs: Self){
+        $(
+          self.$p = self.$p.min(rhs.$p);
+        )+
+      }
+
+      pub fn max(&mut self, rhs: Self){
+        $(
+          self.$p = self.$p.max(rhs.$p);
+        )+
+      }
+
       pub fn zero() -> Self {
         $name{
           $(

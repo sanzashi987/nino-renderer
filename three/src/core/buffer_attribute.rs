@@ -1,17 +1,51 @@
 use crate::math::Vec3;
-struct TypeBufferAttribute<T: Sized + Copy> {
+struct TypeBufferAttribute<T: Sized + Copy + ToF32> {
   data: Vec<T>,
   size: usize,
   normalized: bool,
 }
 
-impl<T: Sized + Copy> TypeBufferAttribute<T> {
+pub trait ToF32 {
+  fn to(self) -> f32;
+}
+
+impl<T: Sized + Copy + ToF32> TypeBufferAttribute<T> {
   pub fn new(data: Vec<T>, size: usize, normalized: bool) -> Self {
     Self {
       data,
       size,
       normalized,
     }
+  }
+}
+
+pub trait IBufferAttribute<T: Sized + Copy + ToF32> {
+  fn get_x(&self, index: usize) -> T;
+  fn get_y(&self, index: usize) -> T;
+  fn get_z(&self, index: usize) -> T;
+  fn get_w(&self, index: usize) -> T;
+  fn count(&self) -> usize;
+}
+
+impl<T: Sized + Copy + ToF32> IBufferAttribute<T> for TypeBufferAttribute<T> {
+  fn get_x(&self, index: usize) -> T {
+    self.data[index * self.size]
+  }
+
+  fn get_y(&self, index: usize) -> T {
+    self.data[index * self.size + 1]
+  }
+
+  fn get_z(&self, index: usize) -> T {
+    self.data[index * self.size + 2]
+  }
+
+  fn get_w(&self, index: usize) -> T {
+    self.data[index * self.size + 3]
+  }
+
+  fn count(&self) -> usize {
+    self.data.len() / self.size
   }
 }
 
@@ -25,7 +59,7 @@ pub trait ExtractRef<T> {
   fn extract(&self) -> Option<T>;
 }
 
-impl<T: Sized + Copy> Iterator for TypeBufferAttribute<T> {
+impl<T: Sized + Copy + ToF32> Iterator for TypeBufferAttribute<T> {
   type Item = Vec<T>;
 
   fn next(&mut self) -> Option<Self::Item> {
@@ -48,6 +82,12 @@ macro_rules! typed_array {
   ($enum_name:tt;$($enum:tt-$type:tt-$ty:tt);+) => {
     $(
       pub type $type = TypeBufferAttribute<$ty>;
+
+      impl ToF32 for $ty {
+        fn to(self)->f32{
+          self as f32
+        }
+      }
 
       impl $type {
         pub fn as_enum(self)-> $enum_name{

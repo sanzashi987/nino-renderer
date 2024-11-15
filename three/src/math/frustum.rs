@@ -1,3 +1,7 @@
+use std::rc::Rc;
+
+use crate::core::object_3d::IObject3D;
+
 use super::{Mat4, Vec3, Vec4};
 
 pub struct PerspectiveFrustum {
@@ -68,7 +72,7 @@ impl PerspectiveFrustum {
 //   }
 // }
 #[derive(Debug, Default)]
-struct Plane {
+pub struct Plane {
   constant: f32,
   normal: Vec3,
 }
@@ -79,6 +83,14 @@ impl Plane {
     self.normal.y = y;
     self.normal.z = z;
     self.constant = constant;
+
+    self.normalize();
+  }
+
+  fn normalize(&mut self) {
+    let length = self.normal.length();
+    self.normal.normalize();
+    self.constant /= length;
   }
 }
 #[derive(Debug, Default)]
@@ -126,4 +138,6 @@ impl Frustum {
 
     res
   }
+
+  pub fn intersect_object(&self, object: Rc<dyn IObject3D>) -> bool {}
 }
