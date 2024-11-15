@@ -1,6 +1,6 @@
-use super::{Mat4, Vec3};
+use super::{Mat4, Vec3, Vec4};
 
-pub struct Frustum {
+pub struct PerspectiveFrustum {
   near: f32,
   far: f32,
   aspect: f32,
@@ -8,7 +8,7 @@ pub struct Frustum {
   mat: Mat4,
 }
 
-impl Frustum {
+impl PerspectiveFrustum {
   #[rustfmt::skip]
   pub fn new(near: f32, far: f32, aspect: f32, fov: f32) -> Self {
     let half_w = near * fov.tan();
@@ -67,3 +67,63 @@ impl Frustum {
 //     todo!()
 //   }
 // }
+#[derive(Debug, Default)]
+struct Plane {
+  constant: f32,
+  normal: Vec3,
+}
+
+impl Plane {
+  fn set_components(&mut self, x: f32, y: f32, z: f32, constant: f32) {
+    self.normal.x = x;
+    self.normal.y = y;
+    self.normal.z = z;
+    self.constant = constant;
+  }
+}
+#[derive(Debug, Default)]
+pub struct Frustum {
+  planes: [Plane; 6],
+}
+
+impl Frustum {
+  pub fn new(planes: [Plane; 6]) -> Self {
+    Self { planes }
+  }
+
+  pub fn from_projection_matrix(projection_matrix: Mat4) -> Self {
+    let Vec4 {
+      x: m0,
+      y: m1,
+      z: m2,
+      w: m3,
+    } = projection_matrix.get_col(0);
+    let Vec4 {
+      x: m4,
+      y: m5,
+      z: m6,
+      w: m7,
+    } = projection_matrix.get_col(1);
+    let Vec4 {
+      x: m8,
+      y: m9,
+      z: m10,
+      w: m11,
+    } = projection_matrix.get_col(2);
+    let Vec4 {
+      x: m12,
+      y: m13,
+      z: m14,
+      w: m15,
+    } = projection_matrix.get_col(3);
+    let mut res = Self::default();
+    res.planes[0].set_components(m3 - m0, m7 - m4, m11 - m8, m15 - m12);
+    res.planes[1].set_components(m3 + m0, m7 + m4, m11 + m8, m15 + m12);
+    res.planes[2].set_components(m3 + m1, m7 + m5, m11 + m9, m15 + m13);
+    res.planes[3].set_components(m3 - m1, m7 - m5, m11 - m9, m15 - m13);
+    res.planes[4].set_components(m3 - m2, m7 - m6, m11 - m10, m15 - m14);
+    res.planes[5].set_components(m3 + m2, m7 + m6, m11 + m10, m15 + m14);
+
+    res
+  }
+}

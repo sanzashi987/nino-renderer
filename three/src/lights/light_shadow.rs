@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use crate::{
   cameras::camera::ICamera,
+  core::render_target::RenderTarget,
   math::{Mat4, Vec2, Vec4},
 };
 
@@ -16,4 +17,5 @@ pub struct LightShadow {
   mat: Mat4,
   // vec4 -> offsetx, offsety, width, height
   viewports: Vec<Vec4>,
+  map: Option<RenderTarget>,
 }

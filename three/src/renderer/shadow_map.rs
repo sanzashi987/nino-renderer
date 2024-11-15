@@ -1,6 +1,8 @@
 use std::{borrow::Borrow, rc::Rc};
 
 use crate::core::render_target::RenderTarget;
+use crate::core::viewport;
+use crate::math::Vec4;
 use crate::{
   cameras::camera::ICamera,
   core::object_3d::{IObject3D, ObjectType},
@@ -38,7 +40,6 @@ impl Default for ShadowMapType {
 pub struct ShadowMap {
   enable: bool,
   shadow_type: ShadowMapType,
-  target: RenderTarget,
 }
 
 impl ShadowMap {
@@ -54,12 +55,23 @@ impl ShadowMap {
           y: map_height,
         } = shadow.map_size();
 
+        let map = shadow.map();
+
+        map.update_texture_name(light.name() + ".shadow_map");
+        shadow.camera().projection_matrix();
+
         let vps = shadow.viewports();
         for vp in vps {
-          let offset_x = vp.x * map_width;
-          let offset_y = vp.y * map_height;
-          let texture_width = vp.z * map_width;
-          let texture_height = vp.w * map_height;
+          let mut viewport = Vec4::zero();
+          //offset_x
+          viewport.x = vp.x * map_width;
+          //offset_y
+          viewport.y = vp.y * map_height;
+          //texture_width
+          viewport.z = vp.z * map_width;
+          //texture_height
+          viewport.w = vp.w * map_height;
+          shadow.update_matrices(light.clone(), viewport);
         }
       }
     }
@@ -67,6 +79,7 @@ impl ShadowMap {
 
   fn render_object(
     &self,
+    target: &RenderTarget,
     object: Rc<dyn IObject3D>,
     camera: Rc<dyn ICamera>,
     shadow_camera: Rc<dyn ICamera>,
@@ -88,6 +101,7 @@ impl ShadowMap {
 
         for child in children.iter() {
           self.render_object(
+            target,
             child.clone(),
             camera.clone(),
             shadow_camera.clone(),
@@ -97,6 +111,8 @@ impl ShadowMap {
       }
     }
   }
+
+  fn redenr_to_target(&self, target: &RenderTarget) {}
 }
 
 pub(crate) use rc_convert;

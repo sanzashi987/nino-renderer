@@ -33,4 +33,9 @@ impl RenderTarget {
     let mut t = self.texture.borrow_mut();
     *t = texture;
   }
+
+  pub fn update_texture_name(&self, name: String) {
+    let mut t = self.texture.borrow_mut();
+    t.name = name;
+  }
 }

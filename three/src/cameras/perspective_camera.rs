@@ -32,7 +32,7 @@ impl PerspectiveCamera {
     let instance =
       with_default_fields!(Camera;fov,aspect,near,far,focus,zoom,view_matrix, projection_matrix);
 
-    instance.make_perspective_mat();
+    instance.update_perspective_mat();
     let that = instance.clone();
     let mut event_emitter = that.event_emitter.borrow_mut();
     let that_2 = instance.clone();
@@ -49,11 +49,8 @@ impl PerspectiveCamera {
     instance
   }
 
-  fn update_perspective() {}
-
-
   #[rustfmt::skip]
-  pub fn make_perspective_mat(&self) {
+  pub fn update_perspective_mat(&self) {
     let top = self.near * (self.fov.to_radians() / 2.0).tan() / self.zoom;
     let height = top * 2.0;
     let width = self.aspect * height;
@@ -96,5 +93,9 @@ impl ICamera for PerspectiveCamera {
 
   fn global_matrix_inverse(&self) -> Mat4 {
     *self.view_matrix.borrow()
+  }
+
+  fn update_projection_matrix(&self) {
+    self.update_perspective_mat();
   }
 }
