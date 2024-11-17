@@ -124,6 +124,18 @@ macro_rules! define_vec {
         }
       }
 
+      pub fn distance_to_squared(&self, target:Self) -> f32 {
+        let mut res = 0f32;
+        $(
+          res += (self.$p - target.$p) * (self.$p - target.$p);
+        )+
+        res
+      }
+
+      pub fn distance_to(&self, target:Self) -> f32 {
+        self.distance_to_squared(target).sqrt()
+      }
+
     }
   };
 }

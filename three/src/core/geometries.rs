@@ -2,12 +2,13 @@ use crate::math::Vec3;
 
 use super::buffer_attribute::{IBufferAttribute, ToF32};
 
-pub struct Box {
+#[derive(Debug, Default)]
+pub struct Box3 {
   min: Vec3,
   max: Vec3,
 }
 
-impl Box {
+impl Box3 {
   fn expand(&mut self, point: Vec3) {
     self.min.min(point);
     self.max.max(point);
@@ -27,10 +28,11 @@ impl Box {
     self.max.z = -f32::INFINITY;
   }
 
-  fn from_attribute<T: Sized + Copy + ToF32>(&mut self, attribute: &impl IBufferAttribute<T>) {
+  // pub fn from_attribute<T: Sized + Copy + ToF32>(&mut self, attribute: &impl IBufferAttribute<T>) {
+  pub fn from_attribute<T: Sized + Copy + ToF32>(&mut self, attribute: &dyn IBufferAttribute<T>) {
     self.reset();
 
-    for index in 0..attribute.count() {
+    for index in 0..attribute.items() {
       let x: f32 = attribute.get_x(index).to();
       let y: f32 = attribute.get_y(index).to();
       let z: f32 = attribute.get_z(index).to();
@@ -41,8 +43,17 @@ impl Box {
 }
 
 pub struct Sphere {
-  center: Vec3,
-  radius: i32,
+  pub center: Vec3,
+  pub radius: f32,
+}
+
+impl Default for Sphere {
+  fn default() -> Self {
+    Self {
+      center: Vec3::zero(),
+      radius: f32::INFINITY,
+    }
+  }
 }
 
 impl Sphere {}

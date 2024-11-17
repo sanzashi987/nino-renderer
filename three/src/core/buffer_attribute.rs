@@ -24,7 +24,8 @@ pub trait IBufferAttribute<T: Sized + Copy + ToF32> {
   fn get_y(&self, index: usize) -> T;
   fn get_z(&self, index: usize) -> T;
   fn get_w(&self, index: usize) -> T;
-  fn count(&self) -> usize;
+  fn get_vec3(&self, index: usize) -> Vec3;
+  fn items(&self) -> usize;
 }
 
 impl<T: Sized + Copy + ToF32> IBufferAttribute<T> for TypeBufferAttribute<T> {
@@ -44,8 +45,14 @@ impl<T: Sized + Copy + ToF32> IBufferAttribute<T> for TypeBufferAttribute<T> {
     self.data[index * self.size + 3]
   }
 
-  fn count(&self) -> usize {
+  fn items(&self) -> usize {
     self.data.len() / self.size
+  }
+  fn get_vec3(&self, index: usize) -> Vec3 {
+    let x = self.get_x(index).to();
+    let y = self.get_y(index).to();
+    let z = self.get_z(index).to();
+    Vec3::new(x, y, z)
   }
 }
 
