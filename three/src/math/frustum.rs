@@ -1,6 +1,12 @@
-use std::rc::Rc;
+use std::{any::Any, rc::Rc};
 
-use crate::core::object_3d::IObject3D;
+use crate::{
+  core::{
+    geometries::{IBoundingSphere, Sphere},
+    object_3d::IObject3D,
+  },
+  objects::base::Renderable,
+};
 
 use super::{Mat4, Vec3, Vec4};
 
@@ -139,5 +145,16 @@ impl Frustum {
     res
   }
 
-  pub fn intersect_object(&self, object: Rc<dyn IObject3D>) -> bool {}
+  pub fn intersect_object(
+    &self,
+    object: Rc<dyn IObject3D>,
+    sphere: Rc<dyn IBoundingSphere>,
+  ) -> bool {
+    // let sph
+    todo!()
+  }
+
+  pub fn intersect_sphere(&self, sphere: &Sphere) -> bool {
+    todo!()
+  }
 }

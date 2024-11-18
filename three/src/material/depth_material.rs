@@ -19,8 +19,6 @@ impl Default for DepthPacking {
 
 struct MeshDepthAttribute {
   depth_packing: DepthPacking,
-  wireframe: bool,
-  wirefame_linewidth: u8,
 }
 
 impl ToUniform for MeshDepthAttribute {

@@ -1,6 +1,8 @@
+use crate::math::Vec3;
+
 use super::{
   buffer_attribute::{IBufferAttribute, TypeBufferEnum},
-  geometries::{Box3, Sphere},
+  geometries::{Box3, IBoundingSphere, Sphere},
 };
 use std::{borrow::Borrow, collections::HashMap};
 
@@ -22,12 +24,46 @@ impl Default for BufferGeometry {
 
 pub type Attribute = HashMap<String, TypeBufferEnum>;
 
-pub trait IGeometry {
+pub trait IGeometry: IBoundingSphere {
   fn get_uuid(&self) -> &str;
   fn get_attribute(&self) -> &Attribute;
   fn set_attribute(&mut self, key: &str, val: TypeBufferEnum);
-  fn update_bounding_sphere(&mut self);
-  fn bounding_sphere(&self) -> &Sphere;
+}
+
+impl IBoundingSphere for BufferGeometry {
+  fn update_bounding_sphere(&mut self) {
+    if let Some(e) = self.attributes.get("position") {
+      if let TypeBufferEnum::F32(position) = e {
+        let mut box3 = Box3::default();
+        // let a: &Box<dyn IBufferAttribute<f32>> = position;
+        // box3.from_attribute::<f32>(position);
+
+        for index in 0..position.items() {
+          let x: f32 = position.get_x(index);
+          let y: f32 = position.get_y(index);
+          let z: f32 = position.get_z(index);
+          box3.expand(Vec3::new(x, y, z));
+        }
+
+        let center = box3.get_center();
+        let bounding = &mut self.bounding_sphere;
+        bounding.center = center;
+
+        let count = position.items();
+        let mut max_radius = 0f32;
+        for i in 0..count {
+          let attr_vec3 = position.get_vec3(i).distance_to(center);
+          max_radius = max_radius.max(attr_vec3);
+        }
+
+        bounding.radius = max_radius
+      }
+    }
+  }
+
+  fn bounding_sphere(&self) -> &Sphere {
+    todo!()
+  }
 }
 
 impl IGeometry for BufferGeometry {
@@ -42,30 +78,6 @@ impl IGeometry for BufferGeometry {
 
   fn get_uuid(&self) -> &str {
     &self.uuid
-  }
-
-  fn update_bounding_sphere(&mut self) {
-    if let Some(e) = self.attributes.get("position") {
-      if let TypeBufferEnum::F32(position) = e {
-        let mut box3 = Box3::default();
-        // let a: &Box<dyn IBufferAttribute<f32>> = position;
-        box3.from_attribute::<f32>(position);
-
-        let count = position.items();
-        let center = self.bounding_sphere.center;
-        let mut max_radius = 0f32;
-        for i in 0..count {
-          let attr_vec3 = position.get_vec3(i).distance_to(center);
-          max_radius = max_radius.max(attr_vec3);
-        }
-
-        self.bounding_sphere.radius = max_radius
-      }
-    }
-  }
-
-  fn bounding_sphere(&self) -> &Sphere {
-    todo!()
   }
 }
 

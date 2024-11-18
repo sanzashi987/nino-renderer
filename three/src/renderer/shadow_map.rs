@@ -3,6 +3,7 @@ use std::{borrow::Borrow, rc::Rc};
 use crate::core::render_target::RenderTarget;
 use crate::core::viewport;
 use crate::math::Vec4;
+use crate::utils::rc_convert;
 use crate::{
   cameras::camera::ICamera,
   core::object_3d::{IObject3D, ObjectType},
@@ -11,17 +12,6 @@ use crate::{
   objects::{base::Renderable, line::Line, mesh::Mesh, point::Point, scene::Scene},
 };
 
-macro_rules! rc_convert {
-  ($source:tt;$($type:tt),+;$msg:tt) => {
-    $(
-      if let Ok(res) = Rc::downcast::<$type>($source.clone()) {
-        res
-      } else
-    )+ {
-      panic!($msg)
-    }
-  };
-}
 #[derive(Debug)]
 enum ShadowMapType {
   BasicShadowMap,
@@ -85,7 +75,9 @@ impl ShadowMap {
     shadow_camera: Rc<dyn ICamera>,
     light: Rc<dyn ILight>,
   ) {
-    let visible = object.layers().test(&camera.layers());
+    if !object.layers().test(&camera.layers()) {
+      return;
+    }
 
     match object.get_type() {
       ObjectType::Mesh | ObjectType::Line | ObjectType::Point => {
@@ -95,6 +87,8 @@ impl ShadowMap {
         if !renderable.material().visible() {
           return;
         }
+
+        let material = renderable.material();
       }
       _ => {
         let children = object.children();
@@ -112,7 +106,7 @@ impl ShadowMap {
     }
   }
 
-  fn redenr_to_target(&self, target: &RenderTarget) {}
+  fn render_to_target(&self, target: &RenderTarget) {}
 }
 
-pub(crate) use rc_convert;
+fn to_depth_material() {}

@@ -1,5 +1,5 @@
 use crate::math::Vec3;
-struct TypeBufferAttribute<T: Sized + Copy + ToF32> {
+pub struct TypeBufferAttribute<T: Sized + Copy + ToF32> {
   data: Vec<T>,
   size: usize,
   normalized: bool,

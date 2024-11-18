@@ -3,7 +3,7 @@ use std::rc::Rc;
 use super::super::cameras::camera::ICamera;
 use super::super::objects::scene::Scene;
 use super::render_states::{RenderItem, RenderList, RenderLists, RenderState, RenderStates};
-use super::shadow_map::{rc_convert, ShadowMap};
+use super::shadow_map::ShadowMap;
 use crate::core::buffer_geometry::IGeometry;
 use crate::core::render_target::RenderTarget;
 use crate::core::uniform::Uniform;
@@ -17,6 +17,7 @@ use crate::objects::line::Line;
 use crate::objects::mesh::Mesh;
 use crate::objects::point::Point;
 
+use crate::utils::rc_convert;
 use crate::{
   core::object_3d::{IObject3D, ObjectType},
   math::{

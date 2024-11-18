@@ -71,6 +71,9 @@ pub struct BasicMaterial<T: ToUniform + Default, U: DefineShader> {
   pub depth_func: DepthFunc,
   pub depth_write: bool,
 
+  pub wireframe: bool,
+  pub wirefame_linewidth: u8,
+
   attributes: RefCell<Rc<T>>,
 
   abstract_shader: PhantomData<U>,
@@ -129,6 +132,8 @@ impl<T: ToUniform + Default, U: DefineShader> Default for BasicMaterial<T, U> {
       depth_write: Default::default(),
       attributes: Default::default(),
       abstract_shader: Default::default(),
+      wireframe: Default::default(),
+      wirefame_linewidth: Default::default(),
     }
   }
 }

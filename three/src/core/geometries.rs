@@ -9,12 +9,12 @@ pub struct Box3 {
 }
 
 impl Box3 {
-  fn expand(&mut self, point: Vec3) {
+  pub fn expand(&mut self, point: Vec3) {
     self.min.min(point);
     self.max.max(point);
   }
 
-  fn get_center(&self) -> Vec3 {
+  pub fn get_center(&self) -> Vec3 {
     let full = self.min + self.max;
     full / 2.0
   }
@@ -29,7 +29,10 @@ impl Box3 {
   }
 
   // pub fn from_attribute<T: Sized + Copy + ToF32>(&mut self, attribute: &impl IBufferAttribute<T>) {
-  pub fn from_attribute<T: Sized + Copy + ToF32>(&mut self, attribute: &dyn IBufferAttribute<T>) {
+  pub fn from_attribute<T: Sized + Copy + ToF32>(
+    &mut self,
+    attribute: &Box<dyn IBufferAttribute<T>>,
+  ) {
     self.reset();
 
     for index in 0..attribute.items() {
@@ -54,6 +57,11 @@ impl Default for Sphere {
       radius: f32::INFINITY,
     }
   }
+}
+
+pub trait IBoundingSphere {
+  fn update_bounding_sphere(&mut self);
+  fn bounding_sphere(&self) -> &Sphere;
 }
 
 impl Sphere {}
