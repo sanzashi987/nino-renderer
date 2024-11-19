@@ -4,11 +4,24 @@ use super::{
   material::{BasicMaterial, ToUniform},
   shader::DefineShader,
 };
+
+#[derive(Debug, Clone, Copy)]
 pub enum DepthPacking {
   BasicDepthPacking = 3200,
   RGBADepthPacking = 3201,
   RGBDepthPacking = 3202,
   RGDepthPacking = 3203,
+}
+
+impl Into<f32> for DepthPacking {
+  fn into(self) -> f32 {
+    match self {
+      DepthPacking::BasicDepthPacking => 3200f32,
+      DepthPacking::RGBADepthPacking => 3201f32,
+      DepthPacking::RGBDepthPacking => 3202f32,
+      DepthPacking::RGDepthPacking => 3203f32,
+    }
+  }
 }
 
 impl Default for DepthPacking {
@@ -17,19 +30,21 @@ impl Default for DepthPacking {
   }
 }
 
-struct MeshDepthAttribute {
+#[derive(Debug, Default)]
+pub struct MeshDepthAttribute {
   depth_packing: DepthPacking,
 }
 
 impl ToUniform for MeshDepthAttribute {
   fn to_uniform(&self) -> Uniform {
     let mut res = Uniform::default();
-    res.insert("wireframe", UniformTypeEnum::Bool(self.wireframe));
+    let a: f32 = self.depth_packing.into();
+    res.insert("wireframe", UniformTypeEnum::Float(a));
     res
   }
 }
 
-struct DepthShader {}
+pub struct DepthShader {}
 
 impl DefineShader for DepthShader {
   fn vertex() -> super::shader::VertexShader {
@@ -40,5 +55,4 @@ impl DefineShader for DepthShader {
     todo!()
   }
 }
-
 pub type MeshDepthMaterial = BasicMaterial<MeshDepthAttribute, DepthShader>;

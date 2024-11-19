@@ -1,7 +1,7 @@
-use std::{borrow::Borrow, rc::Rc};
+use std::rc::Rc;
 
 use crate::core::render_target::RenderTarget;
-use crate::core::viewport;
+use crate::material::depth_material::MeshDepthMaterial;
 use crate::math::Vec4;
 use crate::utils::rc_convert;
 use crate::{
@@ -26,10 +26,11 @@ impl Default for ShadowMapType {
   }
 }
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct ShadowMap {
   enable: bool,
   shadow_type: ShadowMapType,
+  material: MeshDepthMaterial,
 }
 
 impl ShadowMap {

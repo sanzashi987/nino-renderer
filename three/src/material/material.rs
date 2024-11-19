@@ -63,9 +63,9 @@ pub struct BasicMaterial<T: ToUniform + Default, U: DefineShader> {
   pub side: Side,
 
   pub opacity: u8,
-  transparent: bool,
-  transmission: Option<u32>,
-  visible: bool,
+  pub transparent: bool,
+  pub transmission: Option<u32>,
+  pub visible: bool,
 
   pub depth_test: bool,
   pub depth_func: DepthFunc,
@@ -74,15 +74,17 @@ pub struct BasicMaterial<T: ToUniform + Default, U: DefineShader> {
   pub wireframe: bool,
   pub wirefame_linewidth: u8,
 
-  attributes: RefCell<Rc<T>>,
+  pub attributes: RefCell<Rc<T>>,
 
-  abstract_shader: PhantomData<U>,
+  pub abstract_shader: PhantomData<U>,
 }
 
 pub trait IMaterial {
   fn transparent(&self) -> bool;
   fn transmission(&self) -> Option<u32>;
   fn visible(&self) -> bool;
+  fn wireframe(&self) -> bool;
+  fn wirefame_linewidth(&self) -> u8;
   fn to_uniform(&self) -> Uniform;
 }
 
@@ -99,6 +101,14 @@ impl<T: ToUniform + Default, U: DefineShader> IMaterial for BasicMaterial<T, U> 
 
   fn to_uniform(&self) -> Uniform {
     self.attributes.borrow().to_uniform()
+  }
+
+  fn wireframe(&self) -> bool {
+    self.wireframe
+  }
+
+  fn wirefame_linewidth(&self) -> u8 {
+    self.wirefame_linewidth
   }
 }
 
