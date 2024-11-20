@@ -72,7 +72,7 @@ pub struct BasicMaterial<T: ToUniform + Default, U: DefineShader> {
   pub depth_write: bool,
 
   pub wireframe: bool,
-  pub wirefame_linewidth: u8,
+  pub wireframe_linewidth: u8,
 
   pub attributes: RefCell<Rc<T>>,
 
@@ -84,7 +84,7 @@ pub trait IMaterial {
   fn transmission(&self) -> Option<u32>;
   fn visible(&self) -> bool;
   fn wireframe(&self) -> bool;
-  fn wirefame_linewidth(&self) -> u8;
+  fn wireframe_linewidth(&self) -> u8;
   fn to_uniform(&self) -> Uniform;
 }
 
@@ -107,8 +107,8 @@ impl<T: ToUniform + Default, U: DefineShader> IMaterial for BasicMaterial<T, U> 
     self.wireframe
   }
 
-  fn wirefame_linewidth(&self) -> u8 {
-    self.wirefame_linewidth
+  fn wireframe_linewidth(&self) -> u8 {
+    self.wireframe_linewidth
   }
 }
 
@@ -143,7 +143,7 @@ impl<T: ToUniform + Default, U: DefineShader> Default for BasicMaterial<T, U> {
       attributes: Default::default(),
       abstract_shader: Default::default(),
       wireframe: Default::default(),
-      wirefame_linewidth: Default::default(),
+      wireframe_linewidth: Default::default(),
     }
   }
 }
