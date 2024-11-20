@@ -17,6 +17,21 @@ impl<T: Sized + Copy + ToF32> TypeBufferAttribute<T> {
       normalized,
     }
   }
+
+  pub fn pick(&self, index: usize) -> TypeBufferAttribute<T> {
+    let start = self.size * index;
+    let end = start + self.size + 1;
+
+    let mut data = vec![];
+    for i in start..end {
+      data.push(self.data[i]);
+    }
+    Self {
+      data,
+      size: self.size,
+      normalized: self.normalized,
+    }
+  }
 }
 
 pub trait IBufferAttribute<T: Sized + Copy + ToF32> {
@@ -138,6 +153,18 @@ macro_rules! typed_array {
       $(
        $enum(Box<$type>),
       ) +
+    }
+
+    impl $enum_name {
+      pub fn pick(&self, index:usize) -> $enum_name {
+        match &self {
+          $(
+            Self::$enum(buffer)=>{
+              return Self::$enum(Box::new(buffer.pick(index)));
+            }
+          )+
+        }
+      }
     }
 
   };

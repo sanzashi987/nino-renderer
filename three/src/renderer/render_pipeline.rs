@@ -3,11 +3,13 @@ use std::rc::Rc;
 use crate::{
   cameras::camera::ICamera,
   core::{
-    buffer_attribute::TypeBufferEnum, buffer_geometry::IGeometry, object_3d::IObject3D,
+    buffer_attribute::TypeBufferEnum,
+    buffer_geometry::{Attribute, IGeometry},
+    object_3d::IObject3D,
     render_target::RenderTarget,
+    varying::Varying,
   },
   material::material::IMaterial,
-  objects::base::Renderable,
 };
 
 enum RenderMode {
@@ -37,18 +39,33 @@ pub fn render_pipeline(
 
   match mode {
     RenderMode::Triangle => {
-      let position = geometry.get_attribute().get("position");
+      let attribute = geometry.get_attribute();
+      let position = attribute.get("position");
+      let uniform = material.to_uniform();
       if let Some(p) = position {
         match p {
           TypeBufferEnum::F64(type_buffer_attribute) => {
             let data = &type_buffer_attribute.data;
-            for i in 0..data.len() {
+            let size = &type_buffer_attribute.size;
+            let mut index = 0;
+            loop {
+              let mut attribute_per_vertex = Attribute::default();
+
+              attribute.iter().for_each(|(k, v)| {
+                // v.
+                attribute_per_vertex.insert(k.to_string(), v);
+              });
+              index += 1;
+            }
+
+            for i in 0..data.len() / 3 {
               let index = (i * 3) as usize;
               let mut vertices = [data[index], data[index + 1], data[index + 2]];
+              let mut varyings = Varying::default();
+
               for v in &mut vertices {
-                // uniforms.set("vertex_index", GLTypes::Float(index as f32));
-                *v = shader.run_vertex(v, &uniforms, &mut varyings);
-                index += 1.0;
+                let mut gl_vertex = Default::default();
+                material.vertex(attribute, &uniform, &mut varyings, &mut gl_vertex);
               }
             }
           }

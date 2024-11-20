@@ -79,7 +79,7 @@ pub struct BasicMaterial<T: ToUniform + Default, U: DefineShader> {
   pub abstract_shader: PhantomData<U>,
 }
 
-pub trait IMaterial {
+pub trait IMaterial: RunShader {
   fn transparent(&self) -> bool;
   fn transmission(&self) -> Option<u32>;
   fn visible(&self) -> bool;
@@ -112,7 +112,7 @@ impl<T: ToUniform + Default, U: DefineShader> IMaterial for BasicMaterial<T, U> 
   }
 }
 
-trait RunShader {
+pub trait RunShader {
   fn vertex(&self, a: &Attribute, u: &Uniform, v: &mut Varying, gl: &mut GlPerVertex);
   fn fragment(&self, u: &Uniform, v: &Varying, gl: &mut GlPerFragment) -> bool;
 }
