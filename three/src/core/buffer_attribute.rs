@@ -1,4 +1,4 @@
-use crate::math::Vec3;
+use crate::math::{Vec2, Vec3, Vec4};
 pub struct TypeBufferAttribute<T: Sized + Copy + ToF32> {
   pub data: Vec<T>,
   pub size: usize,
@@ -117,19 +117,39 @@ macro_rules! typed_array {
         }
 
       }
-
-
-      // impl Extract<Box<$type>> for $enum_name {
-      //   fn extract(self)->Option<Box<$type>>{
-      //     if let Self::$enum(val) = self {
-      //       Some(val)
-      //     } else {
-      //       None
-      //     }
-      //   }
-      // }
     )+
 
+    impl ExtractRef<f32> for  $enum_name {
+      fn extract(&self) -> Option<f32> {
+        match self {
+          $(
+            Self::$enum(val)=> {
+              if val.data.len() < 1{
+                return None
+              }
+              return Some(val.data[0] as f32);
+            }
+          )+
+        };
+      }
+    }
+
+
+    impl ExtractRef<Vec2> for  $enum_name {
+      fn extract(&self) -> Option<Vec2> {
+        let (x,y) = match self {
+          $(
+            Self::$enum(val)=> {
+              if val.data.len() < 2{
+                return None
+              }
+              (val.data[0] as f32,val.data[1] as f32)
+            }
+          )+
+        };
+        Some(Vec2::new(x,y))
+      }
+    }
 
     impl ExtractRef<Vec3> for  $enum_name {
       fn extract(&self) -> Option<Vec3> {
@@ -142,13 +162,27 @@ macro_rules! typed_array {
               (val.data[0] as f32,val.data[1] as f32,val.data[2] as f32)
             }
           )+
-          _ => {
-            return None
-          }
         };
         Some(Vec3::new(x,y,z))
       }
     }
+
+    impl ExtractRef<Vec4> for  $enum_name {
+      fn extract(&self) -> Option<Vec4> {
+        let (x,y,z,w) = match self {
+          $(
+            Self::$enum(val)=> {
+              if val.data.len() < 4{
+                return None
+              }
+              (val.data[0] as f32,val.data[1] as f32,val.data[2] as f32,val.data[3] as f32)
+            }
+          )+
+        };
+        Some(Vec4::new(x,y,z,w))
+      }
+    }
+
     pub enum $enum_name {
       $(
        $enum(Box<$type>),

@@ -24,6 +24,16 @@ impl Default for BufferGeometry {
 
 pub type Attribute = HashMap<String, TypeBufferEnum>;
 
+pub fn pick_attribute_per_vertex(attr: &Attribute, index: usize) -> Attribute {
+  let mut attribute_per_vertex = Attribute::default();
+
+  attr.iter().for_each(|(k, v)| {
+    attribute_per_vertex.insert(k.to_string(), v.pick(index));
+  });
+
+  attribute_per_vertex
+}
+
 pub trait IGeometry: IBoundingSphere {
   fn get_uuid(&self) -> &str;
   fn get_attribute(&self) -> &Attribute;
