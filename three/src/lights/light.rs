@@ -22,6 +22,10 @@ pub trait LightToUniform {
 }
 
 pub trait ILight: IObject3D + LightToUniform {
+  fn intensity(&self) -> f32;
+
+  fn color(&self) -> Vec4;
+
   fn light_type(&self) -> LightType;
 
   fn to_shadow_uniform(&self) -> Uniform;

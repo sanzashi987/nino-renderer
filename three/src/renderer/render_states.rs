@@ -2,10 +2,14 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc, vec};
 
 use crate::{
   cameras::camera::{self, ICamera},
-  core::{buffer_geometry::IGeometry, object_3d::IObject3D},
-  lights::light::ILight,
+  core::{buffer_geometry::IGeometry, object_3d::IObject3D, uniform::Uniform},
+  lights::light::{ILight, LightType},
   material::material::IMaterial,
+  math::Vec3,
 };
+
+struct LightState {}
+
 #[derive(Default)]
 pub struct RenderState {
   pub lights: RefCell<Vec<Rc<dyn ILight>>>,
@@ -33,7 +37,29 @@ impl RenderState {
     *shadows = vec![];
   }
 
-  pub fn setup_lights(&self) {}
+  pub fn setup_lights(&self) {
+    let mut ambient_color = Vec3::zero();
+    // let mut directional = vec![];
+
+    for light in self.lights.borrow().iter() {
+      match light.light_type() {
+        LightType::AmbientLight => {
+          let color = light.color();
+          ambient_color.x += color.x;
+          ambient_color.y += color.y;
+          ambient_color.z += color.z;
+        }
+        LightType::DirectionalLight => todo!(),
+        LightType::LightProbe => todo!(),
+        LightType::PointLight => todo!(),
+        LightType::SpotLight => todo!(),
+        LightType::HemisphereLight => todo!(),
+        LightType::RectAreaLight => todo!(),
+      }
+    }
+  }
+
+  pub fn setup_ligths_view(&self, camera: Rc<dyn ICamera>) {}
 }
 pub struct RenderItem {
   id: String,
