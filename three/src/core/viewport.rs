@@ -46,7 +46,7 @@ impl Viewport {
     let half_h = self.h/2.0;
     let half_d = self.d/2.0;
 
-    self.viewport_matrix = Mat4::from_row(&[
+    self.viewport_matrix = Mat4::from_row([
      half_w , 0.0     , 0.0   , self.x + half_w,
      0.0    , -half_h , 0.0   , self.y + half_h,
      0.0    , 0.0     , half_d, half_d,

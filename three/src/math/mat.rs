@@ -9,8 +9,8 @@ macro_rules! define_mat {
     }
 
     impl $name {
-      pub fn from_row(data: &[f32; $dim * $dim]) -> Self {
-        Self { data: data.clone() }
+      pub const fn from_row(data: [f32; $dim * $dim]) -> Self {
+        Self { data: data }
       }
 
       pub fn from_col(data: &[f32; $dim * $dim]) -> Self {
@@ -160,7 +160,7 @@ impl Mat2 {
     if d.abs() <= f32::EPSILON {
       return None;
     }
-    Some(Mat2::from_row(&[
+    Some(Mat2::from_row([
       self.get(1, 1) / d, -self.get(1, 0) / d,
       -self.get(0, 1) / d, self.get(0, 0) / d
     ]))
@@ -184,7 +184,7 @@ impl Mat3 {
     if d.abs() <= f32::EPSILON {
       return None;
     }
-    Some(Mat3::from_row(&[
+    Some(Mat3::from_row([
       self.get(1, 1) * self.get(2, 2) - self.get(2, 1) * self.get(1, 2),
       self.get(2, 0) * self.get(1, 2) - self.get(1, 0) * self.get(2, 2),
       self.get(1, 0) * self.get(2, 1) - self.get(2, 0) * self.get(1, 1),
@@ -225,7 +225,7 @@ impl Mat3 {
     let z = (eye - target).normalize();
     let x = up.cross(&z).normalize();
     let y = z.cross(&x).normalize();
-    Self::from_row(&[x.x, x.y, x.z, y.x, y.y, y.z, z.x, z.y, z.z])
+    Self::from_row([x.x, x.y, x.z, y.x, y.y, y.z, z.x, z.y, z.z])
   }
 }
 
@@ -298,7 +298,7 @@ impl Mat4 {
 
 #[rustfmt::skip]
 pub fn apply_translate(offset: &Vec3) -> Mat4 {
-  Mat4::from_row(&[
+  Mat4::from_row([
     1.0, 0.0, 0.0, offset.x,
     0.0, 1.0, 0.0, offset.y,
     0.0, 0.0, 1.0, offset.z,
@@ -309,7 +309,7 @@ pub fn apply_translate(offset: &Vec3) -> Mat4 {
 #[rustfmt::skip]
 pub fn apply_scale(scale: &Vec3) -> Mat4 {
   let Vec3{x,y,z} = scale;
-  Mat4::from_row(&[
+  Mat4::from_row([
     *x  , 0.0, 0.0, 0.0,
     0.0, *y  , 0.0, 0.0,
     0.0, 0.0, *z  , 0.0,

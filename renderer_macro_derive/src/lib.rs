@@ -1,19 +1,14 @@
 extern crate proc_macro;
 
-use proc_macro::{Ident, TokenStream};
+use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse::Parse, parse_macro_input, AttributeArgs, DeriveInput, Field, Lit};
+use syn::{parse::Parse, parse_macro_input, AttributeArgs, DeriveInput, Field, Ident, Lit};
 
 #[proc_macro_attribute]
 pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
   let attr_ast = parse_macro_input!(args as AttributeArgs);
-  // let enum_name = match &attr_ast[0] {
-  //   syn::NestedMeta::Meta(syn::Meta::Path(p)) => {
-  //     quote! {#p }
-  //   }
-  //   _ => quote! {},
-  // };
-  let obj_trait = match &attr_ast[0] {
+
+  let trait_name = match &attr_ast[0] {
     syn::NestedMeta::Meta(syn::Meta::Path(p)) => {
       quote! {#p}
     }
@@ -30,8 +25,6 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
   if let syn::Data::Struct(data_struct) = ast.data {
     for field in data_struct.fields.iter() {
       let Field { ident, ty, vis, .. } = field;
-      // let ident_name = ident.as_ref().unwrap().to_string().repeat(2);
-      // let ident = Some(syn::Ident::new(&ident_name, ident.as_ref().unwrap().span()));
       let attr = quote! {
         #vis #ident:#ty,
       };
@@ -44,8 +37,8 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
       #(#attributes)*
       name:std::cell::RefCell<String>,
       event_emitter: std::cell::RefCell<crate::core::event_emitter::EventEmitter>,
-      parent: std::cell::RefCell<Option<std::rc::Rc<dyn #obj_trait>>>,
-      children: std::cell::RefCell<Vec<std::rc::Rc<dyn #obj_trait>>>,
+      parent: std::cell::RefCell<Option<std::rc::Rc<dyn #trait_name>>>,
+      children: std::cell::RefCell<Vec<std::rc::Rc<dyn #trait_name>>>,
       matrix: std::cell::RefCell<crate::math::Mat4>,
       global_matrix: std::cell::RefCell<crate::math::Mat4>,
       position: std::cell::RefCell<crate::math::Vec3>,
@@ -57,11 +50,11 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
       visible: std::cell::RefCell<bool>,
       user_data: std::collections::HashMap<String, Box<dyn std::any::Any>>,
       object_type: crate::core::object_3d::ObjectType,
-      _self_ref: std::cell::OnceCell<std::rc::Weak<dyn #obj_trait>>,
+      _self_ref: std::cell::OnceCell<std::rc::Weak<dyn #trait_name>>,
       _uuid: String,
     }
 
-    impl #obj_trait for #struct_name {
+    impl #trait_name for #struct_name {
       fn name(&self) -> String {
         self.name.borrow().to_string()
       }
@@ -72,7 +65,7 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
       }
 
 
-      fn parent(&self) -> Option<std::rc::Rc<dyn #obj_trait>> {
+      fn parent(&self) -> Option<std::rc::Rc<dyn #trait_name>> {
         if let Some(p) = self.parent.borrow().as_ref() {
           Some(p.clone())
         } else {
@@ -80,7 +73,7 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
         }
       }
 
-      fn set_parent(&self, parent: std::rc::Rc<dyn #obj_trait>) {
+      fn set_parent(&self, parent: std::rc::Rc<dyn #trait_name>) {
         let mut p = self.parent.borrow_mut();
         *p = Some(parent);
       }
@@ -103,7 +96,7 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
         }
       }
 
-      fn add(&self, child: std::rc::Rc<dyn #obj_trait>) {
+      fn add(&self, child: std::rc::Rc<dyn #trait_name>) {
         let mut children = self.children.borrow_mut();
 
         if let Some(self_pointer) = self._self_ref.get() {
@@ -127,7 +120,7 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
         *children = vec![];
       }
 
-      fn attach(&self, child: Box<dyn #obj_trait>) {
+      fn attach(&self, child: Box<dyn #trait_name>) {
         self.update_global_matrix();
 
         let mut res = self
@@ -144,7 +137,7 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
         child.apply_matrix(res);
       }
 
-      fn children(&self) -> std::cell::Ref<'_, Vec<std::rc::Rc<dyn #obj_trait>>> {
+      fn children(&self) -> std::cell::Ref<'_, Vec<std::rc::Rc<dyn #trait_name>>> {
         self.children.borrow()
       }
 
@@ -381,6 +374,81 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
           .field("_self_ref", &self._self_ref)
           .field("_uuid", &self._uuid)
           .finish()
+      }
+    }
+
+  }
+  .into()
+}
+
+#[proc_macro_attribute]
+pub fn light_shadow(args: TokenStream, input: TokenStream) -> TokenStream {
+  let attr_ast = parse_macro_input!(args as AttributeArgs);
+
+  let trait_name = match &attr_ast[0] {
+    syn::NestedMeta::Meta(syn::Meta::Path(p)) => {
+      quote! {#p}
+    }
+
+    _ => quote! {},
+  };
+
+  let ast: DeriveInput = syn::parse(input).unwrap();
+  let struct_name = ast.ident;
+  let mut attributes = vec![];
+  let expr = quote! {#struct_name};
+  let struct_name_str = expr.to_string();
+
+  if let syn::Data::Struct(data_struct) = ast.data {
+    for field in data_struct.fields.iter() {
+      let Field { ident, ty, vis, .. } = field;
+      let attr = quote! {
+        #vis #ident:#ty,
+      };
+      attributes.push(attr)
+    }
+  }
+
+  quote! {
+    pub struct #struct_name{
+      #(#attributes)*
+      camera: Rc<dyn ICamera>,
+      intensity: i32,
+      bias: i32,
+      normal_bias: i32,
+      radius: i32,
+      // shadow texture width & height
+      map_size: Vec2,
+      mat: Mat4,
+      // vec4 -> offsetx, offsety, width, height
+      viewports: Vec<Vec4>,
+      map: Option<RenderTarget>,
+
+      matrix: Mat4,
+    }
+    impl ILightShadow for LightShadow {
+      fn matrix(&self) -> Mat4 {
+        self.matrix
+      }
+
+      fn camera(&self) -> Rc<dyn ICamera> {
+        self.camera.clone()
+      }
+
+      fn map_size(&self) -> Vec2 {
+        self.map_size
+      }
+
+      fn viewports(&self) -> &Vec<Vec4> {
+        &self.viewports
+      }
+
+      fn update_matrices(&self, light: Rc<dyn super::light::ILight>, viewport: Vec4) {
+        todo!()
+      }
+
+      fn map(&self) -> &RenderTarget {
+        todo!()
       }
     }
 

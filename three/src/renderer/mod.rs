@@ -3,3 +3,4 @@ mod render_states;
 
 mod render_pipeline;
 mod shadow_map;
+mod gl_lights;

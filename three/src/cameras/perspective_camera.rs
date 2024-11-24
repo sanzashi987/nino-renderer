@@ -68,7 +68,7 @@ impl PerspectiveCamera {
     let c = (self.far + self.near) / base;
     let d = 2.0 * self.far * self.near / base;
 
-    let projection_matrix = Mat4::from_row(&[
+    let projection_matrix = Mat4::from_row([
         x,  0.0,    a,  0.0,
       0.0,    y,    b,  0.0,
       0.0,  0.0,    c,    d,

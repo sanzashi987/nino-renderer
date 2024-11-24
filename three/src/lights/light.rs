@@ -2,9 +2,9 @@ use std::rc::Rc;
 
 use crate::{
   cameras::camera::ICamera,
-  core::render_target::RenderTarget,
-  core::{object_3d::IObject3D, uniform::Uniform},
+  core::{object_3d::IObject3D, render_target::RenderTarget, uniform::Uniform},
   math::{Mat4, Vec2, Vec3, Vec4},
+  objects::base::Object3D,
 };
 
 pub enum LightType {
@@ -31,9 +31,13 @@ pub trait ILight: IObject3D + LightToUniform {
   fn to_shadow_uniform(&self) -> Uniform;
 
   fn shadow(&self) -> Option<Rc<dyn ILightShadow>>;
+
+  fn target(&self) -> &Object3D;
 }
 
 pub trait ILightShadow {
+  fn matrix(&self) -> Mat4;
+
   fn camera(&self) -> Rc<dyn ICamera>;
 
   fn map_size(&self) -> Vec2;

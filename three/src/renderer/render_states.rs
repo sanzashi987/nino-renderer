@@ -8,10 +8,13 @@ use crate::{
   math::Vec3,
 };
 
+use super::gl_lights::GLLights;
+
 struct LightState {}
 
 #[derive(Default)]
 pub struct RenderState {
+  pub gl_lights: RefCell<GLLights>,
   pub lights: RefCell<Vec<Rc<dyn ILight>>>,
   pub shadows: RefCell<Vec<Rc<dyn ILight>>>,
   pub camera: RefCell<Option<Rc<dyn ICamera>>>,
@@ -38,28 +41,14 @@ impl RenderState {
   }
 
   pub fn setup_lights(&self) {
-    let mut ambient_color = Vec3::zero();
-    // let mut directional = vec![];
-
-    for light in self.lights.borrow().iter() {
-      match light.light_type() {
-        LightType::AmbientLight => {
-          let color = light.color();
-          ambient_color.x += color.x;
-          ambient_color.y += color.y;
-          ambient_color.z += color.z;
-        }
-        LightType::DirectionalLight => todo!(),
-        LightType::LightProbe => todo!(),
-        LightType::PointLight => todo!(),
-        LightType::SpotLight => todo!(),
-        LightType::HemisphereLight => todo!(),
-        LightType::RectAreaLight => todo!(),
-      }
-    }
+    let lights = &self.lights.borrow();
+    self.gl_lights.borrow_mut().setup(lights);
   }
 
-  pub fn setup_ligths_view(&self, camera: Rc<dyn ICamera>) {}
+  pub fn setup_lights_view(&self, camera: Rc<dyn ICamera>) {
+    let lights = &self.lights.borrow();
+    self.gl_lights.borrow_mut().setup_view(lights, camera);
+  }
 }
 pub struct RenderItem {
   id: String,

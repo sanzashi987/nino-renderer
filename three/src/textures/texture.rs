@@ -79,7 +79,7 @@ impl Texture {
   }
 }
 
-pub fn texture_2D(sampler: &Texture, uv: Vec2) -> Vec4 {
+pub fn texture_2d(sampler: &Texture, uv: Vec2) -> Vec4 {
   let img = &sampler.image;
 
   let width = img.width();

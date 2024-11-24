@@ -18,7 +18,7 @@ impl Euler {
   pub fn apply_eular_rotate_y(angle: f32) -> Mat4 {
     let c = angle.cos();
     let s = angle.sin();
-    Mat4::from_row(&[
+    Mat4::from_row([
       c, 0.0,   s, 0.0,
       0.0, 1.0, 0.0, 0.0,
       -s, 0.0,   c, 0.0,
@@ -31,7 +31,7 @@ impl Euler {
   pub fn apply_eular_rotate_x(angle: f32) -> Mat4 {
     let c = angle.cos();
     let s = angle.sin();
-    Mat4::from_row(&[
+    Mat4::from_row([
       1.0, 0.0, 0.0, 0.0,
       0.0,   c,  -s, 0.0,
       0.0,   s,   c, 0.0,
@@ -44,7 +44,7 @@ impl Euler {
   pub fn apply_eular_rotate_z(angle: f32) -> Mat4 {
     let c = angle.cos();
     let s = angle.sin();
-    Mat4::from_row(&[
+    Mat4::from_row([
         c,  -s, 0.0, 0.0,
         s,   c, 0.0, 0.0,
       0.0, 0.0, 1.0, 0.0,
