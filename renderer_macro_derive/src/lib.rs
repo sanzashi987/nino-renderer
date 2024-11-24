@@ -294,6 +294,20 @@ pub fn object_3d(args: TokenStream, input: TokenStream) -> TokenStream {
         self.rotate_on_axis(*crate::math::Vec3::z_axis(), angle);
       }
 
+      fn update_position(&self, position:crate::math::Vec3) {
+        let mut p = self.position.borrow_mut();
+        *p = position;
+      }
+
+      fn update_from_global_position(&self, position:crate::math::Vec3) {
+        let delta_position = self.global_position() - *self.position.borrow();
+        let next_position = position - delta_position;
+
+        let mut p = self.position.borrow_mut();
+        *p = next_position;
+      }
+
+
       fn translate_on_axis(&self, axis: crate::math::Vec3, distance: f32) {
         let q = self.rotation.borrow().quaternion;
         let crate::math::Vec3 {

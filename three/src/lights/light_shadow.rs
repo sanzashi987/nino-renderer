@@ -28,6 +28,8 @@ pub struct LightShadow {
   viewports: Vec<Vec4>,
   map: Option<RenderTarget>,
 
+  // the standard `NDC` VP matrix from the shadow
+  // the target & position will automatically align with the light
   matrix: std::cell::RefCell<Mat4>,
 }
 
@@ -50,9 +52,9 @@ impl ILightShadow for LightShadow {
 
   fn update_matrices(&self, light: Rc<dyn ILight>, viewport: Vec4) {
     let global_light_position = light.global_matrix().get_col(3).truncated_to_vec3();
-
-
-    // self.camera.
+    self
+      .camera
+      .update_from_global_position(global_light_position);
     let target_position = light
       .target()
       .global_matrix()

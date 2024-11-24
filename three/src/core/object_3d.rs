@@ -47,6 +47,8 @@ pub trait IObject3D: Any {
   fn rotate_y(&self, angle: f32);
   fn rotate_z(&self, angle: f32);
 
+  fn update_position(&self, position: crate::math::Vec3);
+  fn update_from_global_position(&self, position: crate::math::Vec3);
   fn translate_on_axis(&self, axis: crate::math::Vec3, distance: f32);
   fn translate_x(&self, distance: f32);
   fn translate_y(&self, distance: f32);
