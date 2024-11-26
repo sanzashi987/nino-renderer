@@ -12,7 +12,10 @@ use crate::{
   objects::base::Object3D,
 };
 
-use super::light::{compute_direction, ILight, LightToUniform};
+use super::{
+  directional_light_shadow::DirectionalLightShadow,
+  light::{compute_direction, ILight, LightToUniform},
+};
 
 #[object_3d(IObject3D)]
 pub struct DirectionalLight {
@@ -20,7 +23,7 @@ pub struct DirectionalLight {
   pub intensity: f32,
   pub target: Object3D,
   // pub shadow
-  // pub shadow:Diresh
+  pub shadow: DirectionalLightShadow,
 }
 
 impl DirectionalLight {
@@ -28,7 +31,7 @@ impl DirectionalLight {
     let color = Vec4::default();
     let intensity = 1.0f32;
     let target = Object3D::new_ownership();
-    let shadow = None;
+    let shadow = DirectionalLightShadow::new();
     let this = with_default_fields!(Light;color,intensity,target,shadow);
     this
   }

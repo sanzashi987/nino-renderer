@@ -134,7 +134,7 @@ impl GlRenderer {
     camera.update_global_matrix();
 
     let project_matrix = camera.projection_matrix();
-    let view_matrix = camera.global_matrix_inverse();
+    let view_matrix = camera.view_matrix();
     let view_projection_matrix = project_matrix * view_matrix;
 
     let mut global_uniform = Uniform::default();

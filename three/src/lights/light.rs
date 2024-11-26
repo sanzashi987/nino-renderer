@@ -58,11 +58,10 @@ pub trait ILightShadow: ILightShadowBase {
     self.camera().look_at(target_position);
     self.camera().update_global_matrix();
 
-    let vp_matrix = self.camera().projection_matrix() * self.camera().global_matrix_inverse();
+    let vp_matrix = self.camera().projection_matrix() * self.camera().view_matrix();
 
     self.set_matrix(NDC_FACTOR * vp_matrix);
   }
-
 }
 pub trait ILightShadowBase {
   fn set_matrix(&self, next: Mat4);
@@ -86,3 +85,9 @@ pub fn compute_direction(position: Vec3, target: Vec3, view_matrix: Mat4) -> Vec
   direction.z = view_matrix.get(0, 2) * x + view_matrix.get(1, 2) * y + view_matrix.get(2, 2) * z;
   direction
 }
+
+macro_rules! init_shadow_map {
+  () => {};
+}
+
+pub(crate) use init_shadow_map;

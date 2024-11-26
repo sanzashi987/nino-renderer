@@ -3,6 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use renderer_macro_derive::object_3d;
 
 use crate::{
+  cameras::camera::derive_view_matrix,
   core::object_3d::{with_default_fields, IObject3D},
   math::Mat4,
 };
@@ -32,19 +33,7 @@ impl PerspectiveCamera {
     let instance =
       with_default_fields!(Camera;fov,aspect,near,far,focus,zoom,view_matrix, projection_matrix);
 
-    instance.update_perspective_mat();
-    let that = instance.clone();
-    let mut event_emitter = that.event_emitter.borrow_mut();
-    let that_2 = instance.clone();
-    event_emitter.on(
-      "update:global_matrix",
-      Box::new(move |x| {
-        if let Ok(global_matrix) = x.downcast::<Mat4>() {
-          let mut mutator = that_2.view_matrix.borrow_mut();
-          *mutator = global_matrix.inverse().unwrap();
-        }
-      }),
-    );
+    derive_view_matrix!(instance);
 
     instance
   }
@@ -83,15 +72,11 @@ impl PerspectiveCamera {
 }
 
 impl ICamera for PerspectiveCamera {
-  fn view_matrix(&self) -> crate::math::Mat4 {
-    self.global_matrix_inverse()
-  }
-
   fn projection_matrix(&self) -> crate::math::Mat4 {
     *self.projection_matrix.borrow()
   }
 
-  fn global_matrix_inverse(&self) -> Mat4 {
+  fn view_matrix(&self) -> Mat4 {
     *self.view_matrix.borrow()
   }
 
