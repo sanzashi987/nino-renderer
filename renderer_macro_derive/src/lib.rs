@@ -426,45 +426,49 @@ pub fn light_shadow(args: TokenStream, input: TokenStream) -> TokenStream {
   quote! {
     pub struct #struct_name{
       #(#attributes)*
-      camera: Rc<dyn ICamera>,
+      camera: std::rc::Rc<dyn crate::cameras::camera::ICamera>,
       intensity: i32,
       bias: i32,
       normal_bias: i32,
       radius: i32,
       // shadow texture width & height
-      map_size: Vec2,
-      mat: Mat4,
+      map_size: crate::math::Vec2,
+      mat: crate::math::Vec4,
       // vec4 -> offsetx, offsety, width, height
-      viewports: Vec<Vec4>,
-      map: Option<RenderTarget>,
+      viewports: Vec<crate::math::Vec4>,
+      map: std::rc::Rc<crate::core::render_target::RenderTarget>,
 
-      matrix: Mat4,
+      // the standard `NDC` VP matrix from the shadow
+      // the target & position will automatically align with the light
+      matrix: std::cell::RefCell<crate::math::Mat4>,
     }
-    impl ILightShadow for LightShadow {
-      fn matrix(&self) -> Mat4 {
-        self.matrix
+    impl #trait_name for #struct_name {
+      fn matrix(&self) -> crate::math::Mat4 {
+        *self.matrix.borrow()
       }
 
-      fn camera(&self) -> Rc<dyn ICamera> {
+      fn camera(&self) -> std::rc::Rc<dyn crate::cameras::camera::ICamera> {
         self.camera.clone()
       }
 
-      fn map_size(&self) -> Vec2 {
+      fn map_size(&self) -> crate::math::Vec2 {
         self.map_size
       }
 
-      fn viewports(&self) -> &Vec<Vec4> {
+      fn viewports(&self) -> &Vec<crate::math::Vec4> {
         &self.viewports
       }
 
-      fn update_matrices(&self, light: Rc<dyn super::light::ILight>, viewport: Vec4) {
-        todo!()
+      fn map(&self) -> std::rc::Rc<crate::core::render_target::RenderTarget> {
+        self.map.clone()
       }
 
-      fn map(&self) -> &RenderTarget {
-        todo!()
+      fn set_matrix(&self, next: crate::math::Mat4) {
+        let mut m = self.matrix.borrow_mut();
+        *m = next;
       }
     }
+
 
   }
   .into()

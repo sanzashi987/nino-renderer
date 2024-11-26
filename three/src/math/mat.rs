@@ -41,7 +41,7 @@ macro_rules! define_mat {
         }
         mat
       }
-
+      // x -> col ; y -> row
       pub fn get(&self, x: usize, y: usize) -> f32 {
         self.data[x + y * $dim]
       }
@@ -318,7 +318,7 @@ pub fn apply_scale(scale: &Vec3) -> Mat4 {
 }
 
 pub fn extract_position(mat: Mat4) -> Vec3 {
-  Vec3::new(mat.get(0, 3), mat.get(1, 3), mat.get(2, 3))
+  mat.get_col(3).truncated_to_vec3()
 }
 
 pub fn extract_scale(mat: Mat4) -> Vec3 {

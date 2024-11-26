@@ -35,7 +35,38 @@ pub trait ILight: IObject3D + LightToUniform {
   fn target(&self) -> &Object3D;
 }
 
-pub trait ILightShadow {
+#[rustfmt::skip]
+static NDC_FACTOR: Mat4 = Mat4::from_row([			
+  0.5, 0.0, 0.0, 0.5,
+	0.0, 0.5, 0.0, 0.5,
+	0.0, 0.0, 0.5, 0.5,
+	0.0, 0.0, 0.0, 1.0
+]);
+
+pub trait ILightShadow: ILightShadowBase {
+  fn update_matrices(&self, light: Rc<dyn ILight>, viewport: Vec4) {
+    let global_light_position = light.global_matrix().get_col(3).truncated_to_vec3();
+    self
+      .camera()
+      .update_from_global_position(global_light_position);
+    let target_position = light
+      .target()
+      .global_matrix()
+      .get_col(3)
+      .truncated_to_vec3();
+
+    self.camera().look_at(target_position);
+    self.camera().update_global_matrix();
+
+    let vp_matrix = self.camera().projection_matrix() * self.camera().global_matrix_inverse();
+
+    self.set_matrix(NDC_FACTOR * vp_matrix);
+  }
+
+}
+pub trait ILightShadowBase {
+  fn set_matrix(&self, next: Mat4);
+
   fn matrix(&self) -> Mat4;
 
   fn camera(&self) -> Rc<dyn ICamera>;
@@ -44,9 +75,7 @@ pub trait ILightShadow {
 
   fn viewports(&self) -> &Vec<Vec4>;
 
-  fn update_matrices(&self, light: Rc<dyn ILight>, viewport: Vec4);
-
-  fn map(&self) -> &RenderTarget;
+  fn map(&self) -> Rc<RenderTarget>;
 }
 
 pub fn compute_direction(position: Vec3, target: Vec3, view_matrix: Mat4) -> Vec3 {
