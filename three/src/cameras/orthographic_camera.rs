@@ -105,4 +105,8 @@ impl OrthographicCamera {
 
     instance
   }
+
+  pub fn default() -> Rc<Self> {
+    Self::new(-1.0, 1.0, 1.0, -1.0, 0.1, 2000.0)
+  }
 }

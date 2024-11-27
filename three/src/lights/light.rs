@@ -3,6 +3,7 @@ use std::rc::Rc;
 use crate::{
   cameras::camera::ICamera,
   core::{object_3d::IObject3D, render_target::RenderTarget, uniform::Uniform},
+  material::material::ToUniform,
   math::{Mat4, Vec2, Vec3, Vec4},
   objects::base::Object3D,
 };
@@ -17,18 +18,16 @@ pub enum LightType {
   RectAreaLight,
 }
 
-pub trait LightToUniform {
+pub trait ToUniformWithView {
   fn to_uniform(&self, camera: Rc<dyn ICamera>) -> Uniform;
 }
 
-pub trait ILight: IObject3D + LightToUniform {
+pub trait ILight: IObject3D + ToUniformWithView + ToUniform {
   fn intensity(&self) -> f32;
 
   fn color(&self) -> Vec4;
 
   fn light_type(&self) -> LightType;
-
-  fn to_shadow_uniform(&self) -> Uniform;
 
   fn shadow(&self) -> Option<Rc<dyn ILightShadow>>;
 
@@ -43,7 +42,7 @@ static NDC_FACTOR: Mat4 = Mat4::from_row([
 	0.0, 0.0, 0.0, 1.0
 ]);
 
-pub trait ILightShadow: ILightShadowBase {
+pub trait ILightShadow: ILightShadowBase + ToUniform {
   fn update_matrices(&self, light: Rc<dyn ILight>, viewport: Vec4) {
     let global_light_position = light.global_matrix().get_col(3).truncated_to_vec3();
     self
@@ -87,7 +86,21 @@ pub fn compute_direction(position: Vec3, target: Vec3, view_matrix: Mat4) -> Vec
 }
 
 macro_rules! init_shadow_map {
-  () => {};
+  ($camera:ident;$($val:ident),*) => {{
+    Self{
+      $($val,)*
+      camera:$camera,
+      intensity:1.0,
+      bias: 0.0,
+      normal_bias: 0.0,
+      radius: 1.0,
+      map_size: crate::math::Vec2::new(512.0,512.0),
+      mat:  Default::default(),
+      viewports: vec![crate::math::Vec4::new(0.0,0.0,1.0,1.0)],
+      map:  Default::default(),
+      matrix: Default::default(),
+    }
+  }};
 }
 
 pub(crate) use init_shadow_map;

@@ -8,13 +8,14 @@ use crate::{
     object_3d::{with_default_fields, IObject3D},
     uniform::Uniform,
   },
+  material::material::ToUniform,
   math::Vec4,
   objects::base::Object3D,
 };
 
 use super::{
   directional_light_shadow::DirectionalLightShadow,
-  light::{compute_direction, ILight, LightToUniform},
+  light::{compute_direction, ILight, ToUniformWithView},
 };
 
 #[object_3d(IObject3D)]
@@ -37,7 +38,7 @@ impl DirectionalLight {
   }
 }
 
-impl LightToUniform for DirectionalLight {
+impl ToUniformWithView for DirectionalLight {
   fn to_uniform(&self, camera: Rc<dyn ICamera>) -> Uniform {
     let mut res = Uniform::default();
     let rgb = self.color.truncated_to_vec3() * self.intensity;
@@ -56,11 +57,11 @@ impl LightToUniform for DirectionalLight {
   }
 }
 
-impl ILight for DirectionalLight {
-  fn to_shadow_uniform(&self) -> crate::core::uniform::Uniform {
-    todo!()
-  }
+impl ToUniform for DirectionalLight {
+  fn to_uniform(&self) -> Uniform {}
+}
 
+impl ILight for DirectionalLight {
   fn shadow(&self) -> Option<Rc<dyn super::light::ILightShadow>> {
     todo!()
   }
@@ -78,6 +79,6 @@ impl ILight for DirectionalLight {
   }
 
   fn target(&self) -> &Object3D {
-    todo!()
+    &self.target
   }
 }

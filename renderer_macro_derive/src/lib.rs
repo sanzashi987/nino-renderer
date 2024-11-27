@@ -427,13 +427,13 @@ pub fn light_shadow(args: TokenStream, input: TokenStream) -> TokenStream {
     pub struct #struct_name{
       #(#attributes)*
       camera: std::rc::Rc<dyn crate::cameras::camera::ICamera>,
-      intensity: i32,
-      bias: i32,
-      normal_bias: i32,
-      radius: i32,
+      intensity: f32,
+      bias: f32,
+      normal_bias: f32,
+      radius: f32,
       // shadow texture width & height
       map_size: crate::math::Vec2,
-      mat: crate::math::Vec4,
+      mat: crate::math::Mat4,
       // vec4 -> offsetx, offsety, width, height
       viewports: Vec<crate::math::Vec4>,
       map: std::rc::Rc<crate::core::render_target::RenderTarget>,

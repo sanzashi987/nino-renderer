@@ -42,6 +42,19 @@ pub struct Uniform {
   attributes: HashMap<String, UniformTypeEnum>,
 }
 
+impl Uniform {
+  pub fn extends(mut self, mut from: Self) -> Self {
+    for (k, v) in from.attributes.drain() {
+      if self.attributes.contains_key(&k) {
+        continue;
+      }
+      self.attributes.insert(k, v);
+    }
+
+    self
+  }
+}
+
 impl Deref for Uniform {
   type Target = HashMap<String, UniformTypeEnum>;
 

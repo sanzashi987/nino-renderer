@@ -4,6 +4,7 @@ use crate::{
   cameras::camera::{self, ICamera},
   core::uniform::Uniform,
   lights::light::{ILight, LightType},
+  material::material::ToUniform,
   math::{Mat4, Vec3, Vec4},
   textures::texture::Texture,
 };
@@ -38,7 +39,15 @@ impl GLLights {
           self.ambient.y += color.y;
           self.ambient.z += color.z;
         }
-        LightType::DirectionalLight => {}
+        LightType::DirectionalLight => {
+          let l = light.clone();
+          let uniform = (l as Rc<dyn ToUniform>).to_uniform();
+          if light.cast_shadow() {
+            if let Some(shadow) = light.shadow() {
+              let shadow_uniform = shadow.to_uniform();
+            }
+          }
+        }
         LightType::SpotLight => todo!(),
         LightType::PointLight => todo!(),
 
@@ -49,5 +58,18 @@ impl GLLights {
     }
   }
 
-  pub fn setup_view(&mut self, lights: &Vec<Rc<dyn ILight>>, camera: Rc<dyn ICamera>) {}
+  pub fn setup_view(&mut self, lights: &Vec<Rc<dyn ILight>>, camera: Rc<dyn ICamera>) {
+    for light in lights.iter() {
+      match light.light_type() {
+        LightType::AmbientLight => {}
+        LightType::DirectionalLight => {}
+        LightType::SpotLight => todo!(),
+        LightType::PointLight => todo!(),
+
+        LightType::LightProbe => todo!(),
+        LightType::HemisphereLight => todo!(),
+        LightType::RectAreaLight => todo!(),
+      }
+    }
+  }
 }

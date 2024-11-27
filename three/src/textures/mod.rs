@@ -1,3 +1,3 @@
 pub mod texture;
-pub use texture::texture_2D;
+pub use texture::texture_2d;
 

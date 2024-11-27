@@ -4,7 +4,7 @@ use super::{
   buffer_attribute::{IBufferAttribute, TypeBufferEnum},
   geometries::{Box3, IBoundingSphere, Sphere},
 };
-use std::{borrow::Borrow, collections::HashMap};
+use std::collections::HashMap;
 
 pub struct BufferGeometry {
   attributes: Attribute,
