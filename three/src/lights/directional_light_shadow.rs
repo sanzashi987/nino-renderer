@@ -27,7 +27,7 @@ impl ToUniform for DirectionalLightShadow {
     res.insert("shadowBias", self.bias);
     res.insert("shadowNormalBias", self.normal_bias);
     res.insert("shadowRadius", self.radius);
-    res.insert("shadowMap_size", self.map_size);
+    res.insert("shadowMapSize", self.map_size);
 
     res
   }

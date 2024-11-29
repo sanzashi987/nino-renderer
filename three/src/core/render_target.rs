@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 
 use crate::{math::data_array::ColorBuffer, textures::texture::Texture};
 
@@ -7,7 +7,7 @@ use super::viewport::Viewport;
 pub struct RenderTarget {
   viewport: RefCell<Viewport>,
   color: RefCell<ColorBuffer>,
-  pub texture: RefCell<Texture>,
+  texture: RefCell<Texture>,
 }
 
 impl RenderTarget {
@@ -34,5 +34,9 @@ impl RenderTarget {
   pub fn update_texture_name(&self, name: String) {
     let mut t = self.texture.borrow_mut();
     t.name = name;
+  }
+
+  pub fn texture(&self) -> Ref<'_, Texture> {
+    self.texture.borrow()
   }
 }
