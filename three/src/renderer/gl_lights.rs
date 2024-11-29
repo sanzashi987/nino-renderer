@@ -42,9 +42,11 @@ impl GLLights {
         LightType::DirectionalLight => {
           let l = light.clone();
           let uniform = (l as Rc<dyn ToUniform>).to_uniform();
+          self.directional.push(uniform);
           if light.cast_shadow() {
             if let Some(shadow) = light.shadow() {
               let shadow_uniform = shadow.to_uniform();
+              self.directional_shadow.push(shadow_uniform);
             }
           }
         }

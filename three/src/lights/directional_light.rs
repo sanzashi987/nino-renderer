@@ -41,8 +41,6 @@ impl DirectionalLight {
 impl ToUniformWithView for DirectionalLight {
   fn to_uniform(&self, camera: Rc<dyn ICamera>) -> Uniform {
     let mut res = Uniform::default();
-    let rgb = self.color.truncated_to_vec3() * self.intensity;
-    let color = Vec4::from_vec3(&rgb, self.color.w);
 
     let position = self.global_matrix().get_col(3).truncated_to_vec3();
     let target = self.target.global_matrix().get_col(3).truncated_to_vec3();
@@ -50,7 +48,6 @@ impl ToUniformWithView for DirectionalLight {
 
     let direction = compute_direction(position, target, view_matrix);
 
-    res.insert("color", color);
     res.insert("direction", direction);
 
     res
@@ -58,7 +55,14 @@ impl ToUniformWithView for DirectionalLight {
 }
 
 impl ToUniform for DirectionalLight {
-  fn to_uniform(&self) -> Uniform {}
+  fn to_uniform(&self) -> Uniform {
+    let mut uniform = Uniform::default();
+    let rgb = self.color.truncated_to_vec3() * self.intensity;
+    let color = Vec4::from_vec3(&rgb, self.color.w);
+
+    uniform.insert("color", color);
+    uniform
+  }
 }
 
 impl ILight for DirectionalLight {
