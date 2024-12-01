@@ -83,7 +83,7 @@ impl GLLights {
           let uniform = std::mem::replace(&mut self.directional.uniform[i], dummy);
           let l = light.clone();
           let view_uniform = (l as Rc<dyn ToUniformWithView>).to_uniform(camera.clone());
-          let view_uniform = view_uniform.merge(uniform);
+          let view_uniform = view_uniform.extends(uniform);
           let _ = std::mem::replace(&mut self.directional.uniform[i], view_uniform);
         }
         LightType::SpotLight => todo!(),

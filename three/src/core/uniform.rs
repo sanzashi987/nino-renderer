@@ -42,19 +42,6 @@ pub struct Uniform {
   attributes: HashMap<String, UniformTypeEnum>,
 }
 
-impl Uniform {
-  pub fn extends(mut self, mut from: Self) -> Self {
-    for (k, v) in from.attributes.drain() {
-      if self.attributes.contains_key(&k) {
-        continue;
-      }
-      self.attributes.insert(k, v);
-    }
-
-    self
-  }
-}
-
 impl Deref for Uniform {
   type Target = HashMap<String, UniformTypeEnum>;
 
@@ -62,12 +49,6 @@ impl Deref for Uniform {
     &self.attributes
   }
 }
-
-// impl DerefMut for Uniform {
-//   fn deref_mut(&mut self) -> &mut Self::Target {
-//     &mut self.attributes
-//   }
-// }
 
 impl Uniform {
   pub fn get(&self, key: &str) -> Option<UniformTypeEnum> {
@@ -80,13 +61,25 @@ impl Uniform {
     self.attributes.insert(key.to_string(), typed_enum);
   }
 
-  pub fn merge(&self, another: Self) -> Self {
-    let mut a = another;
-    self.attributes.iter().for_each(|(k, v)| {
-      a.insert(k, *v);
-    });
+  pub fn merge(&mut self, another: &Self) {
+    another.iter().for_each(|(k, v)| {
+      if self.attributes.contains_key(k) {
+        return;
+      }
 
-    a
+      self.insert(k, *v);
+    });
+  }
+
+  pub fn extends(mut self, mut from: Self) -> Self {
+    for (k, v) in from.attributes.drain() {
+      if self.attributes.contains_key(&k) {
+        continue;
+      }
+      self.attributes.insert(k, v);
+    }
+
+    self
   }
 }
 

@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use super::super::cameras::camera::ICamera;
 use super::super::objects::scene::Scene;
+use super::render_pipeline::render_pipeline;
 use super::render_states::{RenderItem, RenderList, RenderLists, RenderState, RenderStates};
 use super::shadow_map::ShadowMap;
 use crate::core::buffer_geometry::IGeometry;
@@ -168,6 +169,7 @@ impl GlRenderer {
     current_render_state.setup_lights();
     self.render_scene(
       current_render_list.clone(),
+      current_render_state.clone(),
       scene.clone(),
       camera.clone(),
       &mut global_uniform,
@@ -179,10 +181,12 @@ impl GlRenderer {
   fn render_scene(
     &self,
     render_list: Rc<RenderList>,
+    render_state: Rc<RenderState>,
     scene: Rc<Scene>,
     camera: Rc<dyn ICamera>,
     global_uniform: &mut Uniform,
   ) {
+    render_state.setup_lights_view(camera.clone());
     let opaque = render_list.opaque.borrow();
     if opaque.len() > 0 {
       self.render_objects(&opaque, scene.clone(), camera.clone(), global_uniform);
@@ -240,12 +244,22 @@ impl GlRenderer {
     let view_matrix = camera.view_matrix();
     let model_view_matrix = view_matrix * model_matrix;
     let normal_matrix = extract_normal_matrix(model_view_matrix);
-
+    m_uniform.insert("model_view_matrix", model_view_matrix);
     m_uniform.insert("model_matrix", model_matrix);
     m_uniform.insert("normal_matrix", normal_matrix);
 
-    let mut uniform = global_uniform.merge(m_uniform);
+    // let mut uniform = global_uniform.merge(m_uniform);
+    m_uniform.merge(&global_uniform);
 
+    let target = self.get_current_target();
+    render_pipeline(
+      target,
+      camera.clone(),
+      object.clone(),
+      geometry.clone(),
+      material.clone(),
+      None,
+    );
     // uniform.insert("model_matrix", model_matrix);
 
     // let

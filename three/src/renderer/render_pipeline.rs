@@ -37,11 +37,15 @@ fn render_triangle<T: Sized + Copy + ToF32>(
   let num_of_vertex = data.len() / size;
   for i in 0..num_of_vertex / 3_usize {
     let index = i * 3_usize;
-    let vertices = iter_triangle_verterx(attribute, index);
+    let vertex_attribute = iter_triangle_verterx(attribute, index);
     let mut varyings = Varying::default();
     for j in 0..3 {
       let mut gl_vertex = GlPerVertex::default();
-      material.vertex(&vertices[j], uniform, &mut varyings, &mut gl_vertex);
+      material.vertex(&vertex_attribute[j], uniform, &mut varyings, &mut gl_vertex);
+    }
+
+    for j in 0..3{
+      
     }
   }
 }
