@@ -1,10 +1,10 @@
 use crate::math::Vec3;
 
 use super::{
-  buffer_attribute::{IBufferAttribute, TypeBufferEnum},
+  buffer_attribute::{F32BufferAttribute, IBufferAttribute, TypeBufferEnum},
   geometries::{Box3, IBoundingSphere, Sphere},
 };
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::format};
 
 pub struct BufferGeometry {
   attributes: Attribute,
@@ -26,10 +26,18 @@ pub type Attribute = HashMap<String, TypeBufferEnum>;
 
 pub fn pick_attribute_per_vertex(attr: &Attribute, index: usize) -> Attribute {
   let mut attribute_per_vertex = Attribute::default();
-
+  let vertex_index = (index % 3) as f32;
   attr.iter().for_each(|(k, v)| {
     attribute_per_vertex.insert(k.to_string(), v.pick(index));
   });
+  attribute_per_vertex.insert(
+    format!("vertex_index"),
+    TypeBufferEnum::F32(Box::new(F32BufferAttribute::new(
+      vec![vertex_index],
+      1,
+      false,
+    ))),
+  );
 
   attribute_per_vertex
 }

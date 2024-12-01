@@ -8,39 +8,18 @@ use crate::core::uniform::Uniform;
 use crate::core::varying::Varying;
 use std::fmt::Debug;
 
-macro_rules! define_gl_obj {
-  ($name:tt, $($prop:tt:$ty:ty),+) => {
-    #[derive(Debug, Default)]
-    pub struct $name {
-      $(
-        $prop: $ty,
-      )+
-    }
-    impl $name {
-
-      $(
-        pub fn $prop(&mut self, val:$ty){
-          self.$prop = val
-        }
-      )+
-      pub fn read(self) -> ($($ty),+){
-        ($(self.$prop),+)
-      }
-
-    }
-  };
+#[derive(Default)]
+pub struct GlPerVertex {
+  pub gl_position: Vec4,
+  pub gl_point_size: f32,
+  pub gl_clip_distance: Vec<f32>,
+  pub rhw: f32,
 }
-define_gl_obj!(
-  GlPerVertex,
-  gl_position: Vec4,
-  gl_point_size: f32,
-  gl_clip_distance: Vec<f32>
-);
 
-define_gl_obj!(
-  GlPerFragment,
-  gl_frag_color: Vec4
-);
+#[derive(Default)]
+pub struct GlPerFragment {
+  pub gl_frag_color: Vec4,
+}
 
 pub type VertexShader = Box<dyn Fn(&Attribute, &Uniform, &mut Varying, &mut GlPerVertex)>;
 pub type FragmentShader = Box<dyn Fn(&Uniform, &Varying, &mut GlPerFragment) -> bool>;

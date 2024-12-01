@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{default, rc::Rc};
 
 use crate::{
   cameras::camera::ICamera,
@@ -11,6 +11,7 @@ use crate::{
     varying::Varying,
   },
   material::{material::IMaterial, shader::GlPerVertex},
+  math::Vec2,
 };
 
 enum RenderMode {
@@ -27,25 +28,38 @@ fn iter_triangle_verterx(attr: &Attribute, group: usize) -> [Attribute; 3] {
 }
 
 fn render_triangle<T: Sized + Copy + ToF32>(
-  buffer: &Box<TypeBufferAttribute<T>>,
+  target: &RenderTarget,
+  position: &Box<TypeBufferAttribute<T>>,
   attribute: &Attribute,
   material: Rc<dyn IMaterial>,
   uniform: &Uniform,
 ) {
-  let data = &buffer.data;
-  let size = &buffer.size;
+  let data = &position.data;
+  let size = &position.size;
   let num_of_vertex = data.len() / size;
   for i in 0..num_of_vertex / 3_usize {
     let index = i * 3_usize;
     let vertex_attribute = iter_triangle_verterx(attribute, index);
     let mut varyings = Varying::default();
+
+    let mut vs_results: [GlPerVertex; 3] = Default::default();
     for j in 0..3 {
-      let mut gl_vertex = GlPerVertex::default();
-      material.vertex(&vertex_attribute[j], uniform, &mut varyings, &mut gl_vertex);
+      material.vertex(
+        &vertex_attribute[j],
+        uniform,
+        &mut varyings,
+        &mut vs_results[j],
+      );
     }
 
-    for j in 0..3{
-      
+    let mut vertices_2d: [Vec2; 3] = Default::default();
+    for j in 0..3 {
+      vs_results[j].rhw = 1.0 / vs_results[j].gl_position.w;
+      vs_results[j].gl_position /= vs_results[j].gl_position.w;
+
+      vs_results[j].gl_position = *viewport_matrix * vs_results[j].gl_position;
+
+      vertices_2d[j] = vs_results[j].gl_position.truncate_to_vec2();
     }
   }
 }
@@ -80,10 +94,10 @@ pub fn render_pipeline(
       if let Some(p) = position {
         match p {
           TypeBufferEnum::F64(buffer) => {
-            render_triangle(buffer, attribute, material.clone(), &uniform)
+            render_triangle(target, buffer, attribute, material.clone(), &uniform)
           }
           TypeBufferEnum::F32(buffer) => {
-            render_triangle(buffer, attribute, material.clone(), &uniform)
+            render_triangle(target, buffer, attribute, material.clone(), &uniform)
           }
           _ => {}
         }
