@@ -39,6 +39,10 @@ impl Viewport {
     self.recompute_matrix();
   }
 
+  pub fn get_size(&self) -> (f32, f32) {
+    (self.w, self.h)
+  }
+
 
   #[rustfmt::skip]
   pub fn recompute_matrix(&mut self) {

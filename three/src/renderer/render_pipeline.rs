@@ -11,7 +11,7 @@ use crate::{
     varying::Varying,
   },
   material::{material::IMaterial, shader::GlPerVertex},
-  math::Vec2,
+  math::{Barycentric, BoundaryBox, Vec2},
 };
 
 enum RenderMode {
@@ -32,8 +32,11 @@ fn render_triangle<T: Sized + Copy + ToF32>(
   position: &Box<TypeBufferAttribute<T>>,
   attribute: &Attribute,
   material: Rc<dyn IMaterial>,
-  uniform: &Uniform,
+  uniform: &mut Uniform,
 ) {
+  let viewport_matrix = target.update_and_get_viewport();
+  let viewport = target.viewport();
+  uniform.insert("viewport_matrix", viewport_matrix);
   let data = &position.data;
   let size = &position.size;
   let num_of_vertex = data.len() / size;
@@ -46,7 +49,7 @@ fn render_triangle<T: Sized + Copy + ToF32>(
     for j in 0..3 {
       material.vertex(
         &vertex_attribute[j],
-        uniform,
+        &uniform,
         &mut varyings,
         &mut vs_results[j],
       );
@@ -57,9 +60,27 @@ fn render_triangle<T: Sized + Copy + ToF32>(
       vs_results[j].rhw = 1.0 / vs_results[j].gl_position.w;
       vs_results[j].gl_position /= vs_results[j].gl_position.w;
 
-      vs_results[j].gl_position = *viewport_matrix * vs_results[j].gl_position;
+      vs_results[j].gl_position = viewport_matrix * vs_results[j].gl_position;
 
       vertices_2d[j] = vs_results[j].gl_position.truncate_to_vec2();
+    }
+    let (width, height) = viewport.get_size();
+
+    let BoundaryBox {
+      x_max,
+      x_min,
+      y_max,
+      y_min,
+    } = BoundaryBox::new(&vertices_2d, width, height);
+
+    for x in (x_min as u32)..(x_max as u32 + 1) {
+      for y in (y_min as u32)..(y_max as u32 + 1) {
+        let barycentric = Barycentric::new(&Vec2::new(x as f32, y as f32), &vertices_2d);
+
+        if !barycentric.is_inside() {
+          continue;
+        }
+      }
     }
   }
 }
@@ -89,15 +110,15 @@ pub fn render_pipeline(
   match mode {
     RenderMode::Triangle => {
       let attribute = geometry.get_attribute();
-      let position = attribute.get(pointer);
-      let uniform = material.to_uniform();
+      let position: Option<&TypeBufferEnum> = attribute.get(pointer);
+      let mut uniform = material.to_uniform();
       if let Some(p) = position {
         match p {
           TypeBufferEnum::F64(buffer) => {
-            render_triangle(target, buffer, attribute, material.clone(), &uniform)
+            render_triangle(target, buffer, attribute, material.clone(), &mut uniform)
           }
           TypeBufferEnum::F32(buffer) => {
-            render_triangle(target, buffer, attribute, material.clone(), &uniform)
+            render_triangle(target, buffer, attribute, material.clone(), &mut uniform)
           }
           _ => {}
         }

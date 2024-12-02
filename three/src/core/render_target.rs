@@ -1,6 +1,9 @@
 use std::cell::{Ref, RefCell};
 
-use crate::{math::data_array::ColorBuffer, textures::texture::Texture};
+use crate::{
+  math::{data_array::ColorBuffer, Mat4},
+  textures::texture::Texture,
+};
 
 use super::viewport::Viewport;
 #[derive(Debug, Default)]
@@ -38,5 +41,15 @@ impl RenderTarget {
 
   pub fn texture(&self) -> Ref<'_, Texture> {
     self.texture.borrow()
+  }
+
+  pub fn viewport(&self) -> Ref<'_, Viewport> {
+    self.viewport.borrow()
+  }
+
+  pub fn update_and_get_viewport(&self) -> Mat4 {
+    let mut v = self.viewport.borrow_mut();
+    v.recompute_matrix();
+    *v.get_viewport_matrix()
   }
 }
