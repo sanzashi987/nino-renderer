@@ -10,8 +10,11 @@ use crate::{
     uniform::Uniform,
     varying::Varying,
   },
-  material::{material::IMaterial, shader::GlPerVertex},
-  math::{Barycentric, BoundaryBox, Vec2},
+  material::{
+    material::IMaterial,
+    shader::{GlPerFragment, GlPerVertex},
+  },
+  math::{data_array::DepthBuffer, Barycentric, BoundaryBox, Vec2},
 };
 
 enum RenderMode {
@@ -29,6 +32,7 @@ fn iter_triangle_verterx(attr: &Attribute, group: usize) -> [Attribute; 3] {
 
 fn render_triangle<T: Sized + Copy + ToF32>(
   target: &RenderTarget,
+  depth_buffer: &mut DepthBuffer,
   position: &Box<TypeBufferAttribute<T>>,
   attribute: &Attribute,
   material: Rc<dyn IMaterial>,
@@ -64,6 +68,7 @@ fn render_triangle<T: Sized + Copy + ToF32>(
 
       vertices_2d[j] = vs_results[j].gl_position.truncate_to_vec2();
     }
+
     let (width, height) = viewport.get_size();
 
     let BoundaryBox {
@@ -80,6 +85,24 @@ fn render_triangle<T: Sized + Copy + ToF32>(
         if !barycentric.is_inside() {
           continue;
         }
+        let mut vertices_z: [f32; 3] = Default::default();
+        for j in 0..3 {
+          vertices_z[j] = vs_results[j].gl_position.z;
+        }
+
+        let depth = barycentric.apply_weight(&vertices_z);
+        let is_closer = depth_buffer.get(x, y) >= depth;
+
+        if !material.depth_test() || is_closer {
+          let mut gl_perfragment = GlPerFragment::default();
+          //TODO lerp the varyings
+          material.fragment(&uniform, &varyings, &mut gl_perfragment);
+          target.write(x, y, gl_perfragment.gl_frag_color);
+        }
+
+        if material.depth_write() && is_closer {
+          depth_buffer.set(x, y, depth);
+        }
       }
     }
   }
@@ -87,6 +110,7 @@ fn render_triangle<T: Sized + Copy + ToF32>(
 
 pub fn render_pipeline(
   target: &RenderTarget,
+  depth_buffer: &mut DepthBuffer,
   camera: Rc<dyn ICamera>,
   object: Rc<dyn IObject3D>,
   geometry: Rc<dyn IGeometry>,
@@ -113,13 +137,24 @@ pub fn render_pipeline(
       let position: Option<&TypeBufferEnum> = attribute.get(pointer);
       let mut uniform = material.to_uniform();
       if let Some(p) = position {
+        let material = material.clone();
         match p {
-          TypeBufferEnum::F64(buffer) => {
-            render_triangle(target, buffer, attribute, material.clone(), &mut uniform)
-          }
-          TypeBufferEnum::F32(buffer) => {
-            render_triangle(target, buffer, attribute, material.clone(), &mut uniform)
-          }
+          TypeBufferEnum::F64(position) => render_triangle(
+            target,
+            depth_buffer,
+            position,
+            attribute,
+            material,
+            &mut uniform,
+          ),
+          TypeBufferEnum::F32(position) => render_triangle(
+            target,
+            depth_buffer,
+            position,
+            attribute,
+            material,
+            &mut uniform,
+          ),
           _ => {}
         }
       }

@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use super::super::cameras::camera::ICamera;
@@ -30,7 +31,7 @@ use crate::{
 #[derive(Default)]
 pub struct GlRenderer {
   result: RenderTarget,
-  depth: DepthBuffer,
+  depth: RefCell<DepthBuffer>,
   shadow_map: ShadowMap,
   render_states: RenderStates,
   render_lists: RenderLists,
@@ -58,8 +59,9 @@ impl GlRenderer {
     self.result.set_size(w, h);
   }
 
-  pub fn clear(&mut self) {
-    self.depth.clear(std::f32::MAX);
+  pub fn clear(&self) {
+    let mut depth = self.depth.borrow_mut();
+    depth.clear(std::f32::MAX);
   }
 
   fn project_object(
@@ -252,8 +254,10 @@ impl GlRenderer {
     m_uniform.merge(&global_uniform);
 
     let target = self.get_current_target();
+    let mut depth_buffer = self.depth.borrow_mut();
     render_pipeline(
       target,
+      &mut depth_buffer,
       camera.clone(),
       object.clone(),
       geometry.clone(),

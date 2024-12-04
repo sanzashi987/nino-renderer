@@ -1,7 +1,7 @@
 use std::cell::{Ref, RefCell};
 
 use crate::{
-  math::{data_array::ColorBuffer, Mat4},
+  math::{data_array::ColorBuffer, Mat4, Vec4},
   textures::texture::Texture,
 };
 
@@ -27,6 +27,11 @@ impl RenderTarget {
     let mut color = self.color.borrow_mut();
 
     std::mem::replace(&mut color, ColorBuffer::new(w, h))
+  }
+
+  pub fn write(&self, x: u32, y: u32, color: Vec4) {
+    let mut color_buffer = self.color.borrow_mut();
+    color_buffer.set(x, y, &color);
   }
 
   pub fn update_texture(&self, texture: Texture) {

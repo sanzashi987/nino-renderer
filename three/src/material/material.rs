@@ -86,6 +86,8 @@ pub trait IMaterial: RunShader {
   fn wireframe(&self) -> bool;
   fn wireframe_linewidth(&self) -> u8;
   fn to_uniform(&self) -> Uniform;
+  fn depth_test(&self) -> bool;
+  fn depth_write(&self) -> bool;
 }
 
 impl<T: ToUniform + Default, U: DefineShader> IMaterial for BasicMaterial<T, U> {
@@ -109,6 +111,14 @@ impl<T: ToUniform + Default, U: DefineShader> IMaterial for BasicMaterial<T, U> 
 
   fn wireframe_linewidth(&self) -> u8 {
     self.wireframe_linewidth
+  }
+
+  fn depth_test(&self) -> bool {
+    self.depth_test
+  }
+
+  fn depth_write(&self) -> bool {
+    self.depth_write
   }
 }
 
