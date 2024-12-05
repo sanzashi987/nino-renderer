@@ -13,7 +13,7 @@ pub struct GlPerVertex {
   pub gl_position: Vec4,
   pub gl_point_size: f32,
   pub gl_clip_distance: Vec<f32>,
-  pub rhw: f32,
+  // pub rhw: f32,
 }
 
 #[derive(Default)]

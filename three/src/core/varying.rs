@@ -79,7 +79,9 @@ pub struct Varying {
 }
 
 impl Varying {
-  pub fn lerp(&mut self, bary: &Barycentric, rhws: [f32; 3], z: f32) {
+  pub fn lerp(&mut self, bary: &Barycentric, rhws: [f32; 3]) {
+    let inv_z = bary.apply_weight(&rhws);
+    let z = 1.0 / inv_z;
     for key in self.declare.keys() {
       let vec = self.declare.get(key).unwrap();
       let length = vec.len();

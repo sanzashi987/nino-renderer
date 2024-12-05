@@ -1,4 +1,4 @@
-use std::{default, rc::Rc};
+use std::rc::Rc;
 
 use crate::{
   cameras::camera::ICamera,
@@ -60,13 +60,14 @@ fn render_triangle<T: Sized + Copy + ToF32>(
     }
 
     let mut vertices_2d: [Vec2; 3] = Default::default();
+    let mut rhws: [f32; 3] = Default::default();
     for j in 0..3 {
-      vs_results[j].rhw = 1.0 / vs_results[j].gl_position.w;
       vs_results[j].gl_position /= vs_results[j].gl_position.w;
 
       vs_results[j].gl_position = viewport_matrix * vs_results[j].gl_position;
 
       vertices_2d[j] = vs_results[j].gl_position.truncate_to_vec2();
+      rhws[j] = 1.0 / vs_results[j].gl_position.w;
     }
 
     let (width, height) = viewport.get_size();
@@ -96,6 +97,7 @@ fn render_triangle<T: Sized + Copy + ToF32>(
         if !material.depth_test() || is_closer {
           let mut gl_perfragment = GlPerFragment::default();
           //TODO lerp the varyings
+          varyings.lerp(&barycentric, rhws);
           material.fragment(&uniform, &varyings, &mut gl_perfragment);
           target.write(x, y, gl_perfragment.gl_frag_color);
         }
