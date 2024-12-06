@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use crate::core::render_target::RenderTarget;
 use crate::material::depth_material::MeshDepthMaterial;
+use crate::material::material::IMaterial;
 use crate::math::Vec4;
 use crate::utils::rc_convert;
 use crate::{
@@ -63,6 +64,13 @@ impl ShadowMap {
           //texture_height
           viewport.w = vp.w * map_height;
           shadow.update_matrices(light.clone(), viewport);
+          self.render_object(
+            shadow.map().clone(),
+            scene.clone(),
+            camera.clone(),
+            shadow.camera().clone(),
+            light.clone(),
+          );
         }
       }
     }
@@ -70,7 +78,7 @@ impl ShadowMap {
 
   fn render_object(
     &self,
-    target: &RenderTarget,
+    target: Rc<RenderTarget>,
     object: Rc<dyn IObject3D>,
     camera: Rc<dyn ICamera>,
     shadow_camera: Rc<dyn ICamera>,
@@ -96,7 +104,7 @@ impl ShadowMap {
 
         for child in children.iter() {
           self.render_object(
-            target,
+            target.clone(),
             child.clone(),
             camera.clone(),
             shadow_camera.clone(),
@@ -106,8 +114,11 @@ impl ShadowMap {
       }
     }
   }
-
-  fn render_to_target(&self, target: &RenderTarget) {}
 }
 
-fn to_depth_material() {}
+fn to_depth_material(
+  object: Rc<dyn IObject3D>,
+  material: Rc<dyn IMaterial>,
+  light: Rc<dyn ILight>,
+) {
+}
