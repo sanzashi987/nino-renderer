@@ -3,6 +3,7 @@ use std::rc::Rc;
 use crate::core::render_target::RenderTarget;
 use crate::material::depth_material::MeshDepthMaterial;
 use crate::material::material::IMaterial;
+use crate::math::data_array::DepthBuffer;
 use crate::math::Vec4;
 use crate::utils::rc_convert;
 use crate::{
@@ -12,6 +13,8 @@ use crate::{
   math::Vec2,
   objects::{base::Renderable, line::Line, mesh::Mesh, point::Point, scene::Scene},
 };
+
+use super::render_pipeline::render_pipeline;
 
 #[derive(Debug)]
 enum ShadowMapType {
@@ -98,6 +101,18 @@ impl ShadowMap {
         }
 
         let material = renderable.material();
+        let depth_material = to_depth_material(object.clone(), material, light.clone());
+        let geometry = renderable.geometry();
+        let mut depth_buffer = DepthBuffer::default();
+        render_pipeline(
+          &target,
+          &mut depth_buffer,
+          camera,
+          object,
+          geometry,
+          depth_material,
+          None,
+        );
       }
       _ => {
         let children = object.children();
@@ -120,5 +135,5 @@ fn to_depth_material(
   object: Rc<dyn IObject3D>,
   material: Rc<dyn IMaterial>,
   light: Rc<dyn ILight>,
-) {
+) -> Rc<dyn IMaterial> {
 }

@@ -1,6 +1,9 @@
 use std::{any::Any, cell::RefCell, collections::HashMap, marker::PhantomData, rc::Rc};
 
-use crate::core::{buffer_geometry::Attribute, uniform::Uniform, varying::Varying};
+use crate::{
+  core::{buffer_geometry::Attribute, uniform::Uniform, varying::Varying},
+  textures::texture::Texture,
+};
 
 use super::shader::{DefineShader, GlPerFragment, GlPerVertex, Shader};
 
@@ -77,6 +80,8 @@ pub struct BasicMaterial<T: ToUniform + Default, U: DefineShader> {
   pub attributes: RefCell<Rc<T>>,
 
   pub abstract_shader: PhantomData<U>,
+
+  pub map: Rc<Texture>,
 }
 
 pub trait IMaterial: RunShader {

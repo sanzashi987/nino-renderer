@@ -1,6 +1,6 @@
-use std::fmt::format;
+use std::sync::Mutex;
 
-use image::{open, DynamicImage, GenericImageView, ImageError};
+use image::{open, DynamicImage, GenericImage, GenericImageView, ImageError, Rgba};
 
 use crate::math::{Vec2, Vec4};
 
@@ -18,6 +18,8 @@ pub enum Filter {
   LinearMipMapLinear,
 }
 
+static GLOBAL_ID: Mutex<u32> = Mutex::new(0);
+
 #[derive(Debug)]
 pub struct Texture {
   pub id: u32,
@@ -26,19 +28,24 @@ pub struct Texture {
   pub name: String,
   pub min_filter: Filter,
   pub mag_filter: Filter,
+
+  bit_depth: image::ColorType,
 }
 
 impl Default for Texture {
   fn default() -> Self {
     let image = DynamicImage::new(1, 1, image::ColorType::Rgb8);
-
+    let mut id = GLOBAL_ID.lock().unwrap();
+    let current_id = *id;
+    *id = current_id + 1;
     Self {
-      id: 0,
+      id: current_id,
       image,
       path: Default::default(),
       name: Default::default(),
       min_filter: Filter::Linear,
       mag_filter: Filter::LinearMipmapLinear,
+      bit_depth: image::ColorType::Rgb8,
     }
   }
 }
@@ -46,7 +53,7 @@ impl Default for Texture {
 impl Texture {
   pub fn new(w: u32, h: u32) -> Self {
     let mut instance = Self::default();
-    instance.image = DynamicImage::new(w, h, image::ColorType::Rgb16);
+    instance.image = DynamicImage::new(w, h, instance.bit_depth);
     instance
   }
 
@@ -76,6 +83,24 @@ impl Texture {
       rgba[2] as f32 / 255.0,
       rgba[3] as f32 / 255.0,
     )
+  }
+
+  pub fn write(&mut self, x: u32, y: u32, color: Vec4) {
+    let pixel = Rgba([color.x as u8, color.y as u8, color.z as u8, color.w as u8]);
+    self.image.put_pixel(x, y, pixel);
+  }
+
+  pub fn set_size(&mut self, w: u32, h: u32) {
+    self.image = DynamicImage::new(w, h, self.bit_depth);
+  }
+
+  pub fn take_color(&mut self) -> (Vec<u8>, image::ColorType) {
+    let image = &self.image;
+    let width = image.width();
+    let height = image.height();
+    let empty_image = DynamicImage::new(width, height, self.bit_depth);
+    let res = std::mem::replace(&mut self.image, empty_image);
+    (res.into_bytes(), self.bit_depth)
   }
 }
 

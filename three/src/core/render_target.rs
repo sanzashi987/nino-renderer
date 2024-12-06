@@ -9,29 +9,27 @@ use super::viewport::Viewport;
 #[derive(Debug, Default)]
 pub struct RenderTarget {
   viewport: RefCell<Viewport>,
-  color: RefCell<ColorBuffer>,
   texture: RefCell<Texture>,
 }
 
 impl RenderTarget {
   pub fn set_size(&self, w: f32, h: f32) {
     let mut viewport = self.viewport.borrow_mut();
-    let mut color = self.color.borrow_mut();
+    let mut texture = self.texture.borrow_mut();
     viewport.set_size(w, h);
-    *color = ColorBuffer::new(w as u32, h as u32);
+    texture.set_size(w as u32, h as u32)
+
+    // texture.
   }
 
-  pub fn take_color(&self) -> ColorBuffer {
-    let w = { self.color.borrow().width() };
-    let h = { self.color.borrow().height() };
-    let mut color = self.color.borrow_mut();
-
-    std::mem::replace(&mut color, ColorBuffer::new(w, h))
+  pub fn take_color(&self) -> Vec<u8> {
+    let mut texture = self.texture.borrow_mut();
+    texture.take_color().0
   }
 
   pub fn write(&self, x: u32, y: u32, color: Vec4) {
-    let mut color_buffer = self.color.borrow_mut();
-    color_buffer.set(x, y, &color);
+    let mut color_buffer = self.texture.borrow_mut();
+    color_buffer.write(x, y, color);
   }
 
   pub fn update_texture(&self, texture: Texture) {
