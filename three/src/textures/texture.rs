@@ -76,13 +76,8 @@ impl Texture {
     let x = (uv.x * (width - 1) as f32) as u32;
     let y = ((1.0 - uv.y) * (height - 1) as f32) as u32;
 
-    let rgba = image.get_pixel(x, y).0;
-    Vec4::new(
-      rgba[0] as f32 / 255.0,
-      rgba[1] as f32 / 255.0,
-      rgba[2] as f32 / 255.0,
-      rgba[3] as f32 / 255.0,
-    )
+    let [x, y, z, w] = image.get_pixel(x, y).0;
+    Vec4::new(x as f32, y as f32, z as f32, w as f32) / 255.0
   }
 
   pub fn write(&mut self, x: u32, y: u32, color: Vec4) {
@@ -105,18 +100,5 @@ impl Texture {
 }
 
 pub fn texture_2d(sampler: &Texture, uv: Vec2) -> Vec4 {
-  let img = &sampler.image;
-
-  let width = img.width();
-  let height = img.height();
-
-  let x = (uv.x * (width - 1) as f32) as u32;
-  let y = ((1.0 - uv.y) * (height - 1) as f32) as u32;
-  let rgba = img.get_pixel(x, y).0;
-  Vec4::new(
-    rgba[0] as f32 / 255.0,
-    rgba[1] as f32 / 255.0,
-    rgba[2] as f32 / 255.0,
-    rgba[3] as f32 / 255.0,
-  )
+  sampler.get_pixel(uv)
 }
