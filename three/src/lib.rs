@@ -1,4 +1,3 @@
-#![feature(trait_upcasting)]
 // #![allow(incomplete_features)]
 pub mod cameras;
 pub mod core;

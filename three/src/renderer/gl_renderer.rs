@@ -177,7 +177,11 @@ impl GlRenderer {
       &mut global_uniform,
     );
 
-    self.result.take_color()
+    let (w, h) = self.result.viewport().get_size();
+    let data = self.result.take_color();
+    let mut res = ColorBuffer::new(w as u32, h as u32);
+    res.data = data;
+    res
   }
 
   fn render_scene(

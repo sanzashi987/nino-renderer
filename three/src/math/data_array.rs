@@ -2,7 +2,7 @@
 use super::vec;
 #[derive(Debug)]
 pub struct DataArray<T> {
-  data: Vec<T>,
+  pub data: Vec<T>,
   w: u32,
   h: u32,
 }
