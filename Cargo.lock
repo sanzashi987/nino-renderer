@@ -649,6 +649,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tinytracer"
+version = "0.1.0"
+dependencies = [
+ "image",
+]
+
+[[package]]
 name = "ttf-parser"
 version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
