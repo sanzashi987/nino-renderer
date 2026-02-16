@@ -1,4 +1,6 @@
-workspace = { members = ["renderer_macro_derive", "tinyrenderer", "tinytracer"] }
+[workspace]
+members = [ "math","renderer_macro_derive", "tinyrenderer", "tinytracer"]
+
 [package]
 name = "nino-renderer"
 version = "0.1.0"
@@ -11,7 +13,7 @@ image = "0.24.5"
 rand = "0.8"
 renderer_macro_derive = { path = "./renderer_macro_derive" }
 tinyrenderer = { path = "./tinyrenderer" }
-three = { path = './three' }
+# three = { path = './three' }
 sandbox = { path = "./sandbox" }
 
 [dev-dependencies]
@@ -43,3 +45,7 @@ path = "demo/tiny_renderer.rs"
 [[example]]
 name = "threerenderer"
 path = "demo/three_renderer.rs"
+
+[[example]]
+name = "tinytracer"
+path = "demo/tiny_tracer.rs"
