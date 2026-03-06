@@ -1,4 +1,4 @@
-use crate::math::{apply_eular_rotate_xyz, apply_translate, Mat4, Vec3, Vec4};
+use math::{apply_eular_rotate_xyz, apply_translate, Mat4, Vec3, Vec4};
 
 pub struct Frustum {
   near: f32,

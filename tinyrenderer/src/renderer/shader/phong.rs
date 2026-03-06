@@ -1,7 +1,5 @@
-use crate::{
-  math::{Mat3, Mat4, Vec2, Vec3, Vec4},
-  obj_loader::shader::{uniform, varying, Extract, GLTypes, Shader},
-};
+use crate::obj_loader::shader::{uniform, varying, Extract, GLTypes, Shader};
+use math::{Mat3, Mat4, Vec2, Vec3, Vec4};
 
 pub fn make_phong_shader(light_dir: Vec3) -> Shader {
   let mut shader = Shader::default();
@@ -49,7 +47,6 @@ pub fn make_phong_shader(light_dir: Vec3) -> Shader {
           color.w,
         );
       }
-
     }
 
     color
@@ -120,7 +117,7 @@ pub fn make_phong_shader_with_tangent_normal_map(light_dir: Vec3) -> Shader {
 
     if let (Some(normal), Some(specular)) = (t[0], t[1]) {
       let nn = normal.get_pixel(uv);
-      
+
       // let mut n = Vec3::zero();
       let n = B * nn.truncated_to_vec3();
       let diff = n.normalize().dot(&light_dir).max(0.0);

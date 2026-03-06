@@ -1,5 +1,5 @@
 use super::shader::Shader;
-use crate::math::{Vec2, Vec3, Vec4};
+use math::{Vec2, Vec3, Vec4};
 use crate::utils::swap_and_move;
 use image::{GenericImageView, ImageError};
 use std::path::Path;

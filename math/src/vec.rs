@@ -1,7 +1,7 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 macro_rules! define_vec_op {
-  ($name:ident,$trait_name:ident,  $func_name:ident, $op:tt, $($p:ident),+) => {
+  ($name:ident,$trait_name:ident,$func_name:ident, $op:tt, $($p:ident),+) => {
     impl $trait_name for $name {
       type Output = Self;
 
@@ -59,11 +59,11 @@ macro_rules! define_vec {
     define_vec_op!($name, Add, add, + ,$($p),+);
     define_vec_op!($name, Sub, sub, - ,$($p),+);
     // define_vec_op!($name, Mul, mul, * ,$($p),+);
-    // define_vec_op!($name, Div, div, / ,$($p),+);
+    define_vec_op!($name, Div, div, / ,$($p),+);
     define_vec_op_assign!($name, AddAssign, add_assign, += $(,$p)+ );
     define_vec_op_assign!($name, SubAssign, sub_assign, -= $(,$p)+ );
     // define_vec_op_assign!($name, MulAssign, mul_assign, *= $(,$p)+ );
-    // define_vec_op_assign!($name, DivAssign, div_assign, /= $(,$p)+ );
+    define_vec_op_assign!($name, DivAssign, div_assign, /= $(,$p)+ );
 
 
     impl Mul for $name {
@@ -75,9 +75,18 @@ macro_rules! define_vec {
         )+
         res
       }
-
     }
 
+    impl Mul<f32> for $name {
+      type Output = Self;
+      fn mul(self, rhs: f32) -> Self::Output {
+        $name {
+          $(
+            $p:self.$p * rhs,
+          )+
+        }
+      }
+    }
 
     impl $name {
       pub const fn new($($p:f32),+) -> Self {

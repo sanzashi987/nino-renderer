@@ -1,7 +1,5 @@
-use crate::{
-  data_array::ColorBuffer,
-  math::{Vec2, Vec4},
-};
+use crate::data_array::ColorBuffer;
+use math::{Vec2, Vec4};
 
 pub fn line(pt0: Vec2, pt1: Vec2, color_buffer: &mut ColorBuffer) {
   let Vec2 {

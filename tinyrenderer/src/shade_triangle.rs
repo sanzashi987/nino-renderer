@@ -1,9 +1,9 @@
 use crate::{
   data_array::{ColorBuffer, DepthBuffer},
-  math::{lerp, Barycentric, BoundaryBox, Vec2, Vec3, Vec4},
   model::Vertex,
   obj_loader::material::Texture,
 };
+use math::{lerp, Barycentric, BoundaryBox, Vec2, Vec3, Vec4};
 
 fn shade_triangle_scanline(
   points: &mut [Vec3; 3],
@@ -100,7 +100,9 @@ pub fn shade_triangle_barycentric(
       if depth.get(x, y) < z {
         depth.set(x, y, z);
 
-        result.set(x, y, &(c * (*color)));
+        let buf = Vec4::new(c.x * color.x, c.y * color.y, c.z * color.z, c.w * color.w);
+
+        result.set(x, y, &buf);
         // result.set(x, y, &c);
       }
     }

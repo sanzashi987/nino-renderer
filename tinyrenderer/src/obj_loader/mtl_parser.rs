@@ -1,5 +1,5 @@
 // mtl -> Material Template Library
-use crate::math::Vec3;
+use math::Vec3;
 
 use super::{
   defines::{self, parse_num, parse_token, parse_token_ok, ParserError},

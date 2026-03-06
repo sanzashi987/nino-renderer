@@ -1,7 +1,5 @@
-use crate::{
-  math::{Vec2, Vec3},
-  utils::swap_and_move,
-};
+use crate::utils::swap_and_move;
+use math::{Vec2, Vec3};
 
 use super::{
   defines::ParserError,

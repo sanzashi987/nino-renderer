@@ -1,7 +1,5 @@
-use crate::{
-  math::{Vec3, Vec4},
-  obj_loader::shader::{uniform, varying, Extract, GLTypes, Shader},
-};
+use crate::obj_loader::shader::{uniform, varying, Extract, GLTypes, Shader};
+use math::{Vec3, Vec4};
 
 pub fn make_shadow_shader() -> Shader {
   let mut shader = Shader::default();

@@ -1,5 +1,5 @@
 // struct PureElemImage<T> {}
-use crate::math;
+use math;
 
 pub struct DataArray<T> {
   data: Vec<T>,

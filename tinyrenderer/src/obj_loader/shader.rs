@@ -4,10 +4,8 @@ use std::{
   ops::{Add, Mul},
 };
 
-use crate::{
-  math::{Barycentric, Mat4, Vec2, Vec3, Vec4},
-  model::Vertex,
-};
+use crate::model::Vertex;
+use math::{Barycentric, Mat4, Vec2, Vec3, Vec4};
 
 use super::material::Textures;
 

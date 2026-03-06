@@ -385,10 +385,12 @@ version = "0.1.0"
 dependencies = [
  "fltk",
  "image",
+ "math",
  "rand",
  "renderer_macro_derive",
  "sandbox",
  "tinyrenderer",
+ "tinytracer",
 ]
 
 [[package]]
@@ -620,6 +622,7 @@ name = "tinyrenderer"
 version = "0.1.0"
 dependencies = [
  "image",
+ "math",
  "renderer_macro_derive",
 ]
 

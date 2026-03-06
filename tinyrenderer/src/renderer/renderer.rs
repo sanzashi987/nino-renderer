@@ -1,13 +1,14 @@
 use super::{camera::Camera, shader};
 use crate::{
   data_array::{ColorBuffer, DepthBuffer},
-  math::{Barycentric, BoundaryBox, Mat4, Vec2, Vec4},
   model::Scene,
   obj_loader::{
     material::{self, Material, MtlStores, Texture},
     shader::{GLTypes, GlTypeMap, Shader, Uniform, Varyings},
   },
 };
+use math::{Barycentric, BoundaryBox, Mat4, Vec2, Vec4};
+
 /// It means that the bi-unit cube [-1,1]*[-1,1]*[-1,1]
 /// is mapped onto the screen cube [x,x+w]*[y,y+h]*[0,d].
 /// Right, cube, and not a rectangle,

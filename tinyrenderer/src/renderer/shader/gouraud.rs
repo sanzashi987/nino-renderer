@@ -1,4 +1,4 @@
-use crate::math::{Vec2, Vec3, Vec4};
+use math::{Vec2, Vec3, Vec4};
 use crate::obj_loader::shader::{take_value, Extract, GLTypes, Shader};
 
 pub fn make_gouraud_shader(light_dir: Vec3) -> Shader {

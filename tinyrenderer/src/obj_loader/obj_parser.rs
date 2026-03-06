@@ -1,6 +1,6 @@
 use std::ops::Not;
 
-use crate::math::{Vec2, Vec3};
+use math::{Vec2, Vec3};
 
 use super::{
   defines::{parse_num, parse_token, ParserError, ParserResult},

@@ -1,3 +1,6 @@
+use math::Vec3;
+use tinytracer::object::sphere::Sphere;
+
 const WINDOW_WIDTH: f32 = 1024.0;
 const WINDOW_HEIGHT: f32 = 768.0;
 const HALF_WIDTH: f32 = (WINDOW_WIDTH - 1.0) / 2.0;
@@ -9,6 +12,13 @@ fn test() {
   for j in 0..WINDOW_WIDTH as u8 {
     dbg!(j);
   }
+}
+
+fn cast_ray(origin: &Vec3, dir: &Vec3, sphere: &Sphere) -> Vec3 {
+  if let Some(distance) = sphere.ray_intersect(origin, origin) {
+    return Vec3::new(0.4, 0.4, 0.3);
+  }
+  return Vec3::new(0.2, 0.7, 0.8);
 }
 
 fn main() {
