@@ -58,12 +58,26 @@ macro_rules! define_vec {
 
     define_vec_op!($name, Add, add, + ,$($p),+);
     define_vec_op!($name, Sub, sub, - ,$($p),+);
-    define_vec_op!($name, Mul, mul, * ,$($p),+);
-    define_vec_op!($name, Div, div, / ,$($p),+);
+    // define_vec_op!($name, Mul, mul, * ,$($p),+);
+    // define_vec_op!($name, Div, div, / ,$($p),+);
     define_vec_op_assign!($name, AddAssign, add_assign, += $(,$p)+ );
     define_vec_op_assign!($name, SubAssign, sub_assign, -= $(,$p)+ );
-    define_vec_op_assign!($name, MulAssign, mul_assign, *= $(,$p)+ );
-    define_vec_op_assign!($name, DivAssign, div_assign, /= $(,$p)+ );
+    // define_vec_op_assign!($name, MulAssign, mul_assign, *= $(,$p)+ );
+    // define_vec_op_assign!($name, DivAssign, div_assign, /= $(,$p)+ );
+
+
+    impl Mul for $name {
+      type Output = f32;
+      fn mul(self, rhs:$name) ->Self::Output{
+        let mut res = 0.0;
+        $(
+          res += self.$p * rhs.$p;
+        )+
+        res
+      }
+
+    }
+
 
     impl $name {
       pub const fn new($($p:f32),+) -> Self {
