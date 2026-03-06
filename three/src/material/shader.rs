@@ -1,5 +1,5 @@
 use crate::core::uniform::u;
-use crate::math::{Mat4, Vec3, Vec4};
+use math::{Mat4, Vec3, Vec4};
 
 use crate::core::buffer_attribute::a;
 use crate::core::buffer_geometry::Attribute;

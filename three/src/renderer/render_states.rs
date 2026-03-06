@@ -5,8 +5,8 @@ use crate::{
   core::{buffer_geometry::IGeometry, object_3d::IObject3D, uniform::Uniform},
   lights::light::{ILight, LightType},
   material::material::IMaterial,
-  math::Vec3,
 };
+use math::Vec3;
 
 use super::gl_lights::GLLights;
 

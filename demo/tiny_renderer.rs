@@ -14,7 +14,6 @@ use fltk::draw;
 use tinyrenderer::{
   bresenham_line::line,
   data_array::{ColorBuffer, DepthBuffer},
-  math::{self, Mat4, Vec2, Vec3, Vec4},
   model::{self, from_obj_path, Model, Scene, Vertex},
   obj_loader::material::{self, Material, Texture},
   renderer::{
@@ -23,6 +22,8 @@ use tinyrenderer::{
   },
   shade_triangle::shade_triangle_barycentric,
 };
+
+use math::{self, Mat4, Vec2, Vec3, Vec4};
 
 macro_rules! file {
   ($name:tt) => {

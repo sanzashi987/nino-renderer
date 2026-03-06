@@ -2,7 +2,7 @@ use std::sync::Mutex;
 
 use image::{open, DynamicImage, GenericImage, GenericImageView, ImageError, Rgba};
 
-use crate::math::{Vec2, Vec4};
+use math::{Vec2, Vec4};
 
 #[derive(Debug)]
 pub enum Filter {

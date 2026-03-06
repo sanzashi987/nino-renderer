@@ -9,9 +9,10 @@ use crate::{
     uniform::Uniform,
   },
   material::material::ToUniform,
-  math::Vec4,
   objects::base::Object3D,
 };
+
+use math::Vec4;
 
 use super::{
   directional_light_shadow::DirectionalLightShadow,

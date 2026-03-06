@@ -5,10 +5,8 @@ use std::{
 
 use lazy_static::lazy_static;
 
-use crate::{
-  math::{Vec2, Vec3},
-  utils::SingleOrList,
-};
+use crate::utils::SingleOrList;
+use math::{Vec2, Vec3};
 
 use super::{
   defines::{parse_num, parse_token, ParserError},

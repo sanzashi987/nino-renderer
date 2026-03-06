@@ -1,6 +1,6 @@
 use renderer_macro_derive::object_3d;
 
-use crate::math::Vec4;
+use math::Vec4;
 
 use super::{
   super::core::object_3d::{with_default_fields, IObject3D},

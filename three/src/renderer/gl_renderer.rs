@@ -12,7 +12,7 @@ use crate::core::uniform::Uniform;
 use crate::lights::directional_light::DirectionalLight;
 use crate::lights::light::ILight;
 use crate::material::material::IMaterial;
-use crate::math::Mat4;
+use math::Mat4;
 use crate::objects::base::Renderable;
 use crate::objects::group::Group;
 use crate::objects::line::Line;

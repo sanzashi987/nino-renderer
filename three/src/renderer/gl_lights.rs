@@ -5,8 +5,8 @@ use crate::{
   core::{render_target::RenderTarget, uniform::Uniform},
   lights::light::{ILight, LightType, ToUniformWithView},
   material::material::ToUniform,
-  math::{Mat4, Vec3, Vec4},
 };
+use math::{Mat4, Vec3, Vec4};
 
 #[derive(Debug, Default)]
 pub struct LightQueue {

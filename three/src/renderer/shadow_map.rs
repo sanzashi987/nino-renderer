@@ -3,16 +3,16 @@ use std::rc::Rc;
 use crate::core::render_target::RenderTarget;
 use crate::material::depth_material::MeshDepthMaterial;
 use crate::material::material::IMaterial;
-use crate::math::data_array::DepthBuffer;
-use crate::math::Vec4;
 use crate::utils::rc_convert;
 use crate::{
   cameras::camera::ICamera,
   core::object_3d::{IObject3D, ObjectType},
   lights::light::ILight,
-  math::Vec2,
   objects::{base::Renderable, line::Line, mesh::Mesh, point::Point, scene::Scene},
 };
+use math::data_array::DepthBuffer;
+use math::Vec2;
+use math::Vec4;
 
 use super::render_pipeline::render_pipeline;
 

@@ -3,7 +3,7 @@ use std::{
   ops::{Add, Mul},
 };
 
-use crate::math::{Barycentric, Mat4, Vec2, Vec3, Vec4};
+use math::{Barycentric, Mat4, Vec2, Vec3, Vec4};
 
 trait DeclareGlType<T> {
   fn declare_attribute(&mut self, key: &str, val: T);

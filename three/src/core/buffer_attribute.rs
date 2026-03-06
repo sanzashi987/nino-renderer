@@ -1,4 +1,4 @@
-use crate::math::{Vec2, Vec3, Vec4};
+use math::{Vec2, Vec3, Vec4};
 pub struct TypeBufferAttribute<T: Sized + Copy + ToF32> {
   pub data: Vec<T>,
   pub size: usize,

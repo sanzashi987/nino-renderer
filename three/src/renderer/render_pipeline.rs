@@ -14,8 +14,8 @@ use crate::{
     material::IMaterial,
     shader::{GlPerFragment, GlPerVertex},
   },
-  math::{data_array::DepthBuffer, Barycentric, BoundaryBox, Vec2},
 };
+use math::{data_array::DepthBuffer, Barycentric, BoundaryBox, Vec2};
 
 enum RenderMode {
   Triangle,

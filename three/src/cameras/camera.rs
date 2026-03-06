@@ -1,4 +1,5 @@
-use crate::{core::object_3d::IObject3D, math::Mat4};
+use crate::core::object_3d::IObject3D;
+use math::Mat4;
 
 pub trait ICamera: IObject3D {
   fn view_matrix(&self) -> Mat4;

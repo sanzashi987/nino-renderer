@@ -5,8 +5,9 @@ use renderer_macro_derive::object_3d;
 use crate::{
   cameras::camera::derive_view_matrix,
   core::object_3d::{with_default_fields, IObject3D},
-  math::Mat4,
 };
+
+use math::Mat4;
 
 use super::camera::ICamera;
 
@@ -72,7 +73,7 @@ impl PerspectiveCamera {
 }
 
 impl ICamera for PerspectiveCamera {
-  fn projection_matrix(&self) -> crate::math::Mat4 {
+  fn projection_matrix(&self) -> math::Mat4 {
     *self.projection_matrix.borrow()
   }
 

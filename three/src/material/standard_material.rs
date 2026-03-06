@@ -1,8 +1,8 @@
 use crate::{
   core::{buffer_geometry::Attribute, uniform::Uniform, varying::Varying},
   loaders::mtl_loader::MtlData,
-  math::Vec3,
 };
+use math::Vec3;
 
 use super::{
   material::{define_material_attribute, BasicMaterial},

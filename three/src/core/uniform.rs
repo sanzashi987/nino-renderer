@@ -3,7 +3,7 @@ use std::{
   ops::{Deref, DerefMut},
 };
 
-use crate::math::{Mat3, Mat4, Vec2, Vec3, Vec4};
+use math::{Mat3, Mat4, Vec2, Vec3, Vec4};
 
 use super::marco::define_gl_type_enum;
 

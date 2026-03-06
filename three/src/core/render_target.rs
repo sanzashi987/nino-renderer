@@ -1,9 +1,7 @@
 use std::cell::{Ref, RefCell};
 
-use crate::{
-  math::{data_array::ColorBuffer, Mat4, Vec4},
-  textures::texture::Texture,
-};
+use crate::textures::texture::Texture;
+use math::{data_array::ColorBuffer, Mat4, Vec4};
 
 use super::viewport::Viewport;
 #[derive(Debug, Default)]

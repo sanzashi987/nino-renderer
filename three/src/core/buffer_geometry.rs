@@ -1,4 +1,4 @@
-use crate::math::Vec3;
+use math::Vec3;
 
 use super::{
   buffer_attribute::{F32BufferAttribute, IBufferAttribute, TypeBufferEnum},

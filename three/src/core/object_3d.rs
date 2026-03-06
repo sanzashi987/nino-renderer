@@ -30,33 +30,33 @@ pub trait IObject3D: Any {
   fn attach(&self, child: Box<dyn IObject3D>);
   fn children(&self) -> std::cell::Ref<'_, Vec<std::rc::Rc<dyn IObject3D>>>;
 
-  fn look_at(&self, point: crate::math::Vec3);
-  fn matrix(&self) -> crate::math::Mat4;
-  fn global_matrix(&self) -> crate::math::Mat4;
+  fn look_at(&self, point: math::Vec3);
+  fn matrix(&self) -> math::Mat4;
+  fn global_matrix(&self) -> math::Mat4;
   fn update_global_matrix(&self);
   fn update_matrix(&self);
-  fn compose(&self) -> crate::math::Mat4;
+  fn compose(&self) -> math::Mat4;
   fn decompose(&self);
 
-  fn apply_matrix(&self, matrix: crate::math::Mat4);
-  fn apply_quaternion(&self, matrix: crate::math::Quaternion);
+  fn apply_matrix(&self, matrix: math::Mat4);
+  fn apply_quaternion(&self, matrix: math::Quaternion);
 
-  fn rotate_on_world_axis(&self, axis: crate::math::Vec3, angle: f32);
-  fn rotate_on_axis(&self, axis: crate::math::Vec3, angle: f32);
+  fn rotate_on_world_axis(&self, axis: math::Vec3, angle: f32);
+  fn rotate_on_axis(&self, axis: math::Vec3, angle: f32);
   fn rotate_x(&self, angle: f32);
   fn rotate_y(&self, angle: f32);
   fn rotate_z(&self, angle: f32);
 
-  fn update_position(&self, position: crate::math::Vec3);
-  fn update_from_global_position(&self, position: crate::math::Vec3);
-  fn translate_on_axis(&self, axis: crate::math::Vec3, distance: f32);
+  fn update_position(&self, position: math::Vec3);
+  fn update_from_global_position(&self, position: math::Vec3);
+  fn translate_on_axis(&self, axis: math::Vec3, distance: f32);
   fn translate_x(&self, distance: f32);
   fn translate_y(&self, distance: f32);
   fn translate_z(&self, distance: f32);
 
-  fn global_scale(&self) -> crate::math::Vec3;
-  fn global_position(&self) -> crate::math::Vec3;
-  fn global_rotation(&self) -> crate::math::Rotation;
+  fn global_scale(&self) -> math::Vec3;
+  fn global_position(&self) -> math::Vec3;
+  fn global_rotation(&self) -> math::Rotation;
 
   fn cast_shadow(&self) -> bool;
 

@@ -4,9 +4,9 @@ use crate::{
   cameras::camera::ICamera,
   core::{object_3d::IObject3D, render_target::RenderTarget, uniform::Uniform},
   material::material::ToUniform,
-  math::{Mat4, Vec2, Vec3, Vec4},
   objects::base::Object3D,
 };
+use math::{Mat4, Vec2, Vec3, Vec4};
 
 pub enum LightType {
   AmbientLight,
@@ -94,9 +94,9 @@ macro_rules! init_shadow_map {
       bias: 0.0,
       normal_bias: 0.0,
       radius: 1.0,
-      map_size: crate::math::Vec2::new(512.0,512.0),
+      map_size: math::Vec2::new(512.0,512.0),
       mat:  Default::default(),
-      viewports: vec![crate::math::Vec4::new(0.0,0.0,1.0,1.0)],
+      viewports: vec![math::Vec4::new(0.0,0.0,1.0,1.0)],
       map:  Default::default(),
       matrix: Default::default(),
     }

@@ -2,10 +2,8 @@ use std::{cell::RefCell, rc::Rc};
 
 use renderer_macro_derive::object_3d;
 
-use crate::{
-  core::object_3d::{with_default_fields, IObject3D},
-  math::Mat4,
-};
+use crate::core::object_3d::{with_default_fields, IObject3D};
+use math::Mat4;
 
 use super::camera::{derive_view_matrix, ICamera, View};
 
@@ -26,7 +24,7 @@ pub struct OrthographicCamera {
 }
 
 impl ICamera for OrthographicCamera {
-  fn view_matrix(&self) -> crate::math::Mat4 {
+  fn view_matrix(&self) -> math::Mat4 {
     *self.view_matrix.borrow()
   }
 
@@ -60,11 +58,11 @@ impl ICamera for OrthographicCamera {
     *p_inv = mat.inverse().unwrap();
   }
 
-  fn projection_matrix(&self) -> crate::math::Mat4 {
+  fn projection_matrix(&self) -> math::Mat4 {
     *self.projection_matrix.borrow()
   }
 
-  fn project_matrix_inverse(&self) -> crate::math::Mat4 {
+  fn project_matrix_inverse(&self) -> math::Mat4 {
     *self.projection_matrix_inverse.borrow()
   }
 }
