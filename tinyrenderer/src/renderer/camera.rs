@@ -23,14 +23,14 @@ impl Frustum {
       mat: if cfg!(feature="cpu") {
         let a = 1.0 / (near * fov.tan());
         // without far plane, clamp x,y in [-1, 1], z = near
-        Mat4::from_row(&[
+        Mat4::from_row([
           a,          0.0,         0.0, 0.0,
           0.0, aspect * a,         0.0, 0.0,
           0.0,        0.0,         1.0, 0.0,
           0.0,        0.0, -1.0 / near, 0.0,
         ])
       } else {
-        Mat4::from_row(&[
+        Mat4::from_row([
           near / half_w,           0.0,                       0.0,                               0.0,
           0.0, near / half_h,                       0.0,                               0.0,
           0.0,           0.0, (far + near) / (near - far), 2.0 * far * near / (near - far),
@@ -136,7 +136,7 @@ impl Camera {
     //                            [    0.0,     0.0,     0.0,  1.0]          [0.0, 0.0, 0.0,             1.0]
     //
     // then R^-1 x T^-1  will have the form below
-    self.view_matrix = Mat4::from_row(&[
+    self.view_matrix = Mat4::from_row([
       right.x, right.y, right.z, -right.dot(&self.position),
       up.x,    up.y,    up.z,    -up.dot(&self.position),
       back.x,  back.y,  back.z,  -back.dot(&self.position),

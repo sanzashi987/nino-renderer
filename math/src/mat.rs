@@ -1,19 +1,19 @@
-use super::{Vec3, Vec4};
+use super::{Vec2, Vec3, Vec4};
 use std::ops::{Add, Div, Mul};
 
 macro_rules! define_mat {
-  ($name:ident, $dim:expr) => {
+  ($name:ident, $dim:expr, $t:ident, $($p:ident),+) => {
     #[derive(Debug, Clone, Copy, Default)]
     pub struct $name {
       data: [f32; $dim * $dim],
     }
 
     impl $name {
-      pub fn from_row(data: &[f32; $dim * $dim]) -> Self {
+      pub fn from_row(data: [f32; $dim * $dim]) -> Self {
         Self { data: data.clone() }
       }
 
-      pub fn from_col(data: &[f32; $dim * $dim]) -> Self {
+      pub fn from_col(data: [f32; $dim * $dim]) -> Self {
         let mut mat = $name::zeros();
         for x in 0..$dim {
           for y in 0..$dim {
@@ -59,6 +59,21 @@ macro_rules! define_mat {
         }
         result
       }
+
+      pub fn set_col(&mut self, col: usize, column: $t) {
+        $(
+          self.set(col, 0, column.$p);
+        )+
+      }
+
+      pub fn get_col(&self, col: usize) -> $t {
+        let mut res  = $t::zero();
+        $(
+          res.$p = self.get(col, 0);
+        )+
+        res
+      }
+
     }
     impl Mul for $name {
       type Output = Self;
@@ -120,9 +135,9 @@ macro_rules! define_mat {
   };
 }
 
-define_mat!(Mat2, 2);
-define_mat!(Mat3, 3);
-define_mat!(Mat4, 4);
+define_mat!(Mat2, 2, Vec2, x, y);
+define_mat!(Mat3, 3, Vec3, x, y, z);
+define_mat!(Mat4, 4, Vec4, x, y, z, w);
 
 impl Mul<Vec4> for Mat4 {
   type Output = Vec4;
@@ -160,7 +175,7 @@ impl Mat2 {
     if d.abs() <= f32::EPSILON {
       return None;
     }
-    Some(Mat2::from_row(&[
+    Some(Mat2::from_row([
       self.get(1, 1) / d, -self.get(1, 0) / d,
       -self.get(0, 1) / d, self.get(0, 0) / d
     ]))
@@ -184,7 +199,7 @@ impl Mat3 {
     if d.abs() <= f32::EPSILON {
       return None;
     }
-    Some(Mat3::from_row(&[
+    Some(Mat3::from_row([
       self.get(1, 1) * self.get(2, 2) - self.get(2, 1) * self.get(1, 2),
       self.get(2, 0) * self.get(1, 2) - self.get(1, 0) * self.get(2, 2),
       self.get(1, 0) * self.get(2, 1) - self.get(2, 0) * self.get(1, 1),
@@ -211,17 +226,11 @@ impl Mul<Vec3> for Mat3 {
 }
 
 impl Mat3 {
-  pub fn set_col(&mut self, col: usize, column: Vec3) {
-    self.set(col, 0, column.x);
-    self.set(col, 1, column.y);
-    self.set(col, 2, column.z);
-  }
-
   pub fn get_orthogonal_basis(eye: Vec3, target: Vec3, up: Vec3) -> Self {
     let z = (eye - target).normalize();
     let x = up.cross(&z).normalize();
     let y = z.cross(&x).normalize();
-    Self::from_row(&[x.x, x.y, x.z, y.x, y.y, y.z, z.x, z.y, z.z])
+    Self::from_row([x.x, x.y, x.z, y.x, y.y, y.z, z.x, z.y, z.z])
   }
 }
 
@@ -287,7 +296,7 @@ impl Mat4 {
 
 #[rustfmt::skip]
 pub fn apply_translate(offset: &Vec3) -> Mat4 {
-  Mat4::from_row(&[
+  Mat4::from_row([
     1.0, 0.0, 0.0, offset.x,
     0.0, 1.0, 0.0, offset.y,
     0.0, 0.0, 1.0, offset.z,
@@ -298,7 +307,7 @@ pub fn apply_translate(offset: &Vec3) -> Mat4 {
 #[rustfmt::skip]
 pub fn apply_scale(scale: &Vec3) -> Mat4 {
   let Vec3{x,y,z} = scale;
-  Mat4::from_row(&[
+  Mat4::from_row([
     *x  , 0.0, 0.0, 0.0,
     0.0, *y  , 0.0, 0.0,
     0.0, 0.0, *z  , 0.0,
@@ -310,7 +319,7 @@ pub fn apply_scale(scale: &Vec3) -> Mat4 {
 pub fn apply_eular_rotate_y(angle: f32) -> Mat4 {
   let c = angle.cos();
   let s = angle.sin();
-  Mat4::from_row(&[
+  Mat4::from_row([
       c, 0.0,   s, 0.0,
     0.0, 1.0, 0.0, 0.0,
      -s, 0.0,   c, 0.0,
@@ -322,7 +331,7 @@ pub fn apply_eular_rotate_y(angle: f32) -> Mat4 {
 pub fn apply_eular_rotate_x(angle: f32) -> Mat4 {
   let c = angle.cos();
   let s = angle.sin();
-  Mat4::from_row(&[
+  Mat4::from_row([
     1.0, 0.0, 0.0, 0.0,
     0.0,   c,  -s, 0.0,
     0.0,   s,   c, 0.0,
@@ -334,7 +343,7 @@ pub fn apply_eular_rotate_x(angle: f32) -> Mat4 {
 pub fn apply_eular_rotate_z(angle: f32) -> Mat4 {
   let c = angle.cos();
   let s = angle.sin();
-  Mat4::from_row(&[
+  Mat4::from_row([
       c,  -s, 0.0, 0.0,
       s,   c, 0.0, 0.0,
     0.0, 0.0, 1.0, 0.0,
