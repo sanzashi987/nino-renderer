@@ -16,18 +16,18 @@ fn test() {
 
 fn cast_ray(origin: &Vec3, dir: &Vec3, sphere: &Sphere) -> Vec3 {
   if let Some(distance) = sphere.ray_intersect(origin, origin) {
-    return Vec3::new(0.4, 0.4, 0.3);
+    return Vec3::new(0.4, 0.4, 0.3) * 255.0;
   }
-  return Vec3::new(0.2, 0.7, 0.8);
+  return Vec3::new(0.2, 0.7, 0.8) * 255.0;
 }
 
 fn render_sphere(i: usize, j: usize, buffer: &mut Vec<u8>) {
-  let fov = 45.0f32;
+  let fov = 1.7f32;
   let x = (2.0 * (i as f32 + 0.5) / WINDOW_WIDTH - 1.0) * (fov / 2.0).tan() * WINDOW_WIDTH
     / WINDOW_HEIGHT;
   let y = -(2.0 * (j as f32 + 0.5) / WINDOW_HEIGHT - 1.0) * (fov / 2.0).tan();
   let dir = Vec3::new(x, y, -1.0).normalize();
-  let sphere = Sphere::new(Vec3::new(500.0, 700.0, 0.0), 10.0);
+  let sphere = Sphere::new(Vec3::new(-3.0, 0.0, -16.0), 2.0);
   let color = cast_ray(&Vec3::zero(), &dir, &sphere);
   let idx = (j as usize * WINDOW_WIDTH as usize + i as usize) * 3;
   buffer[idx] = color.x as u8;
