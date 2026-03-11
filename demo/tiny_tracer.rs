@@ -15,14 +15,14 @@ fn test() {
 }
 
 fn cast_ray(origin: &Vec3, dir: &Vec3, sphere: &Sphere) -> Vec3 {
-  if let Some(distance) = sphere.ray_intersect(origin, origin) {
+  if let Some(distance) = sphere.ray_intersect(origin, dir) {
     return Vec3::new(0.4, 0.4, 0.3) * 255.0;
   }
   return Vec3::new(0.2, 0.7, 0.8) * 255.0;
 }
 
 fn render_sphere(i: usize, j: usize, buffer: &mut Vec<u8>) {
-  let fov = 1.7f32;
+  let fov = 1.06f32;
   let x = (2.0 * (i as f32 + 0.5) / WINDOW_WIDTH - 1.0) * (fov / 2.0).tan() * WINDOW_WIDTH
     / WINDOW_HEIGHT;
   let y = -(2.0 * (j as f32 + 0.5) / WINDOW_HEIGHT - 1.0) * (fov / 2.0).tan();
