@@ -3,11 +3,16 @@ use math::Vec3;
 pub struct Sphere {
   pub center: Vec3,
   pub radius: f32,
+  pub material: Vec3,
 }
 
 impl Sphere {
-  pub fn new(center: Vec3, radius: f32) -> Self {
-    Self { center, radius }
+  pub fn new(center: Vec3, radius: f32, material: Vec3) -> Self {
+    Self {
+      center,
+      radius,
+      material,
+    }
   }
 
   /**
