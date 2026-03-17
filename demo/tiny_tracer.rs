@@ -100,7 +100,7 @@ fn test_render(i: usize, j: usize, buffer: &mut Vec<u8>) {
 fn main() {
   let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, false);
   let draw_image = sandbox.make_draw_image();
-
+  let mut periodic_intensity = 0f32;
   sandbox.run_fltk(move |_| {
     let mut buffer: Vec<u8> = vec![0; WINDOW_WIDTH as usize * WINDOW_HEIGHT as usize * 3];
     let mut spheres: Vec<Sphere> = vec![];
@@ -108,9 +108,18 @@ fn main() {
     let ivory = Material::new(Vec3::new(0.4, 0.4, 0.3), Vec2::new(0.6, 0.3), 50.);
     let red_rubber = Material::new(Vec3::new(0.3, 0.1, 0.1), Vec2::new(0.9, 0.1), 10.);
 
-    lights.push(Light::new(Vec3::new(-20.0, 20.0, 20.0), 1.5));
-    lights.push(Light::new(Vec3::new(30.0, 50.0, -25.0), 1.8));
-    lights.push(Light::new(Vec3::new(30.0, 20.0, 30.0), 1.7));
+    lights.push(Light::new(
+      Vec3::new(-20.0, 20.0, 20.0),
+      1.5 * periodic_intensity.cos(),
+    ));
+    lights.push(Light::new(
+      Vec3::new(30.0, 50.0, -25.0),
+      1.8 * periodic_intensity.cos(),
+    ));
+    lights.push(Light::new(
+      Vec3::new(30.0, 20.0, 30.0),
+      1.7 * periodic_intensity.cos(),
+    ));
 
     spheres.push(Sphere::new(Vec3::new(-3.0, 0.0, -16.0), 2.0, ivory));
     spheres.push(Sphere::new(Vec3::new(-1.0, -1.5, -12.0), 2.0, red_rubber));
@@ -123,6 +132,8 @@ fn main() {
         render_spheres(i, j, &mut buffer, &spheres, &lights);
       }
     }
+    periodic_intensity += f32::consts::PI / 2.0;
+    dbg!(periodic_intensity);
     draw_image.as_ref()(&buffer);
   });
 }
