@@ -1,13 +1,15 @@
 use math::Vec3;
 
+use super::material::Material;
+
 pub struct Sphere {
   pub center: Vec3,
   pub radius: f32,
-  pub material: Vec3,
+  pub material: Material,
 }
 
 impl Sphere {
-  pub fn new(center: Vec3, radius: f32, material: Vec3) -> Self {
+  pub fn new(center: Vec3, radius: f32, material: Material) -> Self {
     Self {
       center,
       radius,
