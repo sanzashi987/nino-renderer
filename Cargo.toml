@@ -52,3 +52,7 @@ path = "demo/three_renderer.rs"
 [[example]]
 name = "tinytracer"
 path = "demo/tiny_tracer.rs"
+
+[[example]]
+name = "raytracer"
+path = "demo/raytracer.rs"
