@@ -1,3 +1,25 @@
+use std::{cell::RefCell, f32::consts::PI, rc::Rc};
+
+const ORBIT_SENSITIVITY: f32 = 0.005;
+
+struct OrbitState {
+  azimuth: f32,
+  elevation: f32,
+  distance: f32,
+  target: math::Vec3,
+  last_mouse: Option<(i32, i32)>,
+}
+
+impl OrbitState {
+  fn camera_position(&self) -> math::Vec3 {
+    math::Vec3::new(
+      self.target.x + self.distance * self.elevation.cos() * self.azimuth.sin(),
+      self.target.y + self.distance * self.elevation.sin(),
+      self.target.z + self.distance * self.elevation.cos() * self.azimuth.cos(),
+    )
+  }
+}
+
 const RESOURCE_PATH: &str = "./resources";
 const FOLDER: &str = "african_head";
 const MODEL: &str = "african_head.obj";
@@ -146,8 +168,9 @@ fn main() {
 
   // let scene = from_obj_path(&relative_path).unwrap();
 
-  let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, false);
+  // let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, false);
   // let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, true);
+  let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, true);
   let draw_image = sandbox.make_draw_image();
 
   // let _ = scene.textures.load(tag_path, "african_head_diffuse");
@@ -165,7 +188,7 @@ fn main() {
 
   // lesson 4, 5
   // let mut rotation = -80.0f32;
-  let mut rotation = 0.0f32;
+  // let mut rotation = 0.0f32;
 
   let mut renderer = Renderer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
 
@@ -176,7 +199,7 @@ fn main() {
     "african_head_nm_tangent",
   );
   renderer.load_texture(file!("african_head_spec.tga"), "african_head_spec");
-  renderer.camera.move_to(Vec3::new(1.0, 2.0, 5.0));
+  // renderer.camera.move_to(Vec3::new(1.0, 2.0, 5.0));
   // renderer.camera.move_to(Vec3::new(5.0, 5.0, 5.0));
 
   let mut material = Material::default();
@@ -184,23 +207,62 @@ fn main() {
   // material.shader = make_gouraud_shader(Vec3::new(1.0, 1.0, 1.0));
   material.shader = make_phong_shader(Vec3::new(1.0, 1.0, 1.0));
   // material.shader = make_shadow_shader();
-  renderer.camera.lookat(Vec3::new(0.0, 0.0, 0.0));
+  // renderer.camera.lookat(Vec3::new(0.0, 0.0, 0.0));
   // renderer.camera.set_rotation(Vec3::new(0.0, 0.0, 0.0));
 
   let scene = from_obj_path(MODEL_PATH).unwrap();
 
-  // sandbox.run_fltk(move |_| draw_image.as_ref()(color_buffer.data()));
-  sandbox.run_fltk(move |_| {
-    let model = math::apply_translate(&math::Vec3::new(0.0, 0.0, 0.0))
-      * math::apply_eular_rotate_y(rotation.to_radians());
+  // initial camera position matches old Vec3::new(1.0, 2.0, 5.0)
+  let orbit = Rc::new(RefCell::new(OrbitState {
+    azimuth: 0.197,
+    elevation: 0.381,
+    distance: 5.477,
+    target: math::Vec3::new(0.0, 0.0, 0.0),
+    last_mouse: None,
+  }));
+  let orbit_draw = orbit.clone();
 
-    // println!("{:?}", model);
+  sandbox.run_fltk_with_events(
+    move |_| {
+      let state = orbit_draw.borrow();
+      let pos = state.camera_position();
+      let target = state.target;
+      drop(state);
+      renderer.camera.move_to(pos);
+      renderer.camera.lookat(target);
 
-    renderer.render(&scene, model, &material);
-    let color = renderer.take_color();
-    draw_image.as_ref()(color.data());
-    // rotation -= 10.0;
-  });
+      let model = math::apply_translate(&math::Vec3::new(0.0, 0.0, 0.0));
+      renderer.render(&scene, model, &material);
+      let color = renderer.take_color();
+      draw_image.as_ref()(color.data());
+    },
+    move |_, event| {
+      use fltk::enums::Event;
+      match event {
+        Event::Push => {
+          orbit.borrow_mut().last_mouse = Some((fltk::app::event_x(), fltk::app::event_y()));
+          true
+        }
+        Event::Released => {
+          orbit.borrow_mut().last_mouse = None;
+          true
+        }
+        Event::Drag => {
+          let (mx, my) = (fltk::app::event_x(), fltk::app::event_y());
+          let mut state = orbit.borrow_mut();
+          if let Some((lx, ly)) = state.last_mouse {
+            let dx = -1.0 * (mx - lx) as f32 * ORBIT_SENSITIVITY;
+            let dy = -1.0 * (my - ly) as f32 * ORBIT_SENSITIVITY;
+            state.azimuth += dx;
+            state.elevation = (state.elevation - dy).clamp(-PI / 2.0 + 0.01, PI / 2.0 - 0.01);
+            state.last_mouse = Some((mx, my));
+          }
+          true
+        }
+        _ => false,
+      }
+    },
+  );
 
   // println!("{:?}", scene);
 }

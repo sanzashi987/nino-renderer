@@ -1,4 +1,4 @@
-use fltk::{self, app::set_visual, enums::Mode, prelude::*, text, window::Window};
+use fltk::{self, app::set_visual, enums::Mode, prelude::*, window::Window};
 
 pub struct Sandbox {
   width: i32,
@@ -36,6 +36,26 @@ impl Sandbox {
       });
     }
 
+    app.run().unwrap();
+  }
+
+  pub fn run_fltk_with_events<F, H>(&self, cb: F, event_handler: H)
+  where
+    F: FnMut(&mut Window) + 'static,
+    H: FnMut(&mut Window, fltk::enums::Event) -> bool + 'static,
+  {
+    let app = fltk::app::App::default();
+    let mut window = Window::new(100, 100, self.width, self.height, "runner");
+    window.draw(cb);
+    window.handle(event_handler);
+    window.end();
+    set_visual(Mode::Rgb).unwrap();
+    window.show();
+    if self.redraw {
+      fltk::app::add_idle3(move |_| {
+        window.redraw();
+      });
+    }
     app.run().unwrap();
   }
 

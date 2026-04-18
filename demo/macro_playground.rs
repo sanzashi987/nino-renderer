@@ -14,7 +14,7 @@ struct Test {
 }
 impl Test {
   pub fn add(&mut self, c: impl ITrait) {
-    self.children.push(Box::new(c))
+    // self.children.push(Box::new(c))
   }
 }
 
