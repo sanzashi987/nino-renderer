@@ -68,7 +68,11 @@ impl ParseLine<Scene> for ObjParserImpl {
                 [_, second] => {
                   texture_index = Some(parse_num!(second, u32) - 1);
                 }
-                _ => return Err(ParserError::InvalidSyntax("face vertex format".to_string())),
+                [_] => {}
+                _ => {
+                  dbg!(indices);
+                  return Err(ParserError::InvalidSyntax("face vertex format".to_string()))
+                },
               }
 
               let vertex_index = parse_num!(indices[0], u32) - 1;
@@ -94,7 +98,14 @@ impl ParseLine<Scene> for ObjParserImpl {
 
 pub type ObjParser<'a, 'b> = Parser<'a, 'b, Scene, ObjParserImpl>;
 
-pub fn load_obj(relative_path: &str) -> Result<ObjParser, ParserError> {
+pub fn load_obj(
+  relative_path: &'static str,
+  name: &'static str,
+) -> Result<ObjParser<'static, 'static>, ParserError> {
   let fullpath = std::path::Path::new(relative_path);
-  ObjParser::new(fullpath)
+  let mut parser = ObjParser::new(fullpath);
+  if let Ok(p) = &mut parser {
+    p.get_data().add_model(name.to_string());
+  }
+  parser
 }

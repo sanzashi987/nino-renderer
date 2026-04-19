@@ -183,8 +183,8 @@ impl Scene {
   pub fn add_model(&mut self, model: Model) {}
 }
 
-pub fn from_obj_path(relative_path: &str) -> Result<Scene, ParserError> {
-  let mut parser = load_obj(relative_path)?;
+pub fn from_obj_path(relative_path: &'static str, name: &'static str) -> Result<Scene, ParserError> {
+  let mut parser = load_obj(relative_path,name)?;
   let obj_scene = parser.parse()?;
 
   let mut scene = Scene::from_obj_scene(obj_scene);

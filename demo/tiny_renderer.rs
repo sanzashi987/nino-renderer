@@ -43,7 +43,10 @@ use tinyrenderer::{
   obj_loader::material::{self, Material, Texture},
   renderer::{
     renderer::Renderer,
-    shader::{gouraud::make_gouraud_shader, phong::make_phong_shader, shadow::make_shadow_shader},
+    shader::{
+      gouraud::make_gouraud_shader, phong::make_phong_shader, shadow::make_shadow_shader,
+      wireframe::make_wireframe_shader,
+    },
   },
   shade_triangle::shade_triangle_barycentric,
 };
@@ -195,7 +198,7 @@ fn main() {
 
   let mut renderer = Renderer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
 
-  renderer.load_texture(file!("sample_0001.mtl"), "hand_material");
+  // renderer.load_texture(file!("sample_0001.mtl"), "hand_material");
   // renderer.load_texture(file!("african_head_diffuse.tga"), "african_head_diffuse");
   // renderer.load_texture(file!("african_head_nm.tga"), "african_head_nm");
   // renderer.load_texture(
@@ -210,12 +213,13 @@ fn main() {
   let mut material = Material::default();
 
   // material.shader = make_gouraud_shader(Vec3::new(1.0, 1.0, 1.0));
-  material.shader = make_phong_shader(Vec3::new(1.0, 1.0, 1.0));
+  material.shader = make_wireframe_shader(0.02);
+  // material.shader = make_phong_shader(Vec3::new(1.0, 1.0, 1.0));
   // material.shader = make_shadow_shader();
   // renderer.camera.lookat(Vec3::new(0.0, 0.0, 0.0));
   // renderer.camera.set_rotation(Vec3::new(0.0, 0.0, 0.0));
 
-  let scene = from_obj_path(OBJ_PATH).unwrap();
+  let scene = from_obj_path(OBJ_PATH, "hand").unwrap();
 
   // initial camera position matches old Vec3::new(1.0, 2.0, 5.0)
   let orbit = Rc::new(RefCell::new(OrbitState {
@@ -262,6 +266,17 @@ fn main() {
             state.elevation = (state.elevation - dy).clamp(-PI / 2.0 + 0.01, PI / 2.0 - 0.01);
             state.last_mouse = Some((mx, my));
           }
+          true
+        }
+        Event::MouseWheel => {
+          use fltk::app::MouseWheel;
+          let delta = match fltk::app::event_dy() {
+            MouseWheel::Up => -1.0f32,
+            MouseWheel::Down => 1.0f32,
+            _ => 0.0f32,
+          };
+          let mut state = orbit.borrow_mut();
+          state.distance = (state.distance - delta * 0.5).max(0.5);
           true
         }
         _ => false,

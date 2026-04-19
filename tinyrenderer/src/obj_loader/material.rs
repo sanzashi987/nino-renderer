@@ -1,7 +1,7 @@
 use super::shader::Shader;
-use math::{Vec2, Vec3, Vec4};
 use crate::utils::swap_and_move;
 use image::{GenericImageView, ImageError};
+use math::{Vec2, Vec3, Vec4};
 use std::path::Path;
 use std::{collections::HashMap, fmt::Debug};
 
@@ -110,11 +110,8 @@ pub struct MtlStores {
 }
 
 impl MtlStores {
-  pub fn get_mutates(&mut self) -> Result<(&mut Material, &mut Textures), ParserError> {
-    self
-      .materials
-      .get_mutates()
-      .map(|m| (m, &mut self.textures))
+  pub fn get_mutates(&mut self) -> (Option<&mut Material>, &mut Textures) {
+    (self.materials.get_mutates(), &mut self.textures)
   }
 }
 
@@ -139,10 +136,10 @@ impl Materials {
     self.auto_incre_id += 1;
   }
 
-  pub fn get_mutates(&mut self) -> Result<&mut Material, ParserError> {
-
-    dbg!("materials");
-    dbg!(&self.data);
+  // pub fn get_mutates(&mut self) -> Result<&mut Material, ParserError> {
+  pub fn get_mutates(&mut self) -> Option<&mut Material> {
+    // dbg!("materials");
+    // dbg!(&self.data);
 
     let material = if let Some(name) = &self.last {
       self.data.get_mut(name)
@@ -150,9 +147,10 @@ impl Materials {
       None
     };
 
-    let material = material.ok_or(ParserError::MaterialNotFound)?;
-
-    Ok(material)
+    material
+    // let material = material.ok_or(ParserError::MaterialNotFound)?;
+    //
+    // Ok(material)
 
     // Ok((material, &mut self.textures))
   }
