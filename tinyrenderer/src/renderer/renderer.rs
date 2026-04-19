@@ -175,7 +175,7 @@ impl Renderer {
                 &barycentric,
                 &uniforms,
                 &varyings,
-                &self.stores.texutres,
+                &self.stores.textures,
               );
 
               // let material = model.get_material().unwrap();
@@ -192,7 +192,7 @@ impl Renderer {
   }
 
   pub fn load_texture(&mut self, filepath: &str, name: &str) {
-    let _ = self.stores.texutres.load(filepath, name);
+    let _ = self.stores.textures.load(filepath, name);
   }
 
   pub fn take_color(&mut self) -> ColorBuffer {

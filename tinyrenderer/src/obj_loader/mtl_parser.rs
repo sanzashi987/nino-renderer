@@ -2,8 +2,8 @@
 use math::Vec3;
 
 use super::{
-  defines::{self, parse_num, parse_token, parse_token_ok, ParserError},
-  material::{MoveMaterials, Mtl, MtlStores, Textures},
+  defines::{parse_token, parse_token_ok, ParserError},
+  material::{MoveMaterials, Mtl, MtlStores},
   parser::{ParseLine, Parser},
 };
 

@@ -21,10 +21,13 @@ impl OrbitState {
 }
 
 const RESOURCE_PATH: &str = "./resources";
-const FOLDER: &str = "african_head";
-const MODEL: &str = "african_head.obj";
+const FOLDER: &str = "freihand";
+// const FOLDER: &str = "african_head";
+// const MODEL: &str = "african_head.obj";
 
-const MODEL_PATH: &str = "./resources/african_head/african_head.obj";
+const OBJ_PATH: &str = "./resources/freihand/sample_0001.obj";
+// const OBJ_PATH: &str = "./resources/coke/coke.obj";
+// const OBJ_PATH: &str = "./resources/african_head/african_head.obj";
 // const FOLDER: &str = "Red";
 // const MODEL: &str = "Red.obj";
 // const FOLDER: &str = "plane";
@@ -192,13 +195,15 @@ fn main() {
 
   let mut renderer = Renderer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
 
-  renderer.load_texture(file!("african_head_diffuse.tga"), "african_head_diffuse");
-  renderer.load_texture(file!("african_head_nm.tga"), "african_head_nm");
-  renderer.load_texture(
-    file!("african_head_nm_tangent.tga"),
-    "african_head_nm_tangent",
-  );
-  renderer.load_texture(file!("african_head_spec.tga"), "african_head_spec");
+  renderer.load_texture(file!("sample_0001.mtl"), "hand_material");
+  // renderer.load_texture(file!("african_head_diffuse.tga"), "african_head_diffuse");
+  // renderer.load_texture(file!("african_head_nm.tga"), "african_head_nm");
+  // renderer.load_texture(
+  //   file!("african_head_nm_tangent.tga"),
+  //   "african_head_nm_tangent",
+  // );
+  // renderer.load_texture(file!("african_head_spec.tga"), "african_head_spec");
+  // renderer.load_texture(file!("sample_0001.tga"), "sample_0001");
   // renderer.camera.move_to(Vec3::new(1.0, 2.0, 5.0));
   // renderer.camera.move_to(Vec3::new(5.0, 5.0, 5.0));
 
@@ -210,7 +215,7 @@ fn main() {
   // renderer.camera.lookat(Vec3::new(0.0, 0.0, 0.0));
   // renderer.camera.set_rotation(Vec3::new(0.0, 0.0, 0.0));
 
-  let scene = from_obj_path(MODEL_PATH).unwrap();
+  let scene = from_obj_path(OBJ_PATH).unwrap();
 
   // initial camera position matches old Vec3::new(1.0, 2.0, 5.0)
   let orbit = Rc::new(RefCell::new(OrbitState {

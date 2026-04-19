@@ -106,7 +106,7 @@ pub type TexturePointer = TextureMap<String>;
 #[derive(Debug, Default)]
 pub struct MtlStores {
   pub materials: Materials,
-  pub texutres: Textures,
+  pub textures: Textures,
 }
 
 impl MtlStores {
@@ -114,7 +114,7 @@ impl MtlStores {
     self
       .materials
       .get_mutates()
-      .map(|m| (m, &mut self.texutres))
+      .map(|m| (m, &mut self.textures))
   }
 }
 
@@ -140,6 +140,10 @@ impl Materials {
   }
 
   pub fn get_mutates(&mut self) -> Result<&mut Material, ParserError> {
+
+    dbg!("materials");
+    dbg!(&self.data);
+
     let material = if let Some(name) = &self.last {
       self.data.get_mut(name)
     } else {

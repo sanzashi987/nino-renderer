@@ -31,6 +31,7 @@ impl ParseLine<Scene> for ObjParserImpl {
         let materials = scene.move_out_materials();
 
         let mut relative_path = working_dir.to_string();
+        relative_path.push_str("/");
         relative_path.push_str(&filename);
 
         let mut parser = load_mtl(&relative_path, materials)?;

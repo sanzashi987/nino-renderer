@@ -12,6 +12,7 @@ pub struct FileLoader<'a> {
 
 impl<'a> FileLoader<'a> {
   pub fn new(filename: &'a Path) -> Result<Self, Error> {
+    dbg!(filename);
     let file = File::open(filename)?;
     let reader: BufReader<File> = BufReader::new(file);
 
