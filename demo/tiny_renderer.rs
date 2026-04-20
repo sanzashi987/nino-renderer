@@ -213,7 +213,7 @@ fn main() {
   let mut material = Material::default();
 
   // material.shader = make_gouraud_shader(Vec3::new(1.0, 1.0, 1.0));
-  material.shader = make_wireframe_shader(0.02);
+  material.shader = make_wireframe_shader(0.01, Vec3::new(1.0, 1.0, 1.0));
   // material.shader = make_phong_shader(Vec3::new(1.0, 1.0, 1.0));
   // material.shader = make_shadow_shader();
   // renderer.camera.lookat(Vec3::new(0.0, 0.0, 0.0));

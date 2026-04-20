@@ -84,7 +84,7 @@ impl DepthBuffer {
 impl ColorBuffer {
   pub fn new(w: u32, h: u32) -> Self {
     Self {
-      data: vec![0; (w * h * 3) as usize],
+      data: vec![255; (w * h * 3) as usize],
       w,
       h,
     }
