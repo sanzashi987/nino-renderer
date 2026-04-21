@@ -25,7 +25,7 @@ const FOLDER: &str = "freihand";
 // const FOLDER: &str = "african_head";
 // const MODEL: &str = "african_head.obj";
 
-const OBJ_PATH: &str = "./resources/freihand/sample_0001.obj";
+const OBJ_PATH: &str = "./resources/freihand";
 // const OBJ_PATH: &str = "./resources/coke/coke.obj";
 // const OBJ_PATH: &str = "./resources/african_head/african_head.obj";
 // const FOLDER: &str = "Red";
@@ -240,7 +240,8 @@ fn main() {
       renderer.camera.move_to(pos);
       renderer.camera.lookat(target);
 
-      let model = math::apply_translate(&math::Vec3::new(0.0, 0.0, 0.0));
+      let model = math::apply_translate(&math::Vec3::new(0.0, 0.0, 0.0))
+        * math::apply_eular_rotate_y(180f32.to_radians());
       renderer.render(&scene, model, &material);
       let color = renderer.take_color();
       draw_image.as_ref()(color.data());

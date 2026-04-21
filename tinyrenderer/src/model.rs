@@ -183,8 +183,37 @@ impl Scene {
   pub fn add_model(&mut self, model: Model) {}
 }
 
-pub fn from_obj_path(relative_path: &'static str, name: &'static str) -> Result<Scene, ParserError> {
-  let mut parser = load_obj(relative_path,name)?;
+pub fn from_obj_path(path: &str, name: &'static str) -> Result<Scene, ParserError> {
+  let p = std::path::Path::new(path);
+
+  let obj_path: &'static str = if p.is_dir() {
+    let entry = std::fs::read_dir(p)
+      .map_err(ParserError::IoError)?
+      .filter_map(|e| e.ok())
+      .find(|e| e.path().extension().map_or(false, |ext| ext == "obj"))
+      .ok_or_else(|| {
+        ParserError::IoError(std::io::Error::new(
+          std::io::ErrorKind::NotFound,
+          "no .obj file found in directory",
+        ))
+      })?;
+    let s = entry
+      .path()
+      .to_str()
+      .ok_or_else(|| {
+        ParserError::IoError(std::io::Error::new(
+          std::io::ErrorKind::InvalidData,
+          "path is not valid UTF-8",
+        ))
+      })?
+      .to_string();
+    Box::leak(s.into_boxed_str())
+  } else {
+    // path is a &'static str literal in all current call sites
+    Box::leak(path.to_string().into_boxed_str())
+  };
+
+  let mut parser = load_obj(obj_path, name)?;
   let obj_scene = parser.parse()?;
 
   let mut scene = Scene::from_obj_scene(obj_scene);
