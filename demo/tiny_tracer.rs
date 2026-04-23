@@ -97,7 +97,7 @@ fn test_render(i: usize, j: usize, buffer: &mut Vec<u8>) {
   buffer[idx + 2] = 0;
 }
 
-fn main() {
+fn main_() {
   let sandbox = sandbox::Sandbox::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32, false);
   let draw_image = sandbox.make_draw_image();
   let mut periodic_intensity = 0f32;
@@ -136,4 +136,16 @@ fn main() {
     dbg!(periodic_intensity);
     draw_image.as_ref()(&buffer);
   });
+}
+
+fn main() {
+  let aspect_ratio: f32 = 16.0 / 9.0;
+  let image_width = 400;
+
+  let image_height = (image_width as f32 / aspect_ratio) as i32;
+  let image_height = if image_height < 1 { 1 } else { image_height };
+
+  let focal_length = 1.0f32;
+  let viewport_height = 2.0f32;
+  let viewport_width = viewport_height * (image_width as f32 / image_height as f32);
 }
