@@ -18,3 +18,6 @@ impl Ray {
     return self.origin + self.direction * t;
   }
 }
+
+
+// pub struct RayColor

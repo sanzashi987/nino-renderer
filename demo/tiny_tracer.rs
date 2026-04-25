@@ -1,9 +1,11 @@
 use core::f32;
 
+use image::buffer;
 use math::{Vec2, Vec3};
 use tinytracer::object::{
   light::{self, Light},
   material::Material,
+  ray::Ray,
   sphere::Sphere,
 };
 
@@ -138,13 +140,23 @@ fn main_() {
   });
 }
 
+fn ray_color(r: &Ray) -> Vec3 {
+  let unit_dir = r.direction.normalize();
+  let a = 0.5 * (unit_dir.y + 1.0);
+
+  return Vec3::new(1.0, 1.0, 1.0) * (1.0 - a) + Vec3::new(0.5, 0.7, 1.0) * a;
+}
+
 fn main() {
   let aspect_ratio: f32 = 16.0 / 9.0;
-  let image_width = 400;
+  let image_width = 1920;
   let camera_center = Vec3::zero();
 
   let image_height = (image_width as f32 / aspect_ratio) as i32;
   let image_height = if image_height < 1 { 1 } else { image_height };
+
+  let sandbox = sandbox::Sandbox::new(image_width, image_height, false);
+  let draw_image = sandbox.make_draw_image();
 
   let focal_length = 1.0f32;
   let viewport_height = 2.0f32;
@@ -159,4 +171,26 @@ fn main() {
 
   let viewport_upper_left =
     camera_center - Vec3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+  let pixel00_loc = viewport_upper_left + (pixel_delta_u + pixel_delta_v) * 0.5;
+
+  sandbox.run_fltk(move |_| {
+    let mut buffer: Vec<u8> = vec![0; image_width as usize * image_height as usize * 3];
+
+    for j in 0..image_height {
+      for i in 0..image_width {
+        let pixel_center =
+          pixel00_loc + (pixel_delta_u * (i as f32)) + (pixel_delta_v * (j as f32));
+        let ray_direction = pixel_center - camera_center;
+
+        let r = Ray::new(camera_center, ray_direction);
+        let color = ray_color(&r) * 255.0;
+
+        let idx = (j as usize * image_width as usize + i as usize) * 3;
+        buffer[idx] = (color.x as u8).min(255);
+        buffer[idx + 1] = (color.y as u8).min(255);
+        buffer[idx + 2] = (color.z as u8).min(255);
+      }
+    }
+    draw_image.as_ref()(&buffer);
+  })
 }
