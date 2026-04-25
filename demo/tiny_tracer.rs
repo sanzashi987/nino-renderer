@@ -141,6 +141,7 @@ fn main_() {
 fn main() {
   let aspect_ratio: f32 = 16.0 / 9.0;
   let image_width = 400;
+  let camera_center = Vec3::zero();
 
   let image_height = (image_width as f32 / aspect_ratio) as i32;
   let image_height = if image_height < 1 { 1 } else { image_height };
@@ -148,4 +149,14 @@ fn main() {
   let focal_length = 1.0f32;
   let viewport_height = 2.0f32;
   let viewport_width = viewport_height * (image_width as f32 / image_height as f32);
+
+  // see ![viewport](../images/viewport.jpg)
+  let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
+  let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
+
+  let pixel_delta_u = viewport_u / (image_width as f32);
+  let pixel_delta_v = viewport_v / (image_height as f32);
+
+  let viewport_upper_left =
+    camera_center - Vec3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
 }
