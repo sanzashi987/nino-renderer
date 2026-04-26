@@ -141,8 +141,11 @@ fn main_() {
 }
 
 fn ray_color(r: &Ray, sphere: &Sphere) -> Vec3 {
-  if let Some(_) = sphere.hit(r) {
-    return Vec3::new(1.0, 0.0, 0.0);
+  if let Some(first_intersect) = sphere.hit(r) {
+    let normal = (r.at(first_intersect) - sphere.center).normalize();
+    // map normal from [-1,1] to [0,1]
+    return Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5;
+    // return Vec3::new(1.0, 0.0, 0.0);
   }
 
   let unit_dir = r.direction.normalize();
