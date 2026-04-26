@@ -140,7 +140,11 @@ fn main_() {
   });
 }
 
-fn ray_color(r: &Ray) -> Vec3 {
+fn ray_color(r: &Ray, sphere: &Sphere) -> Vec3 {
+  if let Some(_) = sphere.hit(r) {
+    return Vec3::new(1.0, 0.0, 0.0);
+  }
+
   let unit_dir = r.direction.normalize();
   let a = 0.5 * (unit_dir.y + 1.0);
 
@@ -149,7 +153,7 @@ fn ray_color(r: &Ray) -> Vec3 {
 
 fn main() {
   let aspect_ratio: f32 = 16.0 / 9.0;
-  let image_width = 1920;
+  let image_width = 400;
   let camera_center = Vec3::zero();
 
   let image_height = (image_width as f32 / aspect_ratio) as i32;
@@ -175,6 +179,9 @@ fn main() {
 
   sandbox.run_fltk(move |_| {
     let mut buffer: Vec<u8> = vec![0; image_width as usize * image_height as usize * 3];
+    let ivory = Material::new(Vec3::new(0.4, 0.4, 0.3), Vec2::new(0.6, 0.3), 50.);
+
+    let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, ivory);
 
     for j in 0..image_height {
       for i in 0..image_width {
@@ -183,7 +190,7 @@ fn main() {
         let ray_direction = pixel_center - camera_center;
 
         let r = Ray::new(camera_center, ray_direction);
-        let color = ray_color(&r) * 255.0;
+        let color = ray_color(&r, &sphere) * 255.0;
 
         let idx = (j as usize * image_width as usize + i as usize) * 3;
         buffer[idx] = (color.x as u8).min(255);

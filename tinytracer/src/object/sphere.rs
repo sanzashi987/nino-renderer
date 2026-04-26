@@ -1,5 +1,7 @@
 use math::Vec3;
 
+use crate::object::ray::Ray;
+
 use super::material::Material;
 
 pub struct Sphere {
@@ -25,7 +27,7 @@ impl Sphere {
     let to_center_projected_at_dir = to_center * *ray_dir; // dot product
     let ray_to_center =
       to_center * to_center - to_center_projected_at_dir * to_center_projected_at_dir;
-    let raduis_exq = self.radius.exp2();
+    let raduis_exq = self.radius.powi(2);
     if ray_to_center > raduis_exq {
       return None;
     }
@@ -45,5 +47,9 @@ impl Sphere {
     }
 
     return Some(first_intersect);
+  }
+
+  pub fn hit(&self, ray: &Ray) -> Option<f32> {
+    return self.ray_intersect(&ray.origin, &ray.direction);
   }
 }
