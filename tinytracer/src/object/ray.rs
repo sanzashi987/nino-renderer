@@ -19,5 +19,18 @@ impl Ray {
   }
 }
 
+pub struct HitConfig {
+  pub t_min: f32,
+  pub t_max: f32,
+}
+
+pub struct HitRecord {
+  pub point: Vec3,
+  pub normal: Vec3,
+  pub t: f32,
+}
+pub trait Hittable {
+  fn hit(&self, ray: &Ray, config: Option<HitConfig>) -> Option<HitRecord>;
+}
 
 // pub struct RayColor

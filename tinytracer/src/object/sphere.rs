@@ -1,6 +1,8 @@
+use core::f32;
+
 use math::Vec3;
 
-use crate::object::ray::Ray;
+use crate::object::ray::{HitConfig, HitRecord, Hittable, Ray};
 
 use super::material::Material;
 
@@ -48,8 +50,24 @@ impl Sphere {
 
     return Some(first_intersect);
   }
+}
 
-  pub fn hit(&self, ray: &Ray) -> Option<f32> {
-    return self.ray_intersect(&ray.origin, &ray.direction);
+impl Hittable for Sphere {
+  fn hit(&self, ray: &Ray, config: Option<HitConfig>) -> Option<HitRecord> {
+    let HitConfig { t_min, t_max } = config.unwrap_or(HitConfig {
+      t_min: 0.001,
+      t_max: f32::INFINITY,
+    });
+
+    if let Some(t) = self.ray_intersect(&ray.origin, &ray.direction) {
+      if t <= t_min || t >= t_max {
+        return None;
+      }
+
+      let normal = (ray.at(t) - self.center).normalize();
+      let point = ray.at(t);
+      return Some(HitRecord { point, normal, t });
+    }
+    return None;
   }
 }

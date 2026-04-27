@@ -5,7 +5,7 @@ use math::{Vec2, Vec3};
 use tinytracer::object::{
   light::{self, Light},
   material::Material,
-  ray::Ray,
+  ray::{Hittable, Ray},
   sphere::Sphere,
 };
 
@@ -141,8 +141,8 @@ fn main_() {
 }
 
 fn ray_color(r: &Ray, sphere: &Sphere) -> Vec3 {
-  if let Some(first_intersect) = sphere.hit(r) {
-    let normal = (r.at(first_intersect) - sphere.center).normalize();
+  if let Some(hit) = sphere.hit(r, None) {
+    let normal = hit.normal;
     // map normal from [-1,1] to [0,1]
     return Vec3::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5;
     // return Vec3::new(1.0, 0.0, 0.0);
