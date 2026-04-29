@@ -65,8 +65,7 @@ impl Hittable for Sphere {
       }
 
       let normal = (ray.at(t) - self.center).normalize();
-      let point = ray.at(t);
-      return Some(HitRecord { point, normal, t });
+      return Some(HitRecord::new(ray, normal, t));
     }
     return None;
   }
