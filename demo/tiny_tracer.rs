@@ -7,6 +7,7 @@ use tinytracer::object::{
   material::Material,
   ray::{Hittable, Ray},
   sphere::Sphere,
+  world::World,
 };
 
 const WINDOW_WIDTH: f32 = 1024.0;
@@ -155,6 +156,7 @@ fn ray_color(r: &Ray, sphere: &Sphere) -> Vec3 {
 }
 
 fn main() {
+  // Image
   let aspect_ratio: f32 = 16.0 / 9.0;
   let image_width = 400;
   let camera_center = Vec3::zero();
@@ -165,6 +167,12 @@ fn main() {
   let sandbox = sandbox::Sandbox::new(image_width, image_height, false);
   let draw_image = sandbox.make_draw_image();
 
+  // World
+  let world = World::new();
+  let ivory = Material::new(Vec3::new(0.4, 0.4, 0.3), Vec2::new(0.6, 0.3), 50.);
+  let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, ivory);
+
+  // Camera
   let focal_length = 1.0f32;
   let viewport_height = 2.0f32;
   let viewport_width = viewport_height * (image_width as f32 / image_height as f32);
@@ -182,9 +190,6 @@ fn main() {
 
   sandbox.run_fltk(move |_| {
     let mut buffer: Vec<u8> = vec![0; image_width as usize * image_height as usize * 3];
-    let ivory = Material::new(Vec3::new(0.4, 0.4, 0.3), Vec2::new(0.6, 0.3), 50.);
-
-    let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, ivory);
 
     for j in 0..image_height {
       for i in 0..image_width {

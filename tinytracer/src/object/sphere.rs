@@ -54,10 +54,7 @@ impl Sphere {
 
 impl Hittable for Sphere {
   fn hit(&self, ray: &Ray, config: Option<HitConfig>) -> Option<HitRecord> {
-    let HitConfig { t_min, t_max } = config.unwrap_or(HitConfig {
-      t_min: 0.001,
-      t_max: f32::INFINITY,
-    });
+    let HitConfig { t_min, t_max } = config.unwrap_or(HitConfig::default());
 
     if let Some(t) = self.ray_intersect(&ray.origin, &ray.direction) {
       if t <= t_min || t >= t_max {

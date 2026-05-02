@@ -18,10 +18,19 @@ impl Ray {
     return self.origin + self.direction * t;
   }
 }
-
+#[derive(Debug, Clone, Copy)]
 pub struct HitConfig {
   pub t_min: f32,
   pub t_max: f32,
+}
+
+impl Default for HitConfig {
+  fn default() -> Self {
+    Self {
+      t_min: 0.001,
+      t_max: f32::INFINITY,
+    }
+  }
 }
 
 pub struct HitRecord {
