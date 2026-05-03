@@ -1,3 +1,5 @@
+use math::Vec3;
+
 use super::ray::{HitConfig, HitRecord, Hittable, Ray};
 
 pub struct World {
@@ -34,5 +36,16 @@ impl World {
   }
   pub fn clear(&mut self) {
     self.objects.clear();
+  }
+
+  pub fn render(&self, ray: &Ray) -> Vec3 {
+    if let Some(rec) = self.hit(ray, None) {
+      return (rec.normal + Vec3::new(1.0, 1.0, 1.0)) * 0.5;
+    }
+
+    let unit_dir = ray.direction.normalize();
+    let a = 0.5 * (unit_dir.y + 1.0);
+
+    return Vec3::new(1.0, 1.0, 1.0) * (1.0 - a) + Vec3::new(0.5, 0.7, 1.0) * a;
   }
 }

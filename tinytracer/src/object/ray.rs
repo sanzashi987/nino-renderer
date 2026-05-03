@@ -24,6 +24,18 @@ pub struct HitConfig {
   pub t_max: f32,
 }
 
+impl HitConfig {
+  pub fn size(&self) -> f32 {
+    self.t_max - self.t_min
+  }
+  pub fn containes(&self, x: f32) -> bool {
+    x >= self.t_min && x <= self.t_max
+  }
+  pub fn surrounds(&self, x: f32) -> bool {
+    self.t_min < x && x < self.t_max
+  }
+}
+
 impl Default for HitConfig {
   fn default() -> Self {
     Self {
