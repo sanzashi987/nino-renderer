@@ -1,3 +1,4 @@
+use rand::{Rng, RngExt};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 macro_rules! define_vec_op {
@@ -129,6 +130,23 @@ macro_rules! define_vec {
         Self {
           $(
             $p: self.$p/length,
+          )+
+        }
+      }
+
+      pub fn random() ->Self {
+        Self {
+          $(
+            $p: rand::random(),
+          )+
+        }
+      }
+
+      pub fn random_with_range(min:f32, max:f32) ->Self {
+        let mut rng = rand::rng();
+        Self {
+          $(
+            $p: rng.random_range(min..max),
           )+
         }
       }
