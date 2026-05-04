@@ -4,7 +4,6 @@ use tinytracer::object::{
   camera::Camera,
   light::{self, Light},
   material::Material,
-  ray::{Hittable, Ray},
   sphere::Sphere,
   world::World,
 };

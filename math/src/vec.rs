@@ -63,7 +63,7 @@ macro_rules! define_vec {
     define_vec_op!($name, Div, div, / ,$($p),+);
     define_vec_op_assign!($name, AddAssign, add_assign, += $(,$p)+ );
     define_vec_op_assign!($name, SubAssign, sub_assign, -= $(,$p)+ );
-    // define_vec_op_assign!($name, MulAssign, mul_assign, *= $(,$p)+ );
+    define_vec_op_assign!($name, MulAssign, mul_assign, *= $(,$p)+ );
     define_vec_op_assign!($name, DivAssign, div_assign, /= $(,$p)+ );
 
 

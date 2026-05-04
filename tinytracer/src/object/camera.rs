@@ -1,6 +1,6 @@
 use std::usize;
 
-use math::{Vec2, Vec3};
+use math::Vec3;
 
 use super::{
   ray::{Hittable, Ray},
@@ -19,6 +19,7 @@ pub struct Camera {
   pixel_delta_u: Vec3,
   pixel_delta_v: Vec3,
   pixel00_loc: Vec3,
+  pixel_samples_scale: f32,
 }
 
 impl Camera {
@@ -27,10 +28,10 @@ impl Camera {
   }
 
   pub fn new(image_width: i32, aspect_ratio: f32, center: Vec3) -> Self {
-    let image_height = (image_width as f32 / aspect_ratio) as i32;
-    let image_height = if image_height < 1 { 1 } else { image_height };
+    let image_height = ((image_width as f32 / aspect_ratio) as i32).max(1);
 
     let focal_length = 1.0f32;
+    let samples_per_pixel = 100;
     let viewport_height = 2.0f32;
     let viewport_width = viewport_height * (image_width as f32 / image_height as f32);
 
@@ -53,6 +54,8 @@ impl Camera {
       pixel_delta_u,
       pixel_delta_v,
       pixel00_loc,
+      samples_per_pixel,
+      pixel_samples_scale: 1.0 / samples_per_pixel as f32,
       ..Default::default()
     }
   }
@@ -68,7 +71,7 @@ impl Camera {
     return Vec3::new(1.0, 1.0, 1.0) * (1.0 - a) + Vec3::new(0.5, 0.7, 1.0) * a;
   }
 
-  pub fn get_ray(&self, i: usize, j: usize) -> Ray {
+  pub fn get_ray(&self, i: i32, j: i32) -> Ray {
     let Self {
       center,
       pixel_delta_u,
@@ -77,6 +80,7 @@ impl Camera {
       ..
     } = self;
     let mut offset = Vec3::random() - Vec3::new(0.5, 0.5, 0.5);
+    // let mut offset = Vec3::zero();
     offset.z = 0.0;
 
     let pixel_center = *pixel00_loc
@@ -84,32 +88,31 @@ impl Camera {
       + (*pixel_delta_v * (j as f32 + offset.y));
     let ray_direction = pixel_center - *center;
 
-    Ray::new(pixel_center, ray_direction)
+    Ray::new(*center, ray_direction)
   }
 
   pub fn render(&self, world: &World, buffer: &mut Vec<u8>) {
     let Self {
       image_width,
       image_height,
-      pixel00_loc,
-      pixel_delta_u,
-      pixel_delta_v,
-      center,
+      samples_per_pixel,
       ..
     } = self;
     for j in 0..*image_height {
       for i in 0..*image_width {
-        let pixel_center =
-          *pixel00_loc + (*pixel_delta_u * (i as f32)) + (*pixel_delta_v * (j as f32));
-        let ray_direction = pixel_center - *center;
+        let mut c = Vec3::zero();
 
-        let r = Ray::new(*center, ray_direction);
-        let color = Self::ray_color(world, &r) * 255.0;
+        for _ in 0..*samples_per_pixel {
+          let r = self.get_ray(i, j);
+          let color = Self::ray_color(world, &r);
+          c += color;
+        }
 
         let idx = (j as usize * *image_width as usize + i as usize) * 3;
-        buffer[idx] = (color.x as u8).min(255);
-        buffer[idx + 1] = (color.y as u8).min(255);
-        buffer[idx + 2] = (color.z as u8).min(255);
+        c *= self.pixel_samples_scale * 255.0;
+        buffer[idx] = c.x.clamp(0.0, 255.0) as u8;
+        buffer[idx + 1] = c.y.clamp(0.0, 255.0) as u8;
+        buffer[idx + 2] = c.z.clamp(0.0, 255.0) as u8;
       }
     }
   }
