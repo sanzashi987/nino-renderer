@@ -151,6 +151,17 @@ macro_rules! define_vec {
         }
       }
 
+      pub fn random_unit() -> Self {
+        while true{
+          let p = Self::random_with_range(-1.0,1.0);
+          let len = p.length();
+          if len.powi(2) <=1.0 {
+            return p / len;
+          }
+        }
+        return Self::zero();
+      }
+
     }
   };
 }

@@ -7,6 +7,31 @@ use super::{
   world::World,
 };
 
+fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+  let on_unit_sphere = Vec3::random_unit();
+  if on_unit_sphere * *normal > 0.0 {
+    on_unit_sphere
+  } else {
+    on_unit_sphere * -1.0
+  }
+}
+
+pub fn ray_color(world: &World, ray: &Ray, depth: i32) -> Vec3 {
+  if depth == 0 {
+    return Vec3::zero();
+  }
+
+  if let Some(rec) = world.hit(ray, None) {
+    let direction = random_on_hemisphere(&rec.normal);
+    return ray_color(world, &Ray::new(rec.point, direction), depth - 1) * 0.5;
+  }
+
+  let unit_dir = ray.direction.normalize();
+  let a = 0.5 * (unit_dir.y + 1.0);
+
+  return Vec3::new(1.0, 1.0, 1.0) * (1.0 - a) + Vec3::new(0.5, 0.7, 1.0) * a;
+}
+
 #[derive(Debug, Default)]
 pub struct Camera {
   pub aspect_ratio: f32,
@@ -56,19 +81,9 @@ impl Camera {
       pixel00_loc,
       samples_per_pixel,
       pixel_samples_scale: 1.0 / samples_per_pixel as f32,
+      max_depth: 10,
       ..Default::default()
     }
-  }
-
-  pub fn ray_color(world: &World, ray: &Ray) -> Vec3 {
-    if let Some(rec) = world.hit(ray, None) {
-      return (rec.normal + Vec3::new(1.0, 1.0, 1.0)) * 0.5;
-    }
-
-    let unit_dir = ray.direction.normalize();
-    let a = 0.5 * (unit_dir.y + 1.0);
-
-    return Vec3::new(1.0, 1.0, 1.0) * (1.0 - a) + Vec3::new(0.5, 0.7, 1.0) * a;
   }
 
   pub fn get_ray(&self, i: i32, j: i32) -> Ray {
@@ -96,6 +111,7 @@ impl Camera {
       image_width,
       image_height,
       samples_per_pixel,
+      max_depth,
       ..
     } = self;
     for j in 0..*image_height {
@@ -104,7 +120,7 @@ impl Camera {
 
         for _ in 0..*samples_per_pixel {
           let r = self.get_ray(i, j);
-          let color = Self::ray_color(world, &r);
+          let color = ray_color(world, &r, *max_depth);
           c += color;
         }
 
