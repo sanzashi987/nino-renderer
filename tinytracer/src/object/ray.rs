@@ -51,6 +51,7 @@ impl Default for HitConfig {
 
 pub struct HitRecord {
   pub point: Vec3,
+  /// shall be normalized
   pub normal: Vec3,
   pub t: f32,
   pub front_face: bool,
