@@ -22,14 +22,22 @@ pub fn ray_color(world: &World, ray: &Ray, depth: i32) -> Vec3 {
   }
 
   if let Some(rec) = world.hit(ray, None) {
-    let direction = random_on_hemisphere(&rec.normal);
-    return ray_color(world, &Ray::new(rec.point, direction), depth - 1) * 0.5;
+    let direction = Vec3::random_unit() + rec.normal;
+    return ray_color(world, &Ray::new(rec.point, direction), depth - 1) * 0.1;
   }
 
   let unit_dir = ray.direction.normalize();
   let a = 0.5 * (unit_dir.y + 1.0);
 
   return Vec3::new(1.0, 1.0, 1.0) * (1.0 - a) + Vec3::new(0.5, 0.7, 1.0) * a;
+}
+
+fn gamma_correction(linear: f32) -> f32 {
+  if linear > 0 {
+    linear.sqrt()
+  } else {
+    0
+  }
 }
 
 #[derive(Debug, Default)]
@@ -125,10 +133,14 @@ impl Camera {
         }
 
         let idx = (j as usize * *image_width as usize + i as usize) * 3;
-        c *= self.pixel_samples_scale * 255.0;
-        buffer[idx] = c.x.clamp(0.0, 255.0) as u8;
-        buffer[idx + 1] = c.y.clamp(0.0, 255.0) as u8;
-        buffer[idx + 2] = c.z.clamp(0.0, 255.0) as u8;
+        c *= self.pixel_samples_scale;
+        let x = gamma_correction(c.x);
+        let y = gamma_correction(c.y);
+        let z = gamma_correction(c.z);
+
+        buffer[idx] = (x.clamp(0.0, 1.0) * 255.0) as u8;
+        buffer[idx + 1] = (y.clamp(0.0, 1.0) * 255.0) as u8;
+        buffer[idx + 2] = (z.clamp(0.0, 1.0) * 255.0) as u8;
       }
     }
   }

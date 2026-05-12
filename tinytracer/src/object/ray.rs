@@ -1,4 +1,8 @@
+use std::sync::Arc;
+
 use math::Vec3;
+
+use crate::object::material::Material;
 
 pub struct Ray {
   pub origin: Vec3,
@@ -50,15 +54,17 @@ pub struct HitRecord {
   pub normal: Vec3,
   pub t: f32,
   pub front_face: bool,
+  pub material: Arc<dyn Material>,
 }
 
 impl HitRecord {
-  pub fn new(ray: &Ray, out_normal: Vec3, t: f32) -> Self {
+  pub fn new(ray: &Ray, out_normal: Vec3, t: f32, material: &<Arc<dyn Material>) -> Self {
     let mut h = Self {
       point: ray.at(t),
       t,
       normal: out_normal,
       front_face: true,
+      material,
     };
 
     h.set_face_normal(ray, out_normal);

@@ -21,9 +21,8 @@ fn main() {
 
   // World
   let mut world = World::new();
-  let ivory = Material::new(Vec3::new(0.4, 0.4, 0.3), Vec2::new(0.6, 0.3), 50.);
-  let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, ivory);
-  let ground = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, ivory);
+  let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
+  let ground = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0);
 
   world.add(Box::new(sphere));
   world.add(Box::new(ground));
