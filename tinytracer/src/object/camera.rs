@@ -33,10 +33,10 @@ pub fn ray_color(world: &World, ray: &Ray, depth: i32) -> Vec3 {
 }
 
 fn gamma_correction(linear: f32) -> f32 {
-  if linear > 0 {
+  if linear > 0.0 {
     linear.sqrt()
   } else {
-    0
+    0.0
   }
 }
 

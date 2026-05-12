@@ -24,22 +24,13 @@ math = { path = "./math" }
 fltk = "1.3.33"
 
 
-[[example]]
-name = "runner"
-path = "demo/runner.rs"
-
-
-[[example]]
-name = "hard-import-runner"
-path = "demo/runner_hard_import.rs"
+[features]
+cpu = []
+gpu = []
 
 [[example]]
 name = "macro-playground"
 path = "demo/macro_playground.rs"
-
-[features]
-cpu = []
-gpu = []
 
 [[example]]
 name = "tinyrenderer"

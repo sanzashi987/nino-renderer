@@ -162,6 +162,16 @@ macro_rules! define_vec {
         return Self::zero();
       }
 
+      pub fn near_zero(&self) -> bool {
+        let s = 1e-8f32;
+        let mut res = true;
+        $(
+          res = res && self.$p < s;
+        )+
+
+        res
+      }
+
     }
   };
 }
@@ -176,6 +186,10 @@ impl Vec2 {
   }
 }
 impl Vec3 {
+  pub fn reflect(&self, normal: &Self) -> Self {
+    *self - *normal * 2.0 * (*normal * *self)
+  }
+
   pub fn cross(&self, rhs: &Self) -> Self {
     Self {
       x: self.y * rhs.z - self.z * rhs.y,

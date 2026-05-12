@@ -1,4 +1,5 @@
 use core::f32;
+use std::sync::Arc;
 
 use math::Vec3;
 
@@ -9,11 +10,11 @@ use super::material::Material;
 pub struct Sphere {
   pub center: Vec3,
   pub radius: f32,
-  pub material: Material,
+  pub material: Arc<dyn Material>,
 }
 
 impl Sphere {
-  pub fn new(center: Vec3, radius: f32, material: Material) -> Self {
+  pub fn new(center: Vec3, radius: f32, material: Arc<dyn Material>) -> Self {
     Self {
       center,
       radius,
@@ -62,7 +63,7 @@ impl Hittable for Sphere {
       }
 
       let normal = (ray.at(t) - self.center).normalize();
-      return Some(HitRecord::new(ray, normal, t));
+      return Some(HitRecord::new(ray, normal, t, self.material.clone()));
     }
     return None;
   }

@@ -58,7 +58,7 @@ pub struct HitRecord {
 }
 
 impl HitRecord {
-  pub fn new(ray: &Ray, out_normal: Vec3, t: f32, material: &<Arc<dyn Material>) -> Self {
+  pub fn new(ray: &Ray, out_normal: Vec3, t: f32, material: Arc<dyn Material>) -> Self {
     let mut h = Self {
       point: ray.at(t),
       t,

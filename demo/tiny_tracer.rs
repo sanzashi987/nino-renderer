@@ -33,5 +33,7 @@ fn main() {
     let mut buffer: Vec<u8> = vec![0; image_width as usize * camera.image_height() as usize * 3];
     camera.render(&world, &mut buffer);
     draw_image.as_ref()(&buffer);
-  })
+  });
+
+ let a = 1e-8f32;
 }
