@@ -1,5 +1,4 @@
-use image::buffer;
-use math::{Vec2, Vec3};
+use math::Vec3;
 use tinytracer::object::{
   camera::Camera,
   light::{self, Light},
@@ -35,5 +34,5 @@ fn main() {
     draw_image.as_ref()(&buffer);
   });
 
- let a = 1e-8f32;
+  let a = 1e-8f32;
 }

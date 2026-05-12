@@ -186,6 +186,7 @@ impl Vec2 {
   }
 }
 impl Vec3 {
+  // r = v + 2b 
   pub fn reflect(&self, normal: &Self) -> Self {
     *self - *normal * 2.0 * (*normal * *self)
   }
