@@ -82,7 +82,17 @@ impl Material for Dielectric {
       self.refraction_index
     };
 
-    let refracted = ray_in.direction.refract(&rec.normal, ri);
+    let cos_theta = (ray_in.direction * -1.0 * rec.normal).min(1.0);
+    let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
+
+    let refracted = if ri * sin_theta > 1.0 {
+      // cannot refract , do reflect
+      ray_in.direction.reflect(&rec.normal)
+    } else {
+      ray_in.direction.refract(&rec.normal, ri)
+    };
+
+    // let refracted = ray_in.direction.refract(&rec.normal, ri);
     Some((attenuation, Ray::new(rec.point, refracted)))
   }
 }
