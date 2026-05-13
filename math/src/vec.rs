@@ -186,7 +186,14 @@ impl Vec2 {
   }
 }
 impl Vec3 {
-  // r = v + 2b 
+  pub fn refract(&self, normal: &Self, etai_over_etat: f32) -> Self {
+    let cos_theta = ((*self * -1.0) * *normal).min(1.0);
+    let r_out_perp = (*self + *normal * cos_theta) * etai_over_etat;
+    let r_out_parallel = *normal * ((1.0 - r_out_perp.length_square()).abs().sqrt() * -1.0);
+    return r_out_perp + r_out_parallel;
+  }
+
+  // r = v + 2b
   pub fn reflect(&self, normal: &Self) -> Self {
     *self - *normal * 2.0 * (*normal * *self)
   }
