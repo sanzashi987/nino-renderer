@@ -22,8 +22,14 @@ pub fn ray_color(world: &World, ray: &Ray, depth: i32) -> Vec3 {
   }
 
   if let Some(rec) = world.hit(ray, None) {
-    let direction = Vec3::random_unit() + rec.normal;
-    return ray_color(world, &Ray::new(rec.point, direction), depth - 1) * 0.1;
+    // let direction = Vec3::random_unit() + rec.normal;
+    // return ray_color(world, &Ray::new(rec.point, direction), depth - 1) * 0.1;
+    if let Some((a, scattered)) = rec.material.scatter(ray, &rec) {
+      let c = ray_color(world, &scattered, depth - 1);
+      return Vec3::new(a.x * c.x, a.y * c.y, a.z * c.z);
+    } else {
+      return Vec3::zero();
+    }
   }
 
   let unit_dir = ray.direction.normalize();

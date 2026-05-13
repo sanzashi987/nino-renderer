@@ -10,7 +10,7 @@ use tinytracer::object::{
 fn main() {
   // Image
   let aspect_ratio: f32 = 16.0 / 9.0;
-  let image_width = 400;
+  let image_width = 1080;
   let center = Vec3::zero();
 
   let camera = Camera::new(image_width, aspect_ratio, center);
@@ -51,13 +51,9 @@ fn main() {
     material_right,
   )));
 
-  // Camera
-
   sandbox.run_fltk(move |_| {
     let mut buffer: Vec<u8> = vec![0; image_width as usize * camera.image_height() as usize * 3];
     camera.render(&world, &mut buffer);
     draw_image.as_ref()(&buffer);
   });
-
-  let a = 1e-8f32;
 }
