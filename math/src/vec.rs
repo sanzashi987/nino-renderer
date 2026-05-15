@@ -137,7 +137,7 @@ macro_rules! define_vec {
       pub fn random() ->Self {
         Self {
           $(
-            $p: rand::random(),
+            $p: rand::rng().random_range(0.0..1.0),
           )+
         }
       }

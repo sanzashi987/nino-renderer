@@ -824,6 +824,7 @@ name = "tinytracer"
 version = "0.1.0"
 dependencies = [
  "math",
+ "rand 0.10.1",
 ]
 
 [[package]]

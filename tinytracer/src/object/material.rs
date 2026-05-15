@@ -1,8 +1,12 @@
 use std::sync::Arc;
 
 use math::Vec3;
+use rand::RngExt;
 
-use crate::object::ray::{HitRecord, Ray};
+use crate::{
+  object::ray::{HitRecord, Ray},
+  utils::fresnel::reflectance,
+};
 
 pub trait Material {
   fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)>;
@@ -85,8 +89,9 @@ impl Material for Dielectric {
     let cos_theta = (ray_in.direction * -1.0 * rec.normal).min(1.0);
     let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
 
-    let refracted = if ri * sin_theta > 1.0 {
-      // cannot refract , do reflect
+    let r = rand::rng().random_range(0.0..1.0);
+
+    let refracted = if ri * sin_theta > 1.0 || reflectance(cos_theta, ri) > r {
       ray_in.direction.reflect(&rec.normal)
     } else {
       ray_in.direction.refract(&rec.normal, ri)
