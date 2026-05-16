@@ -40,6 +40,8 @@ impl Sphere {
 
     let half_chord = (radius_exq - ray_to_center).sqrt();
 
+    // 双根回退：折射光线从球面出发，近交点 t ≈ 0 落在 (0, t_min] 内会被拒绝。
+    // 此时必须尝试远交点（球的另一侧），否则光线链在球面断裂，玻璃球变黑。
     let mut first_intersect = to_center_projected_at_dir - half_chord;
     if first_intersect <= t_min || first_intersect >= t_max {
       first_intersect = to_center_projected_at_dir + half_chord;
