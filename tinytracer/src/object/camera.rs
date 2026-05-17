@@ -55,12 +55,18 @@ pub struct Camera {
   pub max_depth: i32,
   // in degree
   pub fov: f32,
+  pub look_at: Vec3,
+  pub look_from: Vec3,
+  pub vup: Vec3,
 
   image_height: i32,
   pixel_delta_u: Vec3,
   pixel_delta_v: Vec3,
   pixel00_loc: Vec3,
   pixel_samples_scale: f32,
+  u: Vec3,
+  v: Vec3,
+  w: Vec3,
 }
 
 impl Camera {
@@ -68,23 +74,27 @@ impl Camera {
     self.image_height
   }
 
-  pub fn new(image_width: i32, aspect_ratio: f32, center: Vec3, fov: f32) -> Self {
+  pub fn new(image_width: i32, aspect_ratio: f32, center: Vec3, fov: f32, look_at: Vec3) -> Self {
     let image_height = ((image_width as f32 / aspect_ratio) as i32).max(1);
+    let look_from = center;
 
-    let focal_length = 1.0f32;
+    let focal_length = (look_from - look_at).length();
     let samples_per_pixel = 100;
     let viewport_height = 2.0 * focal_length * (fov / 2.0).to_radians().tan();
     let viewport_width = viewport_height * (image_width as f32 / image_height as f32);
 
+    let w = (look_from - look_at).normalize();
+    let u = Vec3::y_axis().cross(&w).normalize();
+    let v = w.cross(&u);
+
     // see ![viewport](../images/viewport.jpg)
-    let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
-    let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
+    let viewport_u = u * viewport_width;
+    let viewport_v = v * viewport_height * -1.0; // down growth
 
     let pixel_delta_u = viewport_u / (image_width as f32);
     let pixel_delta_v = viewport_v / (image_height as f32);
 
-    let viewport_upper_left =
-      center - Vec3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+    let viewport_upper_left = center - w * focal_length - viewport_u / 2.0 - viewport_v / 2.0;
     let pixel00_loc = viewport_upper_left + (pixel_delta_u + pixel_delta_v) * 0.5;
 
     Self {
@@ -99,6 +109,9 @@ impl Camera {
       pixel_samples_scale: 1.0 / samples_per_pixel as f32,
       max_depth: 20,
       fov,
+      u,
+      v,
+      w,
       ..Default::default()
     }
   }

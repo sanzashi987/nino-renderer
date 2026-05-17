@@ -10,8 +10,14 @@ use tinytracer::object::{
 };
 const IMAGE_WIDTH: i32 = 450;
 
-fn chapter_11() -> (Camera, World) {
-  let camera = Camera::new(IMAGE_WIDTH, 16.0 / 9.0, Vec3::zero(), 90.0);
+fn chapters() -> (Camera, World) {
+  let camera = Camera::new(
+    IMAGE_WIDTH,
+    16.0 / 9.0,
+    Vec3::new(-2.0, 2.0, 1.0),
+    20.0,
+    Vec3::new(0.0, 0.0, -1.0),
+  );
   // World
   let mut world = World::new();
   // let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
@@ -56,23 +62,117 @@ fn chapter_11() -> (Camera, World) {
   return (camera, world);
 }
 
-fn chapter_12() -> (Camera, World) {
-  let camera = Camera::new(IMAGE_WIDTH, 16.0 / 9.0, Vec3::zero(), 90.0);
+fn chapter_12_test() -> (Camera, World) {
+  let camera = Camera::new(
+    IMAGE_WIDTH,
+    16.0 / 9.0,
+    Vec3::zero(),
+    90.0,
+    Vec3::new(0.0, 0.0, -1.0),
+  );
 
   let mut world = World::new();
 
-  let R = (PI / 4.0).cos();
-  let material_left = Lambertian::new(Vec3::new(0.0,0.0, 1.0));
+  let rr = (PI / 4.0).cos();
+  let material_left = Lambertian::new(Vec3::new(0.0, 0.0, 1.0));
   let material_right = Lambertian::new(Vec3::new(1.0, 0.0, 0.0));
 
-  world.add(Box::new(Sphere::new(Vec3::new(R*-1.0, 0.0, -1.0), R, material_left)));
-  world.add(Box::new(Sphere::new(Vec3::new( R, 0.0, -1.0), R, material_right)));
+  world.add(Box::new(Sphere::new(
+    Vec3::new(rr * -1.0, 0.0, -1.0),
+    rr,
+    material_left,
+  )));
+  world.add(Box::new(Sphere::new(
+    Vec3::new(rr, 0.0, -1.0),
+    rr,
+    material_right,
+  )));
   return (camera, world);
 }
 
+fn random_f32() -> f32 {
+  rand::random::<f32>()
+}
+
+fn cover() -> (Camera, World) {
+  let camera = Camera::new(
+    IMAGE_WIDTH,
+    16.0 / 9.0,
+    Vec3::new(13.0, 2.0, 3.0),
+    20.0,
+    Vec3::new(0.0, 0.0, 0.0),
+  );
+  let mut world = World::new();
+  let ground_material = Lambertian::new(Vec3::new(0.5, 0.5, 0.5));
+  world.add(Box::new(Sphere::new(
+    Vec3::new(0.0, -1000.0, 0.0),
+    1000.0,
+    ground_material,
+  )));
+
+  let x = Vec3::new(4.0, 0.2, 0.0);
+  for a in -11..11 {
+    for b in -11..11 {
+      let choose_mat: f32 = random_f32();
+      let center = Vec3::new(
+        a as f32 + 0.9 * random_f32(),
+        0.2,
+        b as f32 + 0.9 * random_f32(),
+      );
+
+      if (center - x).length() > 0.9 {
+        if choose_mat < 0.8 {
+          // diffuse
+          let albedo = Vec3::new(
+            random_f32() * random_f32(),
+            random_f32() * random_f32(),
+            random_f32() * random_f32(),
+          );
+          let sphere_material = Lambertian::new(albedo);
+          world.add(Box::new(Sphere::new(center, 0.2, sphere_material)));
+        } else if choose_mat < 0.95 {
+          // metal
+          let albedo = Vec3::random_with_range(0.5, 1.0);
+          let fuzz = random_f32();
+          let sphere_material = Metal::new(albedo, fuzz);
+          world.add(Box::new(Sphere::new(center, 0.2, sphere_material)));
+        } else {
+          // glass
+          let sphere_material = Dielectric::new(1.5);
+          world.add(Box::new(Sphere::new(center, 0.2, sphere_material)));
+        }
+      }
+    }
+  }
+
+  let material1 = Dielectric::new(1.5);
+  world.add(Box::new(Sphere::new(
+    Vec3::new(0.0, 1.0, 0.0),
+    1.0,
+    material1,
+  )));
+
+  let material2 = Lambertian::new(Vec3::new(0.4, 0.2, 0.1));
+  world.add(Box::new(Sphere::new(
+    Vec3::new(-4.0, 1.0, 0.0),
+    1.0,
+    material2,
+  )));
+
+  let material3 = Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0);
+  world.add(Box::new(Sphere::new(
+    Vec3::new(4.0, 1.0, 0.0),
+    1.0,
+    material3,
+  )));
+
+  (camera, world)
+}
+
 fn main() {
-  // let (camera, world) = chapter_11();
-  let (camera, world) = chapter_12();
+  // let (camera, world) = chapters();
+  let (camera, world) = cover();
+  // let (camera, world) = chapter_12_test();
   let sandbox = sandbox::Sandbox::new(IMAGE_WIDTH, camera.image_height(), false);
   let draw_image = sandbox.make_draw_image();
 
