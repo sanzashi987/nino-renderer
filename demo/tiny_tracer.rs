@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use math::Vec3;
 use tinytracer::object::{
   camera::Camera,
@@ -6,19 +8,10 @@ use tinytracer::object::{
   sphere::Sphere,
   world::World,
 };
+const IMAGE_WIDTH: i32 = 450;
 
-fn main() {
-  // Image
-  let aspect_ratio: f32 = 16.0 / 9.0;
-  // let image_width = 1080;
-  let image_width = 450;
-  let center = Vec3::zero();
-
-  let camera = Camera::new(image_width, aspect_ratio, center);
-
-  let sandbox = sandbox::Sandbox::new(image_width, camera.image_height(), false);
-  let draw_image = sandbox.make_draw_image();
-
+fn chapter_11() -> (Camera, World) {
+  let camera = Camera::new(IMAGE_WIDTH, 16.0 / 9.0, Vec3::zero(), 90.0);
   // World
   let mut world = World::new();
   // let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
@@ -60,8 +53,31 @@ fn main() {
     material_right,
   )));
 
+  return (camera, world);
+}
+
+fn chapter_12() -> (Camera, World) {
+  let camera = Camera::new(IMAGE_WIDTH, 16.0 / 9.0, Vec3::zero(), 90.0);
+
+  let mut world = World::new();
+
+  let R = (PI / 4.0).cos();
+  let material_left = Lambertian::new(Vec3::new(0.0,0.0, 1.0));
+  let material_right = Lambertian::new(Vec3::new(1.0, 0.0, 0.0));
+
+  world.add(Box::new(Sphere::new(Vec3::new(R*-1.0, 0.0, -1.0), R, material_left)));
+  world.add(Box::new(Sphere::new(Vec3::new( R, 0.0, -1.0), R, material_right)));
+  return (camera, world);
+}
+
+fn main() {
+  // let (camera, world) = chapter_11();
+  let (camera, world) = chapter_12();
+  let sandbox = sandbox::Sandbox::new(IMAGE_WIDTH, camera.image_height(), false);
+  let draw_image = sandbox.make_draw_image();
+
   sandbox.run_fltk(move |_| {
-    let mut buffer: Vec<u8> = vec![0; image_width as usize * camera.image_height() as usize * 3];
+    let mut buffer: Vec<u8> = vec![0; IMAGE_WIDTH as usize * camera.image_height() as usize * 3];
     camera.render(&world, &mut buffer);
     draw_image.as_ref()(&buffer);
   });

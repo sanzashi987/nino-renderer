@@ -53,6 +53,8 @@ pub struct Camera {
   pub image_width: i32,
   pub samples_per_pixel: i32,
   pub max_depth: i32,
+  // in degree
+  pub fov: f32,
 
   image_height: i32,
   pixel_delta_u: Vec3,
@@ -66,12 +68,12 @@ impl Camera {
     self.image_height
   }
 
-  pub fn new(image_width: i32, aspect_ratio: f32, center: Vec3) -> Self {
+  pub fn new(image_width: i32, aspect_ratio: f32, center: Vec3, fov: f32) -> Self {
     let image_height = ((image_width as f32 / aspect_ratio) as i32).max(1);
 
     let focal_length = 1.0f32;
     let samples_per_pixel = 100;
-    let viewport_height = 2.0f32;
+    let viewport_height = 2.0 * focal_length * (fov / 2.0).to_radians().tan();
     let viewport_width = viewport_height * (image_width as f32 / image_height as f32);
 
     // see ![viewport](../images/viewport.jpg)
@@ -96,6 +98,7 @@ impl Camera {
       samples_per_pixel,
       pixel_samples_scale: 1.0 / samples_per_pixel as f32,
       max_depth: 20,
+      fov,
       ..Default::default()
     }
   }
