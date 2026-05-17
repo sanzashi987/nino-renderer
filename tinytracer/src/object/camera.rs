@@ -107,7 +107,7 @@ impl Camera {
       pixel00_loc,
       samples_per_pixel,
       pixel_samples_scale: 1.0 / samples_per_pixel as f32,
-      max_depth: 20,
+      max_depth: 10,
       fov,
       u,
       v,
