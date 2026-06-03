@@ -7,3 +7,4 @@ edition = "2021"
 # image = "0.24.5"
 math = { path = "../math" }
 rand = "0.10.1"
+derive_builder = "0.20"

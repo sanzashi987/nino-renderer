@@ -11,13 +11,13 @@ use tinytracer::object::{
 const IMAGE_WIDTH: i32 = 450;
 
 fn chapters() -> (Camera, World) {
-  let camera = Camera::new(
-    IMAGE_WIDTH,
-    16.0 / 9.0,
-    Vec3::new(-2.0, 2.0, 1.0),
-    20.0,
-    Vec3::new(0.0, 0.0, -1.0),
-  );
+  let camera = Camera::builder()
+    .image_width(IMAGE_WIDTH)
+    .center(Vec3::new(-2.0, 2.0, 1.0))
+    .fov(20.0)
+    .defocus_angle(10.0)
+    .focus_dist(3.4)
+    .build();
   // World
   let mut world = World::new();
   // let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
@@ -63,13 +63,11 @@ fn chapters() -> (Camera, World) {
 }
 
 fn chapter_12_test() -> (Camera, World) {
-  let camera = Camera::new(
-    IMAGE_WIDTH,
-    16.0 / 9.0,
-    Vec3::zero(),
-    90.0,
-    Vec3::new(0.0, 0.0, -1.0),
-  );
+  let camera = Camera::builder()
+    .image_width(IMAGE_WIDTH)
+    .aspect_ratio(16.0 / 9.0)
+    .fov(90.0)
+    .build();
 
   let mut world = World::new();
 
@@ -95,13 +93,12 @@ fn random_f32() -> f32 {
 }
 
 fn cover() -> (Camera, World) {
-  let camera = Camera::new(
-    IMAGE_WIDTH,
-    16.0 / 9.0,
-    Vec3::new(13.0, 2.0, 3.0),
-    20.0,
-    Vec3::new(0.0, 0.0, 0.0),
-  );
+  let camera = Camera::builder()
+    .image_width(IMAGE_WIDTH)
+    .center(Vec3::new(13.0, 2.0, 3.0))
+    .fov(20.0)
+    .look_at(Vec3::new(0.0, 0.0, 0.0))
+    .build();
   let mut world = World::new();
   let ground_material = Lambertian::new(Vec3::new(0.5, 0.5, 0.5));
   world.add(Box::new(Sphere::new(
@@ -170,8 +167,8 @@ fn cover() -> (Camera, World) {
 }
 
 fn main() {
-  // let (camera, world) = chapters();
-  let (camera, world) = cover();
+  let (camera, world) = chapters();
+  // let (camera, world) = cover();
   // let (camera, world) = chapter_12_test();
   let sandbox = sandbox::Sandbox::new(IMAGE_WIDTH, camera.image_height(), false);
   let draw_image = sandbox.make_draw_image();
