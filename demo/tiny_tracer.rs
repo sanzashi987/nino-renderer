@@ -167,8 +167,8 @@ fn cover() -> (Camera, World) {
 }
 
 fn main() {
-  let (camera, world) = chapters();
-  // let (camera, world) = cover();
+  // let (camera, world) = chapters();
+  let (camera, world) = cover();
   // let (camera, world) = chapter_12_test();
   let sandbox = sandbox::Sandbox::new(IMAGE_WIDTH, camera.image_height(), false);
   let draw_image = sandbox.make_draw_image();

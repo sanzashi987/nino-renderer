@@ -1,4 +1,4 @@
-use std::usize;
+use std::{collections::HashMap, usize};
 
 use derive_builder::Builder;
 use math::Vec3;
